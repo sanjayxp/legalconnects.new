@@ -1,0 +1,5 @@
+The real application source code lives here.
+It is SAFE to publish this folder on Netlify: the Supabase "anon" key in
+js/config.js is designed to be public (data is protected by Row Level
+Security in the database). What must NEVER go in this folder: the Supabase
+"service_role" key, or any Razorpay secret key. Claude knows this rule.

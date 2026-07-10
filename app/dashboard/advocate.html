@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advocate Dashboard — LegalConnects</title>
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --amber:#b45309;--amber-soft:#fdf3e3;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+
+  header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  .nav{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:28px;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;letter-spacing:-.02em}
+  .logo-mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .avatar{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:15px}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700;background:var(--amber-soft);color:var(--amber)}
+  .btn-ghost{padding:8px 16px;border-radius:9px;font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);background:transparent;cursor:pointer;transition:all .15s}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  main{max-width:1120px;margin:0 auto;padding:32px 24px}
+  .greeting{margin-bottom:32px}
+  .greeting h1{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+  .greeting p{color:var(--ink-soft)}
+
+  .status-banner{border-radius:14px;padding:18px 22px;margin-bottom:28px;font-size:14px}
+  .status-banner.pending{background:var(--amber-soft);border:1px solid #f0c97e;color:var(--amber)}
+  .status-banner b{font-size:15px;display:block;margin-bottom:6px}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:24px}
+  .card-icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;margin-bottom:14px}
+  .card h3{font-size:15px;font-weight:700;margin-bottom:4px}
+  .card p{font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+  .coming-soon{display:inline-block;margin-top:12px;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="../index.html" class="logo">
+      <div class="logo-mark">⚖</div>
+      LegalConnects
+    </a>
+    <div class="nav-right">
+      <div class="avatar" id="avatarEl">?</div>
+      <button class="btn-ghost" id="signoutBtn">Sign out</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div class="greeting">
+    <h1>Welcome, <span id="nameEl">…</span> ⚖️</h1>
+    <p>Your advocate dashboard.</p>
+  </div>
+
+  <div class="status-banner pending">
+    <b>⏳ Verification pending</b>
+    Your account is registered. In the next build phase, you'll be able to submit your Bar Council certificate and enrollment number. Our team will verify and activate your public profile.
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon" style="background:var(--accent-soft)">👤</div>
+      <h3>Complete Your Profile</h3>
+      <p>Add practice areas, experience, fee structure, and a photo.</p>
+      <span class="coming-soon">Coming soon</span>
+    </div>
+
+    <div class="card">
+      <div class="card-icon" style="background:var(--green-soft)">📥</div>
+      <h3>My Leads</h3>
+      <p>Clients who have requested a consultation with you.</p>
+      <span class="coming-soon">Coming soon</span>
+    </div>
+
+    <div class="card">
+      <div class="card-icon" style="background:var(--amber-soft)">📋</div>
+      <h3>My Bookings</h3>
+      <p>Confirmed consultations and hearing diary.</p>
+      <span class="coming-soon">Coming soon</span>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { supabase } from '../js/config.js';
+import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
+
+const session = await requireAuth();
+if (!session) {}
+
+const profile = await getCurrentProfile();
+if (profile && profile.role !== 'advocate') {
+  const routes = { client: '/dashboard/client.html', admin: '/dashboard/admin.html' };
+  window.location.href = routes[profile.role] || '/auth/login.html';
+}
+
+if (profile) {
+  const name = profile.full_name || session.user.email;
+  document.getElementById('nameEl').textContent = name.split(' ')[0];
+  document.getElementById('avatarEl').textContent = name.charAt(0).toUpperCase();
+}
+
+document.getElementById('signoutBtn').addEventListener('click', signOut);
+</script>
+
+</body>
+</html>

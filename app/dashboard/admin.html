@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — LegalConnects</title>
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --red:#c0392b;--red-soft:#fdecea;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+
+  header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:50}
+  .nav{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:28px;height:60px}
+  .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em}
+  .logo-mark{width:28px;height:28px;border-radius:7px;background:#3e5bd9;color:#fff;display:grid;place-items:center;font-size:14px}
+  .admin-chip{padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.15);font-size:12px;font-weight:700;color:#fff}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+  .btn-ghost{padding:7px 14px;border-radius:8px;font:inherit;font-size:13px;font-weight:600;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);background:transparent;cursor:pointer;transition:all .15s}
+  .btn-ghost:hover{background:rgba(255,255,255,.1);color:#fff}
+
+  main{max-width:1120px;margin:0 auto;padding:32px 24px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+  .sub{color:var(--ink-soft);margin-bottom:28px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+  .stat-num{font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+  .stat-label{font-size:13px;color:var(--ink-soft)}
+
+  .section{margin-bottom:32px}
+  .section-head{font-size:14px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+  .card h3{font-size:15px;font-weight:700;margin-bottom:4px}
+  .card p{font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+  .coming-soon{display:inline-block;margin-top:12px;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700}
+
+  .info-box{background:var(--green-soft);border:1px solid #b8e6d5;border-radius:14px;padding:18px 22px;margin-bottom:28px;font-size:14px;color:var(--green);line-height:1.6}
+  .info-box b{display:block;margin-bottom:8px;font-size:15px}
+  .info-box code{background:rgba(14,138,95,.12);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <div class="logo">
+      <div class="logo-mark">⚖</div>
+      LegalConnects
+    </div>
+    <span class="admin-chip">Admin</span>
+    <div class="nav-right">
+      <div class="avatar" id="avatarEl">A</div>
+      <button class="btn-ghost" id="signoutBtn">Sign out</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <h1>Admin Dashboard</h1>
+  <p class="sub">Signed in as <strong id="emailEl">…</strong></p>
+
+  <div class="info-box">
+    <b>✅ Phase 1 complete — admin login is working!</b>
+    To promote a user to admin: open your Supabase dashboard → Table Editor → <code>profiles</code> table → find their row → click the <code>role</code> cell → type <code>admin</code> → click outside to save.<br><br>
+    The admin verification queue, user management, and analytics dashboard are coming in the next build sessions.
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num" id="totalUsers">—</div>
+      <div class="stat-label">Total users</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="totalAdvocates">—</div>
+      <div class="stat-label">Advocates</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="totalClients">—</div>
+      <div class="stat-label">Clients</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Pending verifications</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">Coming in next sessions</div>
+    <div class="cards">
+      <div class="card">
+        <h3>✅ Verification Queue</h3>
+        <p>Review advocate Bar Council certificates and approve/reject registrations.</p>
+        <span class="coming-soon">Next session</span>
+      </div>
+      <div class="card">
+        <h3>👥 User Management</h3>
+        <p>View all users, change roles, suspend accounts.</p>
+        <span class="coming-soon">Next session</span>
+      </div>
+      <div class="card">
+        <h3>📊 Analytics</h3>
+        <p>Bookings, revenue, signups, forum activity.</p>
+        <span class="coming-soon">Phase 2</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { supabase } from '../js/config.js';
+import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
+
+const session = await requireAuth();
+if (!session) {}
+
+const profile = await getCurrentProfile();
+if (profile && profile.role !== 'admin') {
+  // Not admin — kick them to their proper dashboard
+  const routes = { client: '/dashboard/client.html', advocate: '/dashboard/advocate.html' };
+  window.location.href = routes[profile.role] || '/auth/login.html';
+}
+
+if (profile) {
+  const name = profile.full_name || session.user.email;
+  document.getElementById('avatarEl').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('emailEl').textContent  = session.user.email;
+}
+
+// Load basic stats (admins can read all profiles via RLS policy)
+try {
+  const { data: allProfiles } = await supabase.from('profiles').select('role');
+  if (allProfiles) {
+    document.getElementById('totalUsers').textContent     = allProfiles.length;
+    document.getElementById('totalAdvocates').textContent = allProfiles.filter(p => p.role === 'advocate').length;
+    document.getElementById('totalClients').textContent   = allProfiles.filter(p => p.role === 'client').length;
+  }
+} catch(e) {
+  // Stats will just show dashes
+}
+
+document.getElementById('signoutBtn').addEventListener('click', signOut);
+</script>
+
+</body>
+</html>
