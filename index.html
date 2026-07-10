@@ -482,6 +482,21 @@
   .home-track p{color:#c3cad8;font-size:14.5px;margin-bottom:18px}
   @media (max-width:900px){ .home-track{grid-template-columns:1fr} .matter{grid-template-columns:auto 1fr} .matter .wa-toggle{grid-column:1/-1} }
 
+  /* ===== Phase 8b: visiting card & earnings ===== */
+  .vcard{max-width:400px;background:#1a2233;border-radius:18px;color:#fff;padding:26px;box-shadow:var(--shadow)}
+  .vcard .vc-top{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+  .vcard .mini{width:52px;height:52px;border-radius:13px;background:var(--accent);display:grid;place-items:center;font-weight:800;font-size:19px}
+  .vcard b{font-size:17px;display:block}
+  .vcard .vc-sub{font-size:12.5px;color:#aeb6c6}
+  .vcard .vc-row{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,.12);padding-top:14px}
+  .vcard .vc-info{font-size:12.5px;color:#c3cad8;line-height:1.7}
+  .vcard .vc-info span{color:#8a93a5}
+  .qr{width:84px;height:84px;border-radius:10px;background:#fff;padding:7px;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:2px}
+  .qr i{background:#12192b;border-radius:1px}
+  .qr i.o{background:transparent}
+  .vc-link{font-size:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:8px 12px;margin-top:14px;color:#c3cad8;word-break:break-all}
+  .vc-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
   /* ===== Toast ===== */
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:13px 22px;border-radius:12px;font-size:14px;box-shadow:var(--shadow);transition:transform .3s;z-index:99}
   .toast.show{transform:translateX(-50%) translateY(0)}
@@ -743,7 +758,10 @@
 
       <div class="empty-state" id="no-adv" style="display:none">
         No advocates match these filters yet.<br>
-        <button class="btn btn-ghost" style="margin-top:12px" onclick="resetFilters()">Clear filters</button>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="resetFilters()">Clear filters</button>
+          <button class="btn btn-primary" onclick="go('post')">Post your case — advocates come to you</button>
+        </div>
       </div>
 
       <div class="qa-cta" style="margin-top:18px">
@@ -967,6 +985,7 @@
       <div class="ans-foot">
         <button class="upbtn" onclick="voteA(this)">▲ Upvote · <span>41</span></button>
         <button class="upbtn" onclick="toggleComments(this)">💬 <span class="ccount">2</span> Comments</button>
+        <button class="upbtn" title="Report this answer" onclick="toast('✓ Reported — sent to the moderation queue for review')">⚑ Report</button>
         <span class="helped">This answer helped 38 people</span>
       </div>
       <div class="cthread">
@@ -989,6 +1008,7 @@
       <div class="ans-foot">
         <button class="upbtn" onclick="voteA(this)">▲ Upvote · <span>17</span></button>
         <button class="upbtn" onclick="toggleComments(this)">💬 <span class="ccount">0</span> Comments</button>
+        <button class="upbtn" title="Report this answer" onclick="toast('✓ Reported — sent to the moderation queue for review')">⚑ Report</button>
         <span class="helped">This answer helped 12 people</span>
       </div>
       <div class="cthread">
@@ -1009,6 +1029,7 @@
       <div class="ans-foot">
         <button class="upbtn" onclick="voteA(this)">▲ Upvote · <span>9</span></button>
         <button class="upbtn" onclick="toggleComments(this)">💬 <span class="ccount">0</span> Comments</button>
+        <button class="upbtn" title="Report this answer" onclick="toast('✓ Reported — sent to the moderation queue for review')">⚑ Report</button>
         <span class="helped">This answer helped 6 people</span>
       </div>
       <div class="cthread">
@@ -1147,7 +1168,7 @@
         <label style="font-size:13px;font-weight:700;display:block;margin:12px 0 6px">Password</label>
         <input id="li-pass" type="password" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;font:inherit;font-size:14.5px" placeholder="••••••••">
         <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="doLogin()">Log in</button>
-        <div class="authlink"><b onclick="toast('Password reset email — simulated')">Forgot password?</b></div>
+        <div class="authlink"><b onclick="forgotPass()">Forgot password?</b></div>
         <div class="authlink">New to LegalConnects? <b onclick="setMode('reg')">Create an account</b></div>
       </div>
 
@@ -1280,9 +1301,10 @@
       <div class="ditem" onclick="dtab(this,'dp-book')">📅 Bookings</div>
       <div class="ditem" onclick="dtab(this,'dp-qa')">💬 Q&amp;A Activity</div>
       <div class="ditem" onclick="dtab(this,'dp-diary')">📖 Hearing Diary <span class="n" style="background:var(--amber);">1</span></div>
-      <div class="ditem" onclick="toast('Profile editor — reuses the wizard you built')">👤 Edit Profile</div>
-      <div class="ditem" onclick="toast('Earnings & payouts — next build phase')">₹ Earnings</div>
-      <div class="ditem" onclick="toast('Settings — next build phase')">⚙ Settings</div>
+      <div class="ditem" onclick="fillVCard();dtab(this,'dp-card')">🪪 Visiting Card</div>
+      <div class="ditem" onclick="dtab(this,'dp-earn')">₹ Earnings</div>
+      <div class="ditem" onclick="toast('Profile editor — reuses the registration wizard in production')">👤 Edit Profile</div>
+      <div class="ditem" onclick="logout()">🚪 Sign out</div>
     </aside>
     <div>
       <!-- Overview -->
@@ -1399,6 +1421,54 @@
             </div>
           </div>
           <div class="leadnote">📲 Reminders go out on WhatsApp the evening before and 1 hour before each hearing. Cause-list changes trigger instant alerts. (Demo — WhatsApp Business API in production.)</div>
+        </div>
+      </div>
+      <!-- Visiting Card -->
+      <div class="dpane" id="dp-card">
+        <div class="dcard">
+          <h3>Your digital visiting card</h3>
+          <p style="font-size:13.5px;color:var(--ink-soft);margin-bottom:18px">Share it on WhatsApp, print the QR on your chamber board, or add the link to your court documents — clients land directly on your booking page. Factual profile info only, fully within Bar Council norms.</p>
+          <div class="vcard">
+            <div class="vc-top">
+              <span class="mini" id="vc-ini">DC</span>
+              <div><b id="vc-name">Adv. Dev Chaurasiya</b><span class="vc-sub" id="vc-head">Tax Law Specialist · ✓ Bar Council Verified</span></div>
+            </div>
+            <div class="vc-row">
+              <div class="vc-info" id="vc-info">
+                <span>Enrolment</span> Maharashtra &amp; Goa · 2014<br>
+                <span>Practice</span> Aurangabad · Tax, GST, ITAT<br>
+                <span>Consultation</span> ₹1,500 · Video / Phone
+              </div>
+              <div class="qr" aria-label="QR code placeholder"><i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i></i><i></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i></div>
+            </div>
+            <div class="vc-link" id="vc-link">legalconnects.in/adv/dev-chaurasiya</div>
+          </div>
+          <div class="vc-actions">
+            <button class="btn btn-primary" onclick="copyCardLink()">📋 Copy Link</button>
+            <button class="btn btn-primary" style="background:#25d366" onclick="toast('Opens WhatsApp with your card link pre-filled (production)')">🟢 Share on WhatsApp</button>
+            <button class="btn btn-ghost" onclick="toast('Downloads a print-ready card image (production)')">⬇ Download Card</button>
+          </div>
+          <div class="leadnote" style="margin-top:16px">💡 In production the QR encodes your live profile URL — scanning it opens your booking page.</div>
+        </div>
+      </div>
+      <!-- Earnings -->
+      <div class="dpane" id="dp-earn">
+        <div class="statgrid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat"><div class="lbl">This month</div><div class="val">₹28,500</div><div class="dl">19 consultations</div></div>
+          <div class="stat"><div class="lbl">Pending payout</div><div class="val">₹3,000</div><div class="dl">settles T+2</div></div>
+          <div class="stat"><div class="lbl">Lifetime earnings</div><div class="val">₹2.14L</div><div class="dl">since joining</div></div>
+        </div>
+        <div class="dcard">
+          <h3>Recent payouts</h3>
+          <table class="dtable">
+            <thead><tr><th>Date</th><th>Consultations</th><th>Gross</th><th>Platform fee</th><th>Paid to bank</th></tr></thead>
+            <tbody>
+              <tr><td>8 Jul</td><td>2</td><td>₹3,000</td><td>−₹300</td><td><b>₹2,700</b> <span class="lstat booked">Settled</span></td></tr>
+              <tr><td>5 Jul</td><td>3</td><td>₹4,500</td><td>−₹450</td><td><b>₹4,050</b> <span class="lstat booked">Settled</span></td></tr>
+              <tr><td>2 Jul</td><td>2</td><td>₹3,000</td><td>−₹300</td><td><b>₹2,700</b> <span class="lstat booked">Settled</span></td></tr>
+            </tbody>
+          </table>
+          <div class="leadnote">💰 Fees are collected at booking and settled to your bank T+2 after each completed consultation. Monthly GST-ready statements — production scope. <i>(Platform fee shown as 10% — illustrative, final rate is a business decision.)</i></div>
         </div>
       </div>
       <!-- Q&A -->
@@ -1561,6 +1631,110 @@
         </div>
       </div>
       <div class="disclaimer">Case data shown is demo data. In production this is fetched live from the eCourts NJDG system. Status explanations are general information, not legal advice.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= POST YOUR CASE ================= -->
+<div class="view" id="view-post">
+  <div class="wiz-wrap">
+    <div class="wiz-head"><h2>Post your case</h2><span class="stepnum">Free · Anonymous to the public</span></div>
+    <div style="font-size:14px;color:var(--ink-soft);margin-bottom:20px">Describe your matter once — verified advocates in your city who handle this type of case will reach out to you. Your details are shared only with advocates who respond, never published.</div>
+    <div class="wpane on" id="pc-form">
+      <div class="frow">
+        <div><label>Type of matter</label>
+          <select id="pc-area"><option>Family &amp; Divorce</option><option>Property / RERA</option><option>Criminal</option><option>Corporate</option><option>Tax</option><option>Employment</option><option>Consumer</option><option>Other</option></select>
+        </div>
+        <div><label>City</label><input id="pc-city" placeholder="e.g. Pune"></div>
+      </div>
+      <label>Describe your case</label>
+      <textarea id="pc-desc" placeholder="What happened, what you want to achieve, any deadlines. Don't include names of other parties yet."></textarea>
+      <div class="frow">
+        <div><label>Your budget (optional)</label>
+          <select id="pc-budget"><option>Prefer not to say</option><option>Under ₹10,000</option><option>₹10,000–25,000</option><option>₹25,000–50,000</option><option>₹50,000+</option></select>
+        </div>
+        <div><label>Phone (shared only with responding advocates)</label><input id="pc-phone" placeholder="+91"></div>
+      </div>
+      <label>Your name</label>
+      <input id="pc-name" placeholder="Kept confidential — shown as initials publicly">
+      <div class="anon">🔒 Your case appears to advocates without your name or number. Contact details unlock only for advocates you choose to connect with.</div>
+      <div class="wnav"><span></span><button class="btn btn-primary" onclick="postCase()">Post My Case</button></div>
+    </div>
+    <div class="wpane" id="pc-done">
+      <div class="success-card">
+        <div class="big">✓</div>
+        <h3>Your case is live</h3>
+        <p>Verified advocates in your city can now see it. Most cases get first responses <b>within a few hours</b> — we'll alert you by SMS and email.</p>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="go('dir')">Browse advocates meanwhile</button>
+          <button class="btn btn-ghost" onclick="go('qa')">Ask a quick question free</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CLIENT DASHBOARD ================= -->
+<div class="view" id="view-cdash">
+  <div class="wrap dir-head">
+    <div class="crumb">Home · My Account</div>
+    <h2 id="cd-hello">My account</h2>
+    <p style="color:var(--ink-soft);font-size:15px">Your consultations, questions, and tracked cases in one place. · <span class="rowact" onclick="logout()">Sign out</span></p>
+  </div>
+  <div class="wrap" style="padding-bottom:64px;max-width:860px">
+    <div class="dcard">
+      <h3>My consultations <span class="see" onclick="go('dir')">Book another →</span></h3>
+      <table class="dtable"><tbody id="cd-bookings">
+        <tr><td><b>Tue 8, 11:30</b></td><td>Adv. Dev Chaurasiya — Tax consultation</td><td>🎥 Video</td><td><span class="lstat booked">Confirmed</span></td><td><span class="rowact" onclick="toast('Reschedule flow — production scope')">Reschedule</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="dcard">
+      <h3>My questions <span class="see" onclick="go('qa');openAsk()">Ask new →</span></h3>
+      <table class="dtable"><tbody>
+        <tr><td><b>Security deposit refund</b></td><td>3 answers · 41 upvotes on top answer</td><td><span class="rowact" onclick="go('qd')">View</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="dcard">
+      <h3>Tracked cases <span class="see" onclick="go('track')">Track another →</span></h3>
+      <table class="dtable"><tbody>
+        <tr><td><b>MHAU010012342024</b></td><td>Sunita Mane v. Prakash Builders — next hearing 21 Jul, 11:00 AM</td><td><span class="lstat new">WhatsApp on</span></td><td><span class="rowact" onclick="go('track')">View</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="dcard">
+      <h3>My posted cases <span class="see" onclick="go('post')">Post new →</span></h3>
+      <div id="cd-cases"><div class="empty-reviews">No posted cases yet — post your case and let advocates come to you.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= LEGAL PAGES ================= -->
+<div class="view" id="view-legal">
+  <div class="wrap dir-head">
+    <div class="crumb">Home · Legal</div>
+    <h2>Company &amp; policies</h2>
+  </div>
+  <div class="wrap" style="padding-bottom:64px;max-width:820px">
+    <div class="jtabs">
+      <button class="jtab on" id="lt-about" onclick="legalGo('about')">About Us</button>
+      <button class="jtab" id="lt-privacy" onclick="legalGo('privacy')">Privacy Policy</button>
+      <button class="jtab" id="lt-terms" onclick="legalGo('terms')">Terms</button>
+      <button class="jtab" id="lt-refund" onclick="legalGo('refund')">Refund Policy</button>
+    </div>
+    <div class="dcard" id="lp-about">
+      <h3>About LegalConnects</h3>
+      <p style="font-size:14.5px;color:var(--ink-soft)">LegalConnects is a legal information and technology platform that helps people across India find Bar Council–verified advocates, ask legal questions, track court cases, and book consultations with transparent, fixed fees. We are not a law firm and do not provide legal advice; every consultation is between you and an independent advocate. Every advocate on the platform is verified against Bar Council records before their profile goes live, visibility is never sold, and client reviews cannot be bought or edited. LegalConnects is operated from Delhi, India. Reach us at info@legalconnects.in.</p>
+    </div>
+    <div class="dcard" id="lp-privacy" style="display:none">
+      <h3>Privacy Policy</h3>
+      <p style="font-size:14.5px;color:var(--ink-soft)">We collect only the information needed to provide the service: your account details, and — when you book a consultation or post a case — your contact details and case description. Case details are shared only with the advocate(s) you engage, never published or sold. Q&amp;A questions are posted anonymously by default. You may request access to or deletion of your personal data at any time by writing to info@legalconnects.in, and we will act on such requests in accordance with the Digital Personal Data Protection Act, 2023. Payment information is processed by Razorpay and never stored on our servers.<br><br><i style="color:var(--ink-faint)">[Placeholder — to be finalised by counsel before launch.]</i></p>
+    </div>
+    <div class="dcard" id="lp-terms" style="display:none">
+      <h3>Terms &amp; Conditions</h3>
+      <p style="font-size:14.5px;color:var(--ink-soft)">LegalConnects is a technology platform connecting users with independent advocates. We are not a party to any advocate-client engagement and do not guarantee outcomes. Content on the Q&amp;A forum is general legal information, not legal advice. Advocates are solely responsible for their profiles and answers and must comply with the Bar Council of India Rules, including Rule 36; the platform does not offer advertising, rankings, or paid placement. Misuse — including fake profiles, solicitation, or posting others' personal information — leads to suspension.<br><br><i style="color:var(--ink-faint)">[Placeholder — to be finalised by counsel before launch.]</i></p>
+    </div>
+    <div class="dcard" id="lp-refund" style="display:none">
+      <h3>Refund Policy</h3>
+      <p style="font-size:14.5px;color:var(--ink-soft)">Your first consultation is covered by our satisfaction guarantee: if it does not take place, or does not meet reasonable expectations, contact us within 24 hours at info@legalconnects.in for a full refund of the consultation fee. Consultations cancelled or rescheduled more than 4 hours before the slot are free of charge; refunds are processed to the original payment method within 5–7 working days via Razorpay.<br><br><i style="color:var(--ink-faint)">[Placeholder — to be finalised by counsel before launch.]</i></p>
     </div>
   </div>
 </div>
@@ -1744,6 +1918,22 @@
   </div>
 </div>
 
+<!-- ================= JOB APPLICATION MODAL ================= -->
+<div class="modal-bg" id="jobModal" onclick="if(event.target===this)closeJob()">
+  <div class="modal">
+    <h3>Apply: <span id="job-title">Role</span></h3>
+    <div class="hint">Your verified LegalConnects profile is attached automatically.</div>
+    <label>Cover note (optional)</label>
+    <textarea id="job-note" placeholder="Why you're a fit — 2–3 lines is plenty."></textarea>
+    <label>CV / Resume</label>
+    <div class="upload" id="job-cv" onclick="this.classList.add('done');this.textContent='✓ resume.pdf attached'">📄 Click to attach PDF (optional — your profile may be enough)</div>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="closeJob()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitJobApp()">Send Application</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= ASK QUESTION MODAL ================= -->
 <div class="modal-bg" id="askModal" onclick="if(event.target===this)closeAsk()">
   <div class="modal">
@@ -1770,8 +1960,8 @@
         <h4 style="font-size:17px">⚖ LegalConnects</h4>
         <p style="max-width:34ch">Connecting people across India with Bar Council–verified advocates. Transparent fees, confidential consultations.</p>
       </div>
-      <div><h4>Platform</h4><a onclick="go('dir')">Find an Advocate</a><a onclick="go('qa')">Ask a Question</a><a onclick="go('track')">Track Your Case</a><a onclick="go('jobs')">Jobs &amp; Learning</a><a onclick="go('grow')">For Advocates</a></div>
-      <div><h4>Company</h4><a>About Us</a><a>Privacy Policy</a><a>Terms &amp; Conditions</a><a>Refund Policy</a></div>
+      <div><h4>Platform</h4><a onclick="go('dir')">Find an Advocate</a><a onclick="go('post')">Post Your Case</a><a onclick="go('qa')">Ask a Question</a><a onclick="go('track')">Track Your Case</a><a onclick="go('jobs')">Jobs &amp; Learning</a><a onclick="go('grow')">For Advocates</a></div>
+      <div><h4>Company</h4><a onclick="go('legal');legalGo('about')">About Us</a><a onclick="go('legal');legalGo('privacy')">Privacy Policy</a><a onclick="go('legal');legalGo('terms')">Terms &amp; Conditions</a><a onclick="go('legal');legalGo('refund')">Refund Policy</a></div>
       <div><h4>Contact</h4><a href="mailto:info@legalconnects.in">info@legalconnects.in</a><a href="https://wa.me/919971886999">+91 99718 86999</a><a>Delhi, India</a></div>
     </div>
     <div class="foot-note">© 2026 LegalConnects India. LegalConnects is a directory and booking platform, not a law firm, and does not provide legal advice. · Advocate profiles are verified against Bar Council records at onboarding. · <a style="display:inline;padding:0" onclick="go('adminlogin')">Admin</a></div>
@@ -2037,7 +2227,9 @@ function onLogin(){
   const badge = user.verified ? '<span class="vbadge">✓</span>' : '<span class="pendbadge">⏳</span>';
   document.getElementById('nav-cta').innerHTML = user.role==='adv'
     ? '<span class="userchip" onclick="go(\'dash\')"><span class="mini">'+initials+'</span>Adv. '+user.name+' '+badge+'</span>'
-    : '<span class="userchip"><span class="mini">'+initials+'</span>'+user.name+'</span>';
+    : '<span class="userchip" onclick="go(\'cdash\')"><span class="mini">'+initials+'</span>'+user.name+'</span>';
+  const hello=document.getElementById('cd-hello');
+  if(hello && user.role!=='adv') hello.textContent='Hello, '+user.name.split(' ')[0];
   if(user.role==='adv'){
     document.getElementById('ans-locked').style.display='none';
     document.getElementById('ans-compose').style.display='';
@@ -2153,10 +2345,56 @@ function requireAdvocate(action){
   if(user.role!=='adv'){ toast('Only advocate accounts can '+action); return false; }
   return true;
 }
+let jobBtn=null;
 function applyJob(btn){
   if(!requireAdvocate('apply for jobs')) return;
-  btn.textContent='✓ Applied'; btn.classList.add('btn-done'); btn.onclick=null;
-  toast('✓ Application sent with your LegalConnects profile attached');
+  jobBtn=btn;
+  document.getElementById('job-title').textContent=btn.closest('.job').querySelector('h3').textContent;
+  document.getElementById('job-note').value='';
+  const cv=document.getElementById('job-cv');
+  cv.classList.remove('done'); cv.textContent='📄 Click to attach PDF (optional — your profile may be enough)';
+  document.getElementById('jobModal').classList.add('open');
+}
+function closeJob(){ document.getElementById('jobModal').classList.remove('open'); }
+function submitJobApp(){
+  closeJob();
+  if(jobBtn){ jobBtn.textContent='✓ Applied'; jobBtn.classList.add('btn-done'); jobBtn.onclick=null; }
+  toast('✓ Application sent with your verified profile attached');
+}
+function forgotPass(){
+  const e=document.getElementById('li-email').value.trim();
+  if(!e){ toast('Type your email above first, then click Forgot password'); return; }
+  toast('✓ Password reset link sent to '+e+' (demo)');
+}
+function logout(){
+  user=null;
+  document.getElementById('nav-cta').innerHTML =
+    '<button class="btn btn-ghost" onclick="go(\'auth\')">Log in</button>'
+    +'<button class="btn btn-primary" onclick="go(\'dir\')">Find an Advocate</button>';
+  document.getElementById('ans-locked').style.display='';
+  document.getElementById('ans-compose').style.display='none';
+  go('home');
+  toast('Signed out');
+}
+function copyCardLink(){
+  const link='https://'+document.getElementById('vc-link').textContent;
+  if(navigator.clipboard){ navigator.clipboard.writeText(link).then(()=>toast('✓ Link copied — paste it anywhere')); }
+  else toast('✓ Link copied — paste it anywhere');
+}
+function fillVCard(){
+  const a=ADVOCATES.find(x=>x.id==='me')
+    || (user && user.role==='adv'
+        ? { name:user.name, ini:user.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(),
+            headline:'Advocate', status:user.verified?'verified':'pending',
+            bar:'From your registration', city:'Your city', tags:['Your practice areas'],
+            fee:1000, modes:'video phone' }
+        : ADVOCATES[0]);
+  const slug=a.name.toLowerCase().replace(/[^a-z]+/g,'-');
+  document.getElementById('vc-ini').textContent=a.ini;
+  document.getElementById('vc-name').textContent='Adv. '+a.name;
+  document.getElementById('vc-head').textContent=a.headline+(a.status==='verified'?' · ✓ Bar Council Verified':' · ⏳ Verification pending');
+  document.getElementById('vc-info').innerHTML='<span>Enrolment</span> '+a.bar+'<br><span>Practice</span> '+a.city+' · '+a.tags.slice(0,3).join(', ')+'<br><span>Consultation</span> ₹'+a.fee.toLocaleString('en-IN')+' · '+a.modes.split(' ').join(' / ');
+  document.getElementById('vc-link').textContent='legalconnects.in/adv/'+slug;
 }
 function enrollCourse(btn){
   if(!requireAdvocate('enroll')) return;
@@ -2285,6 +2523,42 @@ function addMatter(){
 function waToggle(el){
   el.classList.toggle('on');
   toast(el.classList.contains('on') ? '📲 WhatsApp reminders ON for this matter' : 'Reminders off for this matter');
+}
+
+/* ===== Phase 8: Post Your Case, client dashboard, legal pages ===== */
+function postCase(){
+  const desc=document.getElementById('pc-desc').value.trim();
+  const phone=document.getElementById('pc-phone').value.trim();
+  const name=document.getElementById('pc-name').value.trim();
+  if(!desc||desc.length<20){ toast('Describe your case in a bit more detail (a few lines)'); return; }
+  if(!phone||!name){ toast('Name and phone are needed so advocates can respond to you'); return; }
+  const area=document.getElementById('pc-area').value;
+  const city=document.getElementById('pc-city').value.trim()||'your city';
+  const budget=document.getElementById('pc-budget').value;
+  // PRODUCTION: insert into posted_cases table; notify matching advocates
+  const pool=document.querySelector('#dp-leads .dcard .case-lead');
+  if(pool){
+    const el=document.createElement('div');
+    el.className='case-lead';
+    el.innerHTML='<div><b></b><p></p><div class="cm"></div></div><button class="btn btn-primary" onclick="connectLead(this)">Connect</button>';
+    el.querySelector('b').textContent=area+' — '+city;
+    el.querySelector('p').textContent=desc.slice(0,140)+(desc.length>140?'…':'');
+    el.querySelector('.cm').textContent='Posted just now · Budget: '+budget+' · 0 advocates viewing';
+    pool.parentElement.insertBefore(el,pool);
+  }
+  const my=document.getElementById('cd-cases');
+  if(my){
+    my.innerHTML='<table class="dtable"><tbody><tr><td><b>'+area+'</b></td><td>Posted just now · visible to verified advocates in '+city+'</td><td><span class="lstat new">Open</span></td></tr></tbody></table>';
+  }
+  document.getElementById('pc-form').classList.remove('on');
+  document.getElementById('pc-done').classList.add('on');
+  toast('✓ Case posted — advocates in '+city+' have been notified (demo)');
+}
+function legalGo(tab){
+  ['about','privacy','terms','refund'].forEach(t=>{
+    document.getElementById('lt-'+t).classList.toggle('on', t===tab);
+    document.getElementById('lp-'+t).style.display = t===tab ? '' : 'none';
+  });
 }
 
 /* ===== Phase 6: Admin ===== */
