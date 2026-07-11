@@ -8,7 +8,7 @@ import { supabase } from './config.js';
 // The app may be served at the site root OR under a subfolder
 // (e.g. legalconnects.netlify.app/app/). Never hardcode absolute
 // paths — derive the app's base from the current location.
-const APP_BASE = window.location.pathname.replace(/\/(auth|dashboard)\/[^/]*$/, '');
+const APP_BASE = window.location.pathname.replace(/\/(auth|dashboard|admin)\/[^/]*$/, '');
 export function appPath(p) { return APP_BASE + p; }
 
 // --- REGISTER ---
