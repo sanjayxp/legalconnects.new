@@ -2640,7 +2640,7 @@ go = function(v){
 <!-- ================= REAL DATA: Jobs, Courses, Team (Supabase-backed) ================= -->
 <script type="module">
 import { listJobsPublic, listCoursesPublic, listTeamPublic, submitJobApplication, submitCourseEnrollment, listApprovedAdvocatesPublic } from './app/js/cms.js';
-  import { supabase } from './app/js/config.js';
+import { supabase } from './app/js/config.js';
 import { getCurrentProfile } from './app/js/auth.js';
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -2841,6 +2841,13 @@ async function loadAdvocates() {
   }
 }
 
+// If someone is already signed in (admin, advocate, or client) and lands on
+// this public homepage — e.g. an admin clicking the "LegalConnects" logo from
+// their admin pages — swap the header's "Log in" button for a direct link
+// back to their own dashboard. Without this, the only way back in was through
+// the public Log in page, which deliberately signs admin accounts out (by
+// design, so admins can't authenticate through the public form) — so an admin
+// clicking "Log in" here to get back would immediately be logged out.
 async function syncAccountNav() {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -2855,6 +2862,7 @@ async function syncAccountNav() {
     loginBtn.textContent = profile.role === 'admin' ? 'Admin dashboard' : 'My dashboard';
     loginBtn.onclick = () => { window.location.href = dest; };
   } catch (e) {
+    // Leave the default "Log in" button as-is if anything goes wrong.
   }
 }
 
