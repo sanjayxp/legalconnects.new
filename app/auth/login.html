@@ -123,7 +123,7 @@
 
 <script type="module">
 import { supabase } from '../js/config.js';
-import { registerUser, loginUser, redirectByRole } from '../js/auth.js';
+import { registerUser, loginUser, redirectByRole, getCurrentProfile, appPath } from '../js/auth.js';
 
 // Already logged in? Straight to the right dashboard.
 const { data: { session } } = await supabase.auth.getSession();
@@ -163,6 +163,18 @@ document.getElementById('btn-login').addEventListener('click', async () => {
   busy('btn-login', true, 'Log in');
   try {
     await loginUser({ email, password: pass });
+    const profile = await getCurrentProfile();
+    if (profile && profile.role === 'admin') {
+      await supabase.auth.signOut();
+      say('Admin accounts sign in at the admin console, not here.', 'err');
+      const m = document.getElementById('msg');
+      const link = document.createElement('a');
+      link.href = appPath('/admin/');
+      link.textContent = ' Go to admin console →';
+      link.style.fontWeight = '700';
+      m.appendChild(link);
+      return;
+    }
     await redirectByRole();
   } catch (err) {
     say(err.message === 'Invalid login credentials'
