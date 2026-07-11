@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify Advocates — LegalConnects Admin</title>
+<title>Manage Advocates — LegalConnects Admin</title>
 <meta name="robots" content="noindex,nofollow">
 <style>
   :root{
@@ -32,7 +32,13 @@
   .btn-ghost:hover{background:rgba(255,255,255,.1);color:#fff}
   main{max-width:1120px;margin:0 auto;padding:32px 24px}
   h1{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
-  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:24px}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:20px}
+
+  .tabs{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+  .tab{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:8px 16px;font:inherit;font-size:13.5px;font-weight:700;color:var(--ink-soft);cursor:pointer}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .tab .cnt{opacity:.75;margin-left:4px}
+
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px;margin-bottom:16px;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
   .ph{width:56px;height:56px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:20px;object-fit:cover;flex-shrink:0}
   .details{flex:1;min-width:240px}
@@ -40,14 +46,52 @@
   .details .meta{font-size:13px;color:var(--ink-soft);margin-bottom:8px}
   .details .field{font-size:13.5px;margin-bottom:4px}
   .details .field b{color:var(--ink-soft);font-weight:600}
-  .badge{display:inline-flex;padding:3px 10px;border-radius:99px;background:var(--amber-soft);color:var(--amber);font-size:12px;font-weight:700}
-  .actions{display:flex;gap:10px;flex-shrink:0}
+  .badge{display:inline-flex;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .badge.pending{background:var(--amber-soft);color:var(--amber)}
+  .badge.approved{background:var(--green-soft);color:var(--green)}
+  .badge.rejected{background:var(--red-soft);color:var(--red)}
+  .actions{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;max-width:180px}
   .btn{border:none;border-radius:10px;padding:10px 16px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
   .btn-approve{background:var(--green-soft);color:var(--green)}
   .btn-approve:hover{background:#d3f0e2}
   .btn-reject{background:var(--red-soft);color:var(--red)}
   .btn-reject:hover{background:#f9d9d5}
+  .btn-outline{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft)}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-danger{background:var(--red-soft);color:var(--red)}
+  .btn-danger:hover{background:#f9d9d5}
   .empty{text-align:center;padding:60px 20px;color:var(--ink-faint)}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(15,20,34,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff;border-radius:18px;padding:28px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+  .modal h2{font-size:19px;font-weight:800;margin-bottom:4px}
+  .modal .modalsub{font-size:13px;color:var(--ink-soft);margin-bottom:16px}
+  .modal label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin:14px 0 6px}
+  .modal input,.modal select,.modal textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none}
+  .modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--accent)}
+  .modal textarea{resize:vertical;min-height:70px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .photo-row{display:flex;align-items:center;gap:16px;margin-top:10px}
+  .photo-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--accent-soft);flex-shrink:0}
+  label.upl{display:inline-block;padding:8px 14px;border-radius:9px;border:1.5px solid var(--line);font-size:13px;font-weight:600;cursor:pointer;color:var(--ink-soft)}
+  label.upl:hover{border-color:var(--accent);color:var(--accent)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{padding:6px 13px;border-radius:99px;border:1.5px solid var(--line);font-size:13px;cursor:pointer;user-select:none;color:var(--ink-soft)}
+  .chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-dark);font-weight:700}
+  .modecheck{display:flex;gap:18px;margin-top:8px;flex-wrap:wrap}
+  .modecheck label{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink);margin:0;cursor:pointer}
+  .modecheck input{width:auto}
+  .timeline-row{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;position:relative}
+  .timeline-row .remove{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:13px;font-weight:700}
+  .timeline-row .remove:hover{color:var(--red)}
+  .addrow-btn{margin-top:12px;background:transparent;border:1.5px dashed var(--line);border-radius:10px;padding:10px;width:100%;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .addrow-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+  .msg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:8px;display:none}
+  .msg.err{display:block;background:var(--red-soft);color:var(--red)}
+  .msg.ok{display:block;background:var(--green-soft);color:var(--green)}
+  .subhead{font-size:14px;font-weight:800;margin:20px 0 2px}
 </style>
 </head>
 <body>
@@ -61,21 +105,87 @@
       <a href="jobs.html">Jobs</a>
       <a href="courses.html">Courses</a>
       <a href="team.html">Team</a>
-      <a href="verify-advocates.html" class="on">Verifications</a>
+      <a href="verify-advocates.html" class="on">Advocates</a>
     </div>
     <div class="nav-right"><button class="btn-ghost" id="signoutBtn">Sign out</button></div>
   </nav>
 </header>
 
 <main>
-  <h1>Advocate verifications</h1>
-  <div class="sub">First-time advocate profiles wait here until approved. Once approved, an advocate's own future edits go live instantly — no re-review needed.</div>
+  <h1>Manage advocates</h1>
+  <div class="sub">Review new submissions, edit any advocate's profile, or remove/unapprove one that's already live.</div>
+
+  <div class="tabs" id="tabs"></div>
   <div id="list"><div class="empty">Loading…</div></div>
 </main>
 
+<!-- Edit advocate modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h2>Edit advocate profile</h2>
+    <div class="modalsub" id="editModalSub"></div>
+    <input type="hidden" id="f-id">
+
+    <label>Profile photo</label>
+    <div class="photo-row">
+      <img class="photo-preview" id="photoPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Crect width='72' height='72' fill='%23eef1fd'/%3E%3C/svg%3E">
+      <div>
+        <label class="upl" for="f-photo">Upload photo</label>
+        <input type="file" id="f-photo" accept="image/*" style="display:none">
+      </div>
+    </div>
+
+    <label>Headline</label>
+    <input id="f-headline" placeholder="e.g. Tax Law Specialist">
+
+    <div class="grid2">
+      <div><label>City</label><input id="f-city" placeholder="e.g. Pune"></div>
+      <div><label>State</label><input id="f-state" placeholder="e.g. Maharashtra"></div>
+    </div>
+
+    <label>Languages</label>
+    <input id="f-languages" placeholder="e.g. Hindi, Marathi, English (comma separated)">
+
+    <label>Practice areas</label>
+    <div class="chips" id="chips"></div>
+
+    <label>Consultation modes</label>
+    <div class="modecheck">
+      <label><input type="checkbox" id="mode-video" value="video"> 🎥 Video</label>
+      <label><input type="checkbox" id="mode-phone" value="phone"> 📞 Phone</label>
+      <label><input type="checkbox" id="mode-inperson" value="inperson"> 🏛 In-person</label>
+    </div>
+
+    <div class="grid2">
+      <div><label>Bar Council enrolment number</label><input id="f-bar" placeholder="e.g. MAH/1234/2015"></div>
+      <div><label>Years of experience</label><input id="f-exp" type="number" min="0" placeholder="e.g. 6"></div>
+    </div>
+
+    <label>Consultation fee (₹, per 30 min)</label>
+    <input id="f-fee" type="number" min="0" placeholder="e.g. 1500">
+
+    <label>About</label>
+    <textarea id="f-bio" placeholder="Short professional bio."></textarea>
+
+    <div class="subhead">Work experience</div>
+    <div id="expRows"></div>
+    <button class="addrow-btn" id="addExpBtn" type="button">+ Add a role</button>
+
+    <div class="subhead">Education</div>
+    <div id="eduRows"></div>
+    <button class="addrow-btn" id="addEduBtn" type="button">+ Add a qualification</button>
+
+    <div class="msg" id="modalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelBtn">Cancel</button>
+      <button class="btn" id="saveBtn" style="background:var(--accent);color:#fff">Save changes</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { listPendingAdvocates, reviewAdvocateProfile } from '../js/cms.js';
+import { listAllAdvocates, reviewAdvocateProfile, adminUpdateAdvocateProfile, deleteAdvocateProfile, uploadPhoto } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -86,41 +196,223 @@ document.getElementById('signoutBtn').addEventListener('click', signOut);
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-async function render() {
+const AREAS = ['Civil','Criminal','Family','Corporate','Property','Tax','Labour & Employment','IP','Cyber Law','Consumer','Real Estate','Immigration'];
+const chipsEl = document.getElementById('chips');
+chipsEl.innerHTML = AREAS.map(a => `<span class="chip" data-area="${a}">${a}</span>`).join('');
+const selected = new Set();
+chipsEl.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  const a = c.dataset.area;
+  if (selected.has(a)) { selected.delete(a); c.classList.remove('on'); }
+  else { selected.add(a); c.classList.add('on'); }
+}));
+
+function makeTimelineRow(container, fields, values) {
+  const row = document.createElement('div');
+  row.className = 'timeline-row';
+  row.innerHTML = `<button type="button" class="remove">✕ Remove</button>` +
+    fields.map(f => `<label>${f.label}</label><input data-key="${f.key}" placeholder="${f.placeholder}" value="${(values?.[f.key] || '').replace(/"/g,'&quot;')}">`).join('');
+  row.querySelector('.remove').addEventListener('click', () => row.remove());
+  container.appendChild(row);
+  return row;
+}
+function readTimelineRows(container) {
+  return [...container.querySelectorAll('.timeline-row')].map(row => {
+    const obj = {};
+    row.querySelectorAll('input[data-key]').forEach(inp => { obj[inp.dataset.key] = inp.value.trim(); });
+    return obj;
+  }).filter(obj => Object.values(obj).some(v => v));
+}
+const EXP_FIELDS = [
+  { key: 'title', label: 'Role / title', placeholder: 'e.g. Independent Practice — Tax Law' },
+  { key: 'org',   label: 'Organisation / court', placeholder: 'e.g. Bombay High Court (Aurangabad Bench)' },
+  { key: 'period',label: 'Period', placeholder: 'e.g. 2019 – Present' },
+];
+const EDU_FIELDS = [
+  { key: 'degree', label: 'Degree / certificate', placeholder: 'e.g. LL.M., Taxation Law' },
+  { key: 'institution', label: 'Institution', placeholder: 'e.g. Symbiosis Law School, Pune' },
+  { key: 'period', label: 'Year', placeholder: 'e.g. 2014' },
+];
+const expRows = document.getElementById('expRows');
+const eduRows = document.getElementById('eduRows');
+document.getElementById('addExpBtn').addEventListener('click', () => makeTimelineRow(expRows, EXP_FIELDS));
+document.getElementById('addEduBtn').addEventListener('click', () => makeTimelineRow(eduRows, EDU_FIELDS));
+
+const modal = document.getElementById('editModal');
+const modalMsg = document.getElementById('modalMsg');
+function sayModal(t, ok){ modalMsg.className='msg'+(t?(ok?' ok':' err'):''); modalMsg.textContent=t; }
+
+let pendingPhotoFile = null;
+let currentPhotoUrl = '';
+document.getElementById('f-photo').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { sayModal('Please choose an image under 3MB.'); e.target.value=''; return; }
+  pendingPhotoFile = file;
+  document.getElementById('photoPreview').src = URL.createObjectURL(file);
+});
+
+function openEdit(a) {
+  sayModal('');
+  pendingPhotoFile = null;
+  currentPhotoUrl = a.photo_url || '';
+  document.getElementById('editModalSub').textContent = `${a.profiles?.full_name || 'Advocate'} — verification status is unaffected by this form; use Approve/Reject/Unapprove for that.`;
+  document.getElementById('f-id').value = a.id;
+  document.getElementById('f-headline').value = a.headline || '';
+  document.getElementById('f-city').value = a.city || '';
+  document.getElementById('f-state').value = a.state || '';
+  document.getElementById('f-languages').value = (a.languages || []).join(', ');
+  document.getElementById('f-bar').value = a.bar_number || '';
+  document.getElementById('f-exp').value = a.experience_years ?? '';
+  document.getElementById('f-fee').value = a.consultation_fee ?? '';
+  document.getElementById('f-bio').value = a.bio || '';
+  document.getElementById('photoPreview').src = currentPhotoUrl || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'72\' height=\'72\'%3E%3Crect width=\'72\' height=\'72\' fill=\'%23eef1fd\'/%3E%3C/svg%3E';
+
+  selected.clear();
+  chipsEl.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  (a.practice_areas || []).forEach(area => {
+    const chip = chipsEl.querySelector(`[data-area="${CSS.escape(area)}"]`);
+    if (chip) { selected.add(area); chip.classList.add('on'); }
+  });
+  ['video','phone','inperson'].forEach(m => { document.getElementById('mode-'+m).checked = (a.consultation_modes||[]).includes(m); });
+
+  expRows.innerHTML = ''; eduRows.innerHTML = '';
+  (a.experience_timeline || []).forEach(v => makeTimelineRow(expRows, EXP_FIELDS, v));
+  (a.education_timeline || []).forEach(v => makeTimelineRow(eduRows, EDU_FIELDS, v));
+
+  modal.classList.add('open');
+}
+document.getElementById('cancelBtn').addEventListener('click', () => modal.classList.remove('open'));
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const id = document.getElementById('f-id').value;
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    let photoUrl = currentPhotoUrl;
+    if (pendingPhotoFile) {
+      const ext = pendingPhotoFile.name.split('.').pop();
+      photoUrl = await uploadPhoto('advocate-photos', `${id}/photo.${ext}`, pendingPhotoFile);
+    }
+    const modes = ['video','phone','inperson'].filter(m => document.getElementById('mode-'+m).checked);
+    const languages = document.getElementById('f-languages').value.split(',').map(s => s.trim()).filter(Boolean);
+    const feeVal = parseFloat(document.getElementById('f-fee').value);
+    const fields = {
+      headline: document.getElementById('f-headline').value.trim(),
+      city: document.getElementById('f-city').value.trim(),
+      state: document.getElementById('f-state').value.trim(),
+      languages,
+      bar_number: document.getElementById('f-bar').value.trim(),
+      experience_years: parseInt(document.getElementById('f-exp').value) || null,
+      consultation_fee: isNaN(feeVal) ? null : feeVal,
+      consultation_modes: modes,
+      bio: document.getElementById('f-bio').value.trim(),
+      practice_areas: Array.from(selected),
+      photo_url: photoUrl || null,
+      experience_timeline: readTimelineRows(expRows),
+      education_timeline: readTimelineRows(eduRows),
+    };
+    await adminUpdateAdvocateProfile(id, fields);
+    modal.classList.remove('open');
+    render();
+  } catch (e) {
+    sayModal(e.message || 'Could not save changes.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save changes';
+  }
+});
+
+// ---- Tabs + list ----
+let allAdvocates = [];
+let currentTab = 'all';
+const TABS = [
+  { key: 'all', label: 'All' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' },
+];
+
+function renderTabs() {
+  const counts = { all: allAdvocates.length };
+  ['pending','approved','rejected'].forEach(s => counts[s] = allAdvocates.filter(a => a.verification_status === s).length);
+  document.getElementById('tabs').innerHTML = TABS.map(t =>
+    `<button class="tab ${t.key===currentTab?'on':''}" data-tab="${t.key}">${t.label} <span class="cnt">${counts[t.key]}</span></button>`
+  ).join('');
+  document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
+    currentTab = b.dataset.tab; renderTabs(); renderList();
+  }));
+}
+
+function renderList() {
   const list = document.getElementById('list');
-  const pending = await listPendingAdvocates();
-  if (!pending.length) { list.innerHTML = '<div class="empty">🎉 No pending verifications right now.</div>'; return; }
-  list.innerHTML = pending.map(a => {
+  const rows = currentTab === 'all' ? allAdvocates : allAdvocates.filter(a => a.verification_status === currentTab);
+  if (!rows.length) { list.innerHTML = '<div class="empty">Nothing here yet.</div>'; return; }
+
+  list.innerHTML = rows.map(a => {
     const name = a.profiles?.full_name || 'Unnamed advocate';
+    const status = a.verification_status || 'pending';
+    const dateLabel = a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : '—';
+    let actionButtons = '';
+    if (status === 'pending') {
+      actionButtons = `<button class="btn btn-approve" data-approve="${a.id}">✓ Approve</button>
+        <button class="btn btn-reject" data-reject="${a.id}">✕ Reject</button>`;
+    } else if (status === 'approved') {
+      actionButtons = `<button class="btn btn-reject" data-unapprove="${a.id}">⟲ Unapprove</button>`;
+    } else if (status === 'rejected') {
+      actionButtons = `<button class="btn btn-approve" data-approve="${a.id}">✓ Approve</button>`;
+    }
     return `<div class="card" data-id="${a.id}">
       ${a.photo_url ? `<img class="ph" src="${esc(a.photo_url)}">` : `<div class="ph">${esc(name.charAt(0))}</div>`}
       <div class="details">
-        <h3>${esc(name)} <span class="badge">Pending</span></h3>
-        <div class="meta">Submitted ${new Date(a.submitted_at).toLocaleDateString()} · Phone: ${esc(a.profiles?.phone || '—')}</div>
+        <h3>${esc(name)} <span class="badge ${status}">${status}</span></h3>
+        <div class="meta">Submitted ${dateLabel} · Phone: ${esc(a.profiles?.phone || '—')}</div>
         <div class="field"><b>Bar enrolment no.:</b> ${esc(a.bar_number || '—')}</div>
         <div class="field"><b>Practice areas:</b> ${(a.practice_areas||[]).map(esc).join(', ') || '—'}</div>
         <div class="field"><b>Experience:</b> ${a.experience_years != null ? a.experience_years + ' yrs' : '—'}</div>
-        <div class="field"><b>Fee range:</b> ${esc(a.fee_range || '—')}</div>
+        <div class="field"><b>Fee:</b> ${a.consultation_fee != null ? '₹' + a.consultation_fee : '—'}</div>
         <div class="field"><b>Bio:</b> ${esc(a.bio || '—')}</div>
       </div>
       <div class="actions">
-        <button class="btn btn-approve" data-approve="${a.id}">✓ Approve</button>
-        <button class="btn btn-reject" data-reject="${a.id}">✕ Reject</button>
+        ${actionButtons}
+        <button class="btn btn-outline" data-edit="${a.id}">✎ Edit</button>
+        <button class="btn btn-danger" data-delete="${a.id}">🗑 Delete</button>
       </div>
     </div>`;
   }).join('');
 
   list.querySelectorAll('[data-approve]').forEach(b => b.addEventListener('click', async () => {
     await reviewAdvocateProfile(b.dataset.approve, 'approved', session.user.id);
-    render();
+    await load();
   }));
   list.querySelectorAll('[data-reject]').forEach(b => b.addEventListener('click', async () => {
     if (!confirm('Reject this advocate profile? They will remain unverified until they resubmit.')) return;
     await reviewAdvocateProfile(b.dataset.reject, 'rejected', session.user.id);
-    render();
+    await load();
+  }));
+  list.querySelectorAll('[data-unapprove]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm("Unapprove this advocate? They'll disappear from the public site immediately. If they edit and resubmit their profile, it comes back to you as Pending for review.")) return;
+    await reviewAdvocateProfile(b.dataset.unapprove, 'rejected', session.user.id);
+    await load();
+  }));
+  list.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => {
+    const a = allAdvocates.find(x => x.id === b.dataset.edit);
+    if (a) openEdit(a);
+  }));
+  list.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', async () => {
+    const a = allAdvocates.find(x => x.id === b.dataset.delete);
+    const name = a?.profiles?.full_name || 'this advocate';
+    if (!confirm(`Delete ${name}'s profile? This removes their listing, photo, and all details from the directory and this queue. Their login stays active — if they sign back in, they'll see an empty "Complete Your Profile" form, as if starting fresh. This cannot be undone.`)) return;
+    await deleteAdvocateProfile(b.dataset.delete);
+    await load();
   }));
 }
-render();
+
+async function load() {
+  allAdvocates = await listAllAdvocates();
+  renderTabs();
+  renderList();
+}
+async function render() { await load(); }
+load();
 </script>
 </body>
 </html>
