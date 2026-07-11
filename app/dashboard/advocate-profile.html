@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Profile — LegalConnects</title>
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --amber:#b45309;--amber-soft:#fdf3e3;
+    --red:#c0392b;--red-soft:#fdecea;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+  header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  .nav{max-width:820px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:28px;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;letter-spacing:-.02em}
+  .logo-mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px}
+  .nav-right{margin-left:auto}
+  .btn-ghost{padding:8px 16px;border-radius:9px;font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);background:transparent;cursor:pointer}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  main{max-width:820px;margin:0 auto;padding:32px 24px 64px}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+  .sub{color:var(--ink-soft);margin-bottom:22px}
+
+  .status-banner{border-radius:14px;padding:16px 20px;margin-bottom:24px;font-size:14px;display:none}
+  .status-banner b{display:block;font-size:14.5px;margin-bottom:2px}
+  .status-banner.pending{display:block;background:var(--amber-soft);border:1px solid #f0c97e;color:var(--amber)}
+  .status-banner.approved{display:block;background:var(--green-soft);border:1px solid #b8e6d5;color:var(--green)}
+  .status-banner.rejected{display:block;background:var(--red-soft);border:1px solid #f0b8b0;color:var(--red)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px}
+  .photo-row{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+  .photo-preview{width:88px;height:88px;border-radius:50%;object-fit:cover;background:var(--accent-soft)}
+  .photo-actions label.upl{display:inline-block;padding:9px 16px;border-radius:9px;border:1.5px solid var(--line);font-size:13.5px;font-weight:600;cursor:pointer;color:var(--ink-soft)}
+  .photo-actions label.upl:hover{border-color:var(--accent);color:var(--accent)}
+  .photo-hint{font-size:12px;color:var(--ink-faint);margin-top:6px}
+
+  label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin:16px 0 6px}
+  input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;font:inherit;font-size:14.5px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:90px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{padding:6px 13px;border-radius:99px;border:1.5px solid var(--line);font-size:13px;cursor:pointer;user-select:none;color:var(--ink-soft)}
+  .chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-dark);font-weight:700}
+  .actions-row{display:flex;justify-content:flex-end;gap:10px;margin-top:26px}
+  .btn{border:none;border-radius:10px;padding:12px 22px;font:inherit;font-size:14.5px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer}
+  .btn:hover{background:var(--accent-dark)}
+  .btn:disabled{opacity:.6;cursor:wait}
+  .msg{font-size:13.5px;margin-top:14px;padding:11px 14px;border-radius:9px;display:none}
+  .msg.err{display:block;background:var(--red-soft);color:var(--red)}
+  .msg.ok{display:block;background:var(--green-soft);color:var(--green)}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="advocate.html" class="logo"><div class="logo-mark">⚖</div>LegalConnects</a>
+    <div class="nav-right"><a class="btn-ghost" href="advocate.html">← Back to dashboard</a></div>
+  </nav>
+</header>
+
+<main>
+  <h1>Your profile</h1>
+  <p class="sub">This is what clients see once your profile is approved.</p>
+
+  <div class="status-banner" id="statusBanner"></div>
+
+  <div class="card">
+    <label>Profile photo</label>
+    <div class="photo-row">
+      <img class="photo-preview" id="photoPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88'%3E%3Crect width='88' height='88' fill='%23eef1fd'/%3E%3C/svg%3E">
+      <div class="photo-actions">
+        <label class="upl" for="f-photo">Upload photo</label>
+        <input type="file" id="f-photo" accept="image/*" style="display:none">
+        <div class="photo-hint">JPG or PNG, under 3MB.</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Bar Council enrolment number</label>
+        <input id="f-bar" placeholder="e.g. MAH/1234/2015">
+      </div>
+      <div>
+        <label>Years of experience</label>
+        <input id="f-exp" type="number" min="0" placeholder="e.g. 6">
+      </div>
+    </div>
+
+    <label>Practice areas</label>
+    <div class="chips" id="chips"></div>
+
+    <label>Fee range (per consultation)</label>
+    <input id="f-fee" placeholder="e.g. ₹1,500–₹3,000">
+
+    <label>About you</label>
+    <textarea id="f-bio" placeholder="A short professional bio clients will see on your profile."></textarea>
+
+    <div class="msg" id="msg"></div>
+    <div class="actions-row">
+      <button class="btn" id="saveBtn">Save profile</button>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { requireAuth, getCurrentProfile } from '../js/auth.js';
+import { getAdvocateProfile, upsertAdvocateProfile, uploadPhoto } from '../js/cms.js';
+
+const session = await requireAuth();
+const profile = await getCurrentProfile();
+if (profile && profile.role !== 'advocate') {
+  const routes = { client: 'client.html', admin: 'admin.html' };
+  window.location.href = routes[profile.role] || '../auth/login.html';
+}
+
+const AREAS = ['Civil','Criminal','Family','Corporate','Property','Tax','Labour & Employment','IP','Cyber Law','Consumer','Real Estate','Immigration'];
+const chipsEl = document.getElementById('chips');
+chipsEl.innerHTML = AREAS.map(a => `<span class="chip" data-area="${a}">${a}</span>`).join('');
+const selected = new Set();
+chipsEl.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  const a = c.dataset.area;
+  if (selected.has(a)) { selected.delete(a); c.classList.remove('on'); }
+  else { selected.add(a); c.classList.add('on'); }
+}));
+
+let pendingPhotoFile = null;
+let currentPhotoUrl = '';
+let isFirstSubmit = true;
+
+document.getElementById('f-photo').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { sayMsg('Please choose an image under 3MB.'); e.target.value=''; return; }
+  pendingPhotoFile = file;
+  document.getElementById('photoPreview').src = URL.createObjectURL(file);
+});
+
+function sayMsg(t, ok) { const m = document.getElementById('msg'); m.className = 'msg' + (t ? (ok ? ' ok' : ' err') : ''); m.textContent = t; }
+
+function renderStatus(status) {
+  const banner = document.getElementById('statusBanner');
+  if (!status) { banner.className = 'status-banner pending'; banner.innerHTML = '<b>⏳ Not submitted yet</b>Fill in your details and save to send your profile for verification.'; return; }
+  if (status === 'pending') { banner.className = 'status-banner pending'; banner.innerHTML = '<b>⏳ Verification pending</b>Our team is reviewing your profile. It will go public once approved — usually within 2 working days.'; }
+  else if (status === 'approved') { banner.className = 'status-banner approved'; banner.innerHTML = '<b>✅ Verified &amp; live</b>Your profile is public. Any changes you save now go live instantly — no re-review needed.'; }
+  else if (status === 'rejected') { banner.className = 'status-banner rejected'; banner.innerHTML = '<b>✕ Changes needed</b>Your last submission wasn\'t approved. Update your details below and save to resubmit for review.'; }
+}
+
+const existing = await getAdvocateProfile(session.user.id);
+if (existing) {
+  isFirstSubmit = false;
+  renderStatus(existing.verification_status);
+  document.getElementById('f-bar').value = existing.bar_number || '';
+  document.getElementById('f-exp').value = existing.experience_years ?? '';
+  document.getElementById('f-fee').value = existing.fee_range || '';
+  document.getElementById('f-bio').value = existing.bio || '';
+  currentPhotoUrl = existing.photo_url || '';
+  if (currentPhotoUrl) document.getElementById('photoPreview').src = currentPhotoUrl;
+  (existing.practice_areas || []).forEach(a => {
+    const chip = chipsEl.querySelector(`[data-area="${CSS.escape(a)}"]`);
+    if (chip) { selected.add(a); chip.classList.add('on'); }
+  });
+} else {
+  renderStatus(null);
+}
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  sayMsg('');
+  try {
+    let photoUrl = currentPhotoUrl;
+    if (pendingPhotoFile) {
+      const ext = pendingPhotoFile.name.split('.').pop();
+      const path = `${session.user.id}/photo.${ext}`;
+      photoUrl = await uploadPhoto('advocate-photos', path, pendingPhotoFile);
+    }
+    const fields = {
+      bar_number: document.getElementById('f-bar').value.trim(),
+      experience_years: parseInt(document.getElementById('f-exp').value) || null,
+      fee_range: document.getElementById('f-fee').value.trim(),
+      bio: document.getElementById('f-bio').value.trim(),
+      practice_areas: Array.from(selected),
+      photo_url: photoUrl || null,
+    };
+    // Resubmitting after rejection sends it back to pending review.
+    if (existing && existing.verification_status === 'rejected') {
+      fields.verification_status = 'pending';
+    }
+    await upsertAdvocateProfile(session.user.id, fields, isFirstSubmit);
+    isFirstSubmit = false;
+    currentPhotoUrl = photoUrl;
+    const status = (existing && existing.verification_status === 'rejected') ? 'pending' : (existing?.verification_status || 'pending');
+    renderStatus(status);
+    sayMsg('Profile saved.', true);
+  } catch (e) {
+    sayMsg(e.message || 'Could not save your profile.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save profile';
+  }
+});
+</script>
+</body>
+</html>

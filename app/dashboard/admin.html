@@ -39,7 +39,8 @@
   .section{margin-bottom:32px}
   .section-head{font-size:14px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+  .card{display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+  a.card:hover{border-color:var(--accent);transform:translateY(-2px)}
   .card h3{font-size:15px;font-weight:700;margin-bottom:4px}
   .card p{font-size:13.5px;color:var(--ink-soft);line-height:1.5}
   .coming-soon{display:inline-block;margin-top:12px;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700}
@@ -47,6 +48,11 @@
   .info-box{background:var(--green-soft);border:1px solid #b8e6d5;border-radius:14px;padding:18px 22px;margin-bottom:28px;font-size:14px;color:var(--green);line-height:1.6}
   .info-box b{display:block;margin-bottom:8px;font-size:15px}
   .info-box code{background:rgba(14,138,95,.12);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px}
+  .adminnav{display:flex;gap:4px;margin-left:12px}
+  .adminnav a{padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:600;color:rgba(255,255,255,.75)}
+  .adminnav a:hover{background:rgba(255,255,255,.08);color:#fff}
+  .adminnav a.on{background:rgba(255,255,255,.15);color:#fff}
+  .n-pill{display:inline-flex;min-width:18px;height:18px;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:99px;font-size:11px;font-weight:800;padding:0 5px;margin-left:6px}
 </style>
 </head>
 <body>
@@ -58,6 +64,13 @@
       LegalConnects
     </div>
     <span class="admin-chip">Admin</span>
+    <div class="adminnav">
+      <a href="admin.html" class="on">Overview</a>
+      <a href="../admin/jobs.html">Jobs</a>
+      <a href="../admin/courses.html">Courses</a>
+      <a href="../admin/team.html">Team</a>
+      <a href="../admin/verify-advocates.html">Verifications <span class="n-pill" id="pendPill" style="display:none">0</span></a>
+    </div>
     <div class="nav-right">
       <div class="avatar" id="avatarEl">A</div>
       <button class="btn-ghost" id="signoutBtn">Sign out</button>
@@ -70,9 +83,8 @@
   <p class="sub">Signed in as <strong id="emailEl">…</strong></p>
 
   <div class="info-box">
-    <b>✅ Phase 1 complete — admin login is working!</b>
-    To promote a user to admin: open your Supabase dashboard → Table Editor → <code>profiles</code> table → find their row → click the <code>role</code> cell → type <code>admin</code> → click outside to save.<br><br>
-    The admin verification queue, user management, and analytics dashboard are coming in the next build sessions.
+    <b>✅ Content management is live</b>
+    Post jobs, courses, and team members below — changes appear on the public site immediately. New advocate signups wait in Verifications until you approve them.
   </div>
 
   <div class="stats">
@@ -89,24 +101,34 @@
       <div class="stat-label">Clients</div>
     </div>
     <div class="stat">
-      <div class="stat-num">0</div>
+      <div class="stat-num" id="totalPending">—</div>
       <div class="stat-label">Pending verifications</div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-head">Coming in next sessions</div>
+    <div class="section-head">Manage content</div>
     <div class="cards">
-      <div class="card">
-        <h3>✅ Verification Queue</h3>
-        <p>Review advocate Bar Council certificates and approve/reject registrations.</p>
-        <span class="coming-soon">Next session</span>
-      </div>
-      <div class="card">
-        <h3>👥 User Management</h3>
-        <p>View all users, change roles, suspend accounts.</p>
-        <span class="coming-soon">Next session</span>
-      </div>
+      <a class="card" href="../admin/verify-advocates.html">
+        <h3>🛡 Verification Queue</h3>
+        <p>Review advocate submissions and approve or reject their public profile.</p>
+        <span class="coming-soon" id="pendCardTag">Open →</span>
+      </a>
+      <a class="card" href="../admin/jobs.html">
+        <h3>💼 Jobs</h3>
+        <p>Add, edit, or close job listings shown in Jobs &amp; Learning.</p>
+        <span class="coming-soon">Open →</span>
+      </a>
+      <a class="card" href="../admin/courses.html">
+        <h3>🎓 Courses &amp; Webinars</h3>
+        <p>Add, edit, or close courses shown in Jobs &amp; Learning.</p>
+        <span class="coming-soon">Open →</span>
+      </a>
+      <a class="card" href="../admin/team.html">
+        <h3>👥 Team (About Us)</h3>
+        <p>Add or edit team members with photo, title, LinkedIn, and bio.</p>
+        <span class="coming-soon">Open →</span>
+      </a>
       <div class="card">
         <h3>📊 Analytics</h3>
         <p>Bookings, revenue, signups, forum activity.</p>
@@ -119,6 +141,7 @@
 <script type="module">
 import { supabase } from '../js/config.js';
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
+import { listPendingAdvocates } from '../js/cms.js';
 
 const session = await requireAuth();
 if (!session) {}
@@ -145,6 +168,20 @@ try {
     document.getElementById('totalClients').textContent   = allProfiles.filter(p => p.role === 'client').length;
   }
 } catch(e) {
+  // Stats will just show dashes
+}
+
+// Pending advocate verifications
+try {
+  const pending = await listPendingAdvocates();
+  const n = pending.length;
+  document.getElementById('totalPending').textContent = n;
+  if (n > 0) {
+    const pill = document.getElementById('pendPill');
+    pill.textContent = n; pill.style.display = 'inline-flex';
+    document.getElementById('pendCardTag').textContent = `${n} waiting →`;
+  }
+} catch (e) {
   // Stats will just show dashes
 }
 

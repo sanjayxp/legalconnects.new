@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Jobs — LegalConnects Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --red:#c0392b;--red-soft:#fdecea;
+    --amber:#b45309;--amber-soft:#fdf3e3;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+
+  header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:50}
+  .nav{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:20px;height:60px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em}
+  .logo-mark{width:28px;height:28px;border-radius:7px;background:#3e5bd9;color:#fff;display:grid;place-items:center;font-size:14px}
+  .admin-chip{padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.15);font-size:12px;font-weight:700;color:#fff}
+  .adminnav{display:flex;gap:4px;margin-left:12px}
+  .adminnav a{padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:600;color:rgba(255,255,255,.75)}
+  .adminnav a:hover{background:rgba(255,255,255,.08);color:#fff}
+  .adminnav a.on{background:rgba(255,255,255,.15);color:#fff}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .btn-ghost{padding:7px 14px;border-radius:8px;font:inherit;font-size:13px;font-weight:600;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);background:transparent;cursor:pointer;transition:all .15s}
+  .btn-ghost:hover{background:rgba(255,255,255,.1);color:#fff}
+
+  main{max-width:1120px;margin:0 auto;padding:32px 24px}
+  .pagehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--ink-soft);font-size:14px;margin-top:2px}
+  .btn{border:none;border-radius:10px;padding:11px 18px;font:inherit;font-size:14px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;transition:background .15s}
+  .btn:hover{background:var(--accent-dark)}
+  .btn-sm{padding:7px 12px;font-size:13px;border-radius:8px}
+  .btn-outline{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft)}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-danger{background:var(--red-soft);color:var(--red)}
+  .btn-danger:hover{background:#f9d9d5}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .pill.active{background:var(--green-soft);color:var(--green)}
+  .pill.closed{background:var(--red-soft);color:var(--red)}
+  .row-actions{display:flex;gap:8px}
+  .empty{text-align:center;padding:50px 20px;color:var(--ink-faint)}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(15,20,34,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff;border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+  .modal h2{font-size:19px;font-weight:800;margin-bottom:18px}
+  label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin:14px 0 6px}
+  input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:70px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+  .msg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:8px;display:none}
+  .msg.err{display:block;background:var(--red-soft);color:var(--red)}
+  .msg.ok{display:block;background:var(--green-soft);color:var(--green)}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="../index.html" class="logo"><div class="logo-mark">⚖</div>LegalConnects</a>
+    <span class="admin-chip">Admin</span>
+    <div class="adminnav">
+      <a href="../dashboard/admin.html">Overview</a>
+      <a href="jobs.html" class="on">Jobs</a>
+      <a href="courses.html">Courses</a>
+      <a href="team.html">Team</a>
+      <a href="verify-advocates.html">Verifications</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-ghost" id="signoutBtn">Sign out</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div class="pagehead">
+    <div>
+      <h1>Job listings</h1>
+      <div class="sub">Postings here appear live in the "Jobs &amp; Learning" section of the public site.</div>
+    </div>
+    <button class="btn" id="newJobBtn">+ New job</button>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead><tr><th>Title</th><th>Firm</th><th>Status</th><th>Applications</th><th></th></tr></thead>
+      <tbody id="jobsBody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Job editor modal -->
+<div class="modal-bg" id="jobModal">
+  <div class="modal">
+    <h2 id="modalTitle">New job</h2>
+    <input type="hidden" id="f-id">
+    <label>Job title</label>
+    <input id="f-title" placeholder="e.g. Associate — Corporate Law">
+    <div class="grid2">
+      <div><label>Firm name</label><input id="f-firm" placeholder="e.g. Khaitan Associates"></div>
+      <div><label>Firm initials (badge)</label><input id="f-initials" maxlength="3" placeholder="e.g. KA"></div>
+    </div>
+    <div class="grid2">
+      <div><label>Employment type</label>
+        <select id="f-emptype"><option>Full-time</option><option>Part-time</option><option>Internship</option><option>Contract</option></select>
+      </div>
+      <div><label>Location type</label>
+        <select id="f-loctype"><option>On-site</option><option>Hybrid</option><option>Remote</option></select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div><label>Experience (PQE)</label><input id="f-exp" placeholder="e.g. 2–4 yrs PQE"></div>
+      <div><label>Salary range</label><input id="f-salary" placeholder="e.g. ₹8–12 LPA"></div>
+    </div>
+    <label>Description (optional)</label>
+    <textarea id="f-desc" placeholder="Role details, requirements…"></textarea>
+    <label>Status</label>
+    <select id="f-status"><option value="active">Active — visible on site</option><option value="closed">Closed — hidden from site</option></select>
+    <div class="msg" id="modalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelBtn">Cancel</button>
+      <button class="btn" id="saveBtn">Save job</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
+import { listJobsAdmin, saveJob, deleteJob, countApplications } from '../js/cms.js';
+
+const session = await requireAuth();
+const profile = await getCurrentProfile();
+if (profile && profile.role !== 'admin') {
+  window.location.href = profile.role === 'advocate' ? '../dashboard/advocate.html' : '../dashboard/client.html';
+}
+document.getElementById('signoutBtn').addEventListener('click', signOut);
+
+const modal = document.getElementById('jobModal');
+const modalMsg = document.getElementById('modalMsg');
+function sayModal(t, ok){ modalMsg.className='msg'+(t?(ok?' ok':' err'):''); modalMsg.textContent=t; }
+
+function openModal(job) {
+  sayModal('');
+  document.getElementById('modalTitle').textContent = job ? 'Edit job' : 'New job';
+  document.getElementById('f-id').value = job?.id || '';
+  document.getElementById('f-title').value = job?.title || '';
+  document.getElementById('f-firm').value = job?.firm_name || '';
+  document.getElementById('f-initials').value = job?.firm_initials || '';
+  document.getElementById('f-emptype').value = job?.employment_type || 'Full-time';
+  document.getElementById('f-loctype').value = job?.location_type || 'On-site';
+  document.getElementById('f-exp').value = job?.experience_level || '';
+  document.getElementById('f-salary').value = job?.salary_range || '';
+  document.getElementById('f-desc').value = job?.description || '';
+  document.getElementById('f-status').value = job?.status || 'active';
+  modal.classList.add('open');
+}
+document.getElementById('newJobBtn').addEventListener('click', () => openModal(null));
+document.getElementById('cancelBtn').addEventListener('click', () => modal.classList.remove('open'));
+
+const colors = ['#3e5bd9','#0e8a5f','#b45309','#7c3aed','#c0392b','#0891b2'];
+function colorFor(str){ let h=0; for(const c of (str||'')) h=(h*31+c.charCodeAt(0))%colors.length; return colors[h]; }
+
+async function render() {
+  const tbody = document.getElementById('jobsBody');
+  const jobs = await listJobsAdmin();
+  if (!jobs.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No jobs posted yet. Click "+ New job" to add one.</td></tr>'; return; }
+  const rows = await Promise.all(jobs.map(async j => {
+    const apps = await countApplications(j.id);
+    return `<tr>
+      <td><b>${esc(j.title)}</b><div style="color:var(--ink-faint);font-size:12.5px">${esc(j.experience_level||'')}</div></td>
+      <td>${esc(j.firm_name)}</td>
+      <td><span class="pill ${j.status}">${j.status}</span></td>
+      <td>${apps}</td>
+      <td class="row-actions">
+        <button class="btn btn-sm btn-outline" data-edit="${j.id}">Edit</button>
+        <button class="btn btn-sm btn-danger" data-del="${j.id}">Delete</button>
+      </td>
+    </tr>`;
+  }));
+  tbody.innerHTML = rows.join('');
+
+  tbody.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => {
+    const job = jobs.find(j => j.id === b.dataset.edit);
+    openModal(job);
+  }));
+  tbody.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Delete this job posting? This cannot be undone.')) return;
+    await deleteJob(b.dataset.del);
+    render();
+  }));
+}
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const title = document.getElementById('f-title').value.trim();
+  const firm  = document.getElementById('f-firm').value.trim();
+  if (!title || !firm) { sayModal('Job title and firm name are required.'); return; }
+  const job = {
+    id: document.getElementById('f-id').value || undefined,
+    title, firm_name: firm,
+    firm_initials: document.getElementById('f-initials').value.trim() || firm.slice(0,2).toUpperCase(),
+    firm_color: colorFor(firm),
+    employment_type: document.getElementById('f-emptype').value,
+    location_type: document.getElementById('f-loctype').value,
+    experience_level: document.getElementById('f-exp').value.trim(),
+    salary_range: document.getElementById('f-salary').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    status: document.getElementById('f-status').value,
+    created_by: session.user.id,
+  };
+  try {
+    await saveJob(job);
+    modal.classList.remove('open');
+    render();
+  } catch (e) { sayModal(e.message || 'Could not save job.'); }
+});
+
+render();
+</script>
+</body>
+</html>

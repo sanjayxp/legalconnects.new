@@ -1064,80 +1064,14 @@
     </div>
 
     <div id="jobs-pane">
-      <div class="jgrid">
-        <div class="job">
-          <div class="job-top">
-            <span class="firmlogo" style="background:#3e5bd9">KA</span>
-            <div><h3>Associate — Corporate &amp; M&amp;A</h3><div class="firm">Khare &amp; Associates · Mumbai</div></div>
-          </div>
-          <div class="job-meta"><span class="jm">Full-time</span><span class="jm">2–4 yrs PQE</span><span class="jm">On-site</span><span class="jm sal">₹8–12 LPA</span></div>
-          <div class="job-foot"><span class="ago">Posted 2 days ago</span><button class="btn btn-primary" onclick="applyJob(this)">Apply</button></div>
-        </div>
-        <div class="job">
-          <div class="job-top">
-            <span class="firmlogo" style="background:#0e8a5f">TL</span>
-            <div><h3>Legal Counsel — Fintech</h3><div class="firm">TechLend India · Bengaluru</div></div>
-          </div>
-          <div class="job-meta"><span class="jm">Full-time</span><span class="jm">4–7 yrs PQE</span><span class="jm">Hybrid</span><span class="jm sal">₹18–24 LPA</span></div>
-          <div class="job-foot"><span class="ago">Posted 3 days ago</span><button class="btn btn-primary" onclick="applyJob(this)">Apply</button></div>
-        </div>
-        <div class="job">
-          <div class="job-top">
-            <span class="firmlogo" style="background:#b45309">DS</span>
-            <div><h3>Junior Litigation Associate</h3><div class="firm">Desai &amp; Sharma Chambers · Delhi High Court</div></div>
-          </div>
-          <div class="job-meta"><span class="jm">Full-time</span><span class="jm">0–2 yrs PQE</span><span class="jm">On-site</span><span class="jm sal">₹4–6 LPA</span></div>
-          <div class="job-foot"><span class="ago">Posted 5 days ago</span><button class="btn btn-primary" onclick="applyJob(this)">Apply</button></div>
-        </div>
-        <div class="job">
-          <div class="job-top">
-            <span class="firmlogo" style="background:#7c3aed">RE</span>
-            <div><h3>Contracts Manager (Legal)</h3><div class="firm">Renew Energy Corp · Pune (Remote-friendly)</div></div>
-          </div>
-          <div class="job-meta"><span class="jm">Full-time</span><span class="jm">3–6 yrs PQE</span><span class="jm">Remote</span><span class="jm sal">₹12–16 LPA</span></div>
-          <div class="job-foot"><span class="ago">Posted 1 week ago</span><button class="btn btn-primary" onclick="applyJob(this)">Apply</button></div>
-        </div>
+      <div class="jgrid" id="jobs-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--ink-faint)">Loading job openings…</div>
       </div>
     </div>
 
     <div id="edu-pane" style="display:none">
-      <div class="jgrid">
-        <div class="course">
-          <div class="band" style="background:#3e5bd9"></div>
-          <div class="inner">
-            <span class="ctag" style="background:var(--accent-soft);color:var(--accent-dark)">Certificate Course</span>
-            <h3>GST Litigation &amp; Departmental Proceedings</h3>
-            <div class="by">By National Tax Law Academy · 6 weeks · Online</div>
-            <div class="cfoot"><span>Starts 20 Jul 2026</span><b>₹4,999</b><button class="btn btn-ghost" style="padding:7px 16px;font-size:13px" onclick="enrollCourse(this)">Enroll</button></div>
-          </div>
-        </div>
-        <div class="course">
-          <div class="band" style="background:#0e8a5f"></div>
-          <div class="inner">
-            <span class="ctag" style="background:var(--green-soft);color:var(--green)">Free Webinar</span>
-            <h3>Drafting Enforceable Employment Contracts After the New Labour Codes</h3>
-            <div class="by">By Adv. Arjun Sethi · 90 minutes · Live online</div>
-            <div class="cfoot"><span>Fri, 17 Jul · 6 PM</span><b>Free</b><button class="btn btn-ghost" style="padding:7px 16px;font-size:13px" onclick="enrollCourse(this)">Register</button></div>
-          </div>
-        </div>
-        <div class="course">
-          <div class="band" style="background:#b45309"></div>
-          <div class="inner">
-            <span class="ctag" style="background:var(--amber-soft);color:var(--amber)">Skill Workshop</span>
-            <h3>Client Communication &amp; Building an Online Legal Practice</h3>
-            <div class="by">By LegalConnects Academy · 3 sessions · Online</div>
-            <div class="cfoot"><span>Weekend batch</span><b>₹1,499</b><button class="btn btn-ghost" style="padding:7px 16px;font-size:13px" onclick="enrollCourse(this)">Enroll</button></div>
-          </div>
-        </div>
-        <div class="course">
-          <div class="band" style="background:#7c3aed"></div>
-          <div class="inner">
-            <span class="ctag" style="background:#f1e9fd;color:#7c3aed">Certificate Course</span>
-            <h3>RERA Practice: Representing Homebuyers &amp; Builders</h3>
-            <div class="by">By Maharashtra Real Estate Law Institute · 4 weeks · Online</div>
-            <div class="cfoot"><span>Starts 3 Aug 2026</span><b>₹3,499</b><button class="btn btn-ghost" style="padding:7px 16px;font-size:13px" onclick="enrollCourse(this)">Enroll</button></div>
-          </div>
-        </div>
+      <div class="jgrid" id="courses-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--ink-faint)">Loading courses…</div>
       </div>
     </div>
   </div>
@@ -1723,6 +1657,12 @@
     <div class="dcard" id="lp-about">
       <h3>About LegalConnects</h3>
       <p style="font-size:14.5px;color:var(--ink-soft)">LegalConnects is a legal information and technology platform that helps people across India find Bar Council–verified advocates, ask legal questions, track court cases, and book consultations with transparent, fixed fees. We are not a law firm and do not provide legal advice; every consultation is between you and an independent advocate. Every advocate on the platform is verified against Bar Council records before their profile goes live, visibility is never sold, and client reviews cannot be bought or edited. LegalConnects is operated from Delhi, India. Reach us at info@legalconnects.in.</p>
+      <div id="team-section" style="margin-top:24px;border-top:1px solid var(--line);padding-top:20px">
+        <h3 style="margin-bottom:14px">Meet the team</h3>
+        <div id="team-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px">
+          <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--ink-faint)">Loading team…</div>
+        </div>
+      </div>
     </div>
     <div class="dcard" id="lp-privacy" style="display:none">
       <h3>Privacy Policy</h3>
@@ -1922,14 +1862,38 @@
 <div class="modal-bg" id="jobModal" onclick="if(event.target===this)closeJob()">
   <div class="modal">
     <h3>Apply: <span id="job-title">Role</span></h3>
-    <div class="hint">Your verified LegalConnects profile is attached automatically.</div>
+    <div class="hint">Your details go straight to our team — no account needed.</div>
+    <label>Full name</label>
+    <input id="job-name" placeholder="Your full name">
+    <label>Email</label>
+    <input id="job-email" type="email" placeholder="you@example.com">
+    <label>Phone (optional)</label>
+    <input id="job-phone" placeholder="+91 …">
     <label>Cover note (optional)</label>
     <textarea id="job-note" placeholder="Why you're a fit — 2–3 lines is plenty."></textarea>
-    <label>CV / Resume</label>
-    <div class="upload" id="job-cv" onclick="this.classList.add('done');this.textContent='✓ resume.pdf attached'">📄 Click to attach PDF (optional — your profile may be enough)</div>
+    <div class="msg" id="job-msg" style="display:none;font-size:13px;padding:9px 12px;border-radius:8px;margin-top:8px;background:#fdecea;color:#c0392b"></div>
     <div class="row">
       <button class="btn btn-ghost" onclick="closeJob()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitJobApp()">Send Application</button>
+      <button class="btn btn-primary" id="job-submit-btn" onclick="submitJobApp()">Send Application</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= COURSE ENROLL MODAL ================= -->
+<div class="modal-bg" id="courseModal" onclick="if(event.target===this)closeCourseModal()">
+  <div class="modal">
+    <h3>Enroll: <span id="course-title">Course</span></h3>
+    <div class="hint">Your details go straight to our team — no account needed.</div>
+    <label>Full name</label>
+    <input id="course-name" placeholder="Your full name">
+    <label>Email</label>
+    <input id="course-email" type="email" placeholder="you@example.com">
+    <label>Phone (optional)</label>
+    <input id="course-phone" placeholder="+91 …">
+    <div class="msg" id="course-msg" style="display:none;font-size:13px;padding:9px 12px;border-radius:8px;margin-top:8px;background:#fdecea;color:#c0392b"></div>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="closeCourseModal()">Cancel</button>
+      <button class="btn btn-primary" id="course-submit-btn" onclick="submitCourseEnroll()">Confirm Enrollment</button>
     </div>
   </div>
 </div>
@@ -1964,7 +1928,7 @@
       <div><h4>Company</h4><a onclick="go('legal');legalGo('about')">About Us</a><a onclick="go('legal');legalGo('privacy')">Privacy Policy</a><a onclick="go('legal');legalGo('terms')">Terms &amp; Conditions</a><a onclick="go('legal');legalGo('refund')">Refund Policy</a></div>
       <div><h4>Contact</h4><a href="mailto:info@legalconnects.in">info@legalconnects.in</a><a href="https://wa.me/919971886999">+91 99718 86999</a><a>Delhi, India</a></div>
     </div>
-    <div class="foot-note">© 2026 LegalConnects India. LegalConnects is a directory and booking platform, not a law firm, and does not provide legal advice. · Advocate profiles are verified against Bar Council records at onboarding. · <a style="display:inline;padding:0" onclick="go('adminlogin')">Admin</a></div>
+    <div class="foot-note">© 2026 LegalConnects India. LegalConnects is a directory and booking platform, not a law firm, and does not provide legal advice. · Advocate profiles are verified against Bar Council records at onboarding. · <a style="display:inline;padding:0" onclick="window.location.href='app/admin/'">Admin</a></div>
   </div>
 </footer>
 
@@ -2703,6 +2667,172 @@ go = function(v){
     }));
   });
 };
+</script>
+
+<!-- ================= REAL DATA: Jobs, Courses, Team (Supabase-backed) ================= -->
+<script type="module">
+import { listJobsPublic, listCoursesPublic, listTeamPublic, submitJobApplication, submitCourseEnrollment } from './app/js/cms.js';
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function timeAgo(iso){
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (d <= 0) return 'Posted today';
+  if (d === 1) return 'Posted 1 day ago';
+  if (d < 14) return 'Posted ' + d + ' days ago';
+  return 'Posted ' + Math.floor(d/7) + ' week' + (d>=14?'s':'') + ' ago';
+}
+
+let JOBS = [], COURSES = [];
+let currentJobId = null, currentCourseId = null;
+
+async function renderJobs() {
+  const grid = document.getElementById('jobs-grid');
+  try {
+    JOBS = await listJobsPublic();
+  } catch (e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--ink-faint)">Couldn\'t load job listings right now.</div>';
+    return;
+  }
+  if (!JOBS.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--ink-faint)">No open roles posted right now — check back soon.</div>';
+    return;
+  }
+  grid.innerHTML = JOBS.map(j => `
+    <div class="job">
+      <div class="job-top">
+        <span class="firmlogo" style="background:${esc(j.firm_color||'#3e5bd9')}">${esc(j.firm_initials || j.firm_name.slice(0,2).toUpperCase())}</span>
+        <div><h3>${esc(j.title)}</h3><div class="firm">${esc(j.firm_name)}</div></div>
+      </div>
+      <div class="job-meta">
+        <span class="jm">${esc(j.employment_type||'Full-time')}</span>
+        ${j.experience_level ? `<span class="jm">${esc(j.experience_level)}</span>` : ''}
+        <span class="jm">${esc(j.location_type||'On-site')}</span>
+        ${j.salary_range ? `<span class="jm sal">${esc(j.salary_range)}</span>` : ''}
+      </div>
+      <div class="job-foot"><span class="ago">${timeAgo(j.created_at)}</span><button class="btn btn-primary" data-apply="${j.id}">Apply</button></div>
+    </div>`).join('');
+  grid.querySelectorAll('[data-apply]').forEach(btn => btn.addEventListener('click', () => openJobApply(btn.dataset.apply)));
+}
+
+async function renderCourses() {
+  const grid = document.getElementById('courses-grid');
+  try {
+    COURSES = await listCoursesPublic();
+  } catch (e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--ink-faint)">Couldn\'t load courses right now.</div>';
+    return;
+  }
+  if (!COURSES.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--ink-faint)">No courses or webinars posted right now — check back soon.</div>';
+    return;
+  }
+  grid.innerHTML = COURSES.map(c => `
+    <div class="course">
+      <div class="band" style="background:${esc(c.band_color||'#3e5bd9')}"></div>
+      <div class="inner">
+        <span class="ctag" style="background:var(--accent-soft);color:var(--accent-dark)">${esc(c.tag_type||'Course')}</span>
+        <h3>${esc(c.title)}</h3>
+        <div class="by">${c.instructor ? 'By '+esc(c.instructor)+' · ' : ''}${esc(c.duration||'')}${c.duration && c.mode ? ' · ' : ''}${esc(c.mode||'')}</div>
+        <div class="cfoot"><span>${esc(c.schedule_text||'')}</span><b>${c.is_free || !c.price ? 'Free' : '₹'+c.price}</b><button class="btn btn-ghost" style="padding:7px 16px;font-size:13px" data-enroll="${c.id}">${esc(c.cta_label||'Enroll')}</button></div>
+      </div>
+    </div>`).join('');
+  grid.querySelectorAll('[data-enroll]').forEach(btn => btn.addEventListener('click', () => openCourseEnroll(btn.dataset.enroll)));
+}
+
+async function renderTeam() {
+  const section = document.getElementById('team-section');
+  const grid = document.getElementById('team-grid');
+  try {
+    const team = await listTeamPublic();
+    if (!team.length) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    grid.innerHTML = team.map(m => `
+      <div style="text-align:center">
+        ${m.photo_url
+          ? `<img src="${esc(m.photo_url)}" style="width:84px;height:84px;border-radius:50%;object-fit:cover;margin:0 auto 10px">`
+          : `<div style="width:84px;height:84px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:26px;margin:0 auto 10px">${esc((m.full_name||'?').charAt(0))}</div>`}
+        <div style="font-weight:700;font-size:14.5px">${esc(m.full_name)}</div>
+        <div style="font-size:13px;color:var(--ink-soft);margin-bottom:6px">${esc(m.title||'')}</div>
+        ${m.linkedin_url ? `<a href="${esc(m.linkedin_url)}" target="_blank" rel="noopener" style="font-size:12.5px;color:var(--accent);text-decoration:none">LinkedIn ↗</a>` : ''}
+        ${m.bio ? `<p style="font-size:12.5px;color:var(--ink-faint);margin-top:8px;line-height:1.5">${esc(m.bio)}</p>` : ''}
+      </div>`).join('');
+  } catch (e) {
+    section.style.display = 'none';
+  }
+}
+
+// ---- Job apply modal ----
+window.openJobApply = function(jobId) {
+  const job = JOBS.find(j => j.id === jobId);
+  if (!job) return;
+  currentJobId = jobId;
+  document.getElementById('job-title').textContent = job.title;
+  document.getElementById('job-name').value = '';
+  document.getElementById('job-email').value = '';
+  document.getElementById('job-phone').value = '';
+  document.getElementById('job-note').value = '';
+  document.getElementById('job-msg').style.display = 'none';
+  document.getElementById('jobModal').classList.add('open');
+};
+window.submitJobApp = async function() {
+  const name = document.getElementById('job-name').value.trim();
+  const email = document.getElementById('job-email').value.trim();
+  const msg = document.getElementById('job-msg');
+  if (!name || !email) { msg.textContent = 'Please enter your name and email.'; msg.style.display = 'block'; return; }
+  const btn = document.getElementById('job-submit-btn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await submitJobApplication({
+      job_id: currentJobId,
+      full_name: name,
+      email,
+      phone: document.getElementById('job-phone').value.trim(),
+      cover_note: document.getElementById('job-note').value.trim(),
+    });
+    document.getElementById('jobModal').classList.remove('open');
+    if (typeof toast === 'function') toast('✓ Application sent — we\'ll be in touch by email');
+  } catch (e) {
+    msg.textContent = 'Could not send your application. Please try again.'; msg.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = 'Send Application'; }
+};
+
+// ---- Course enroll modal ----
+window.closeCourseModal = function() { document.getElementById('courseModal').classList.remove('open'); };
+window.openCourseEnroll = function(courseId) {
+  const course = COURSES.find(c => c.id === courseId);
+  if (!course) return;
+  currentCourseId = courseId;
+  document.getElementById('course-title').textContent = course.title;
+  document.getElementById('course-name').value = '';
+  document.getElementById('course-email').value = '';
+  document.getElementById('course-phone').value = '';
+  document.getElementById('course-msg').style.display = 'none';
+  document.getElementById('courseModal').classList.add('open');
+};
+window.submitCourseEnroll = async function() {
+  const name = document.getElementById('course-name').value.trim();
+  const email = document.getElementById('course-email').value.trim();
+  const msg = document.getElementById('course-msg');
+  if (!name || !email) { msg.textContent = 'Please enter your name and email.'; msg.style.display = 'block'; return; }
+  const btn = document.getElementById('course-submit-btn');
+  btn.disabled = true; btn.textContent = 'Confirming…';
+  try {
+    await submitCourseEnrollment({
+      course_id: currentCourseId,
+      full_name: name,
+      email,
+      phone: document.getElementById('course-phone').value.trim(),
+    });
+    document.getElementById('courseModal').classList.remove('open');
+    if (typeof toast === 'function') toast('✓ Enrolled — details sent to ' + email);
+  } catch (e) {
+    msg.textContent = 'Could not confirm enrollment. Please try again.'; msg.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = 'Confirm Enrollment'; }
+};
+
+renderJobs();
+renderCourses();
+renderTeam();
 </script>
 </body>
 </html>
