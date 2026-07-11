@@ -171,9 +171,12 @@ export async function upsertAdvocateProfile(userId, fields, isFirstSubmit) {
 }
 
 export async function listPendingAdvocates() {
+  // advocate_profiles has two foreign keys into profiles (id, and reviewed_by),
+  // so the embed must specify which relationship to follow — otherwise
+  // PostgREST refuses with an ambiguous-embedding error (PGRST201).
   const { data, error } = await supabase
     .from('advocate_profiles')
-    .select('*, profiles(full_name, phone)')
+    .select('*, profiles!advocate_profiles_id_fkey(full_name, phone)')
     .eq('verification_status', 'pending')
     .order('submitted_at', { ascending: true });
   if (error) throw error;
