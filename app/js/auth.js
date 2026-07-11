@@ -68,17 +68,26 @@ export async function requireAuth() {
 }
 
 // --- REDIRECT BY ROLE ---
-// After login/register, send user to their dashboard.
+// After login/register on the PUBLIC site, send the user to their dashboard.
+// Admin accounts are deliberately excluded here — the public login/register
+// pages are for clients and advocates only. If an admin account ends up here
+// (e.g. typed into the public login form), sign them out of this context and
+// send them to the dedicated admin console instead, rather than opening the
+// admin dashboard from a public-facing page.
 export async function redirectByRole() {
   const profile = await getCurrentProfile();
   if (!profile) {
     window.location.href = appPath('/auth/login.html');
     return;
   }
+  if (profile.role === 'admin') {
+    await supabase.auth.signOut();
+    window.location.href = appPath('/admin/');
+    return;
+  }
   const routes = {
     client:   '/dashboard/client.html',
     advocate: '/dashboard/advocate.html',
-    admin:    '/dashboard/admin.html',
   };
   window.location.href = appPath(routes[profile.role] || '/auth/login.html');
 }
