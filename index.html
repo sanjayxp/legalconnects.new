@@ -592,9 +592,12 @@
               <label>Legal issue</label>
               <select id="q-area">
                 <option value="all">What do you need help with?</option>
-                <option value="family">Family &amp; Divorce</option><option value="property">Property &amp; Real Estate</option>
-                <option value="criminal">Criminal Defense</option><option value="corporate">Corporate &amp; Business</option>
-                <option value="tax">Tax</option><option value="all2">Employment</option><option value="all3">Consumer Disputes</option>
+                <option value="Civil">Civil</option><option value="Criminal">Criminal Defense</option>
+                <option value="Family">Family &amp; Divorce</option><option value="Corporate">Corporate &amp; Business</option>
+                <option value="Property">Property &amp; Real Estate</option><option value="Tax">Tax</option>
+                <option value="Labour & Employment">Labour &amp; Employment</option><option value="IP">Intellectual Property</option>
+                <option value="Cyber Law">Cyber Law</option><option value="Consumer">Consumer Disputes</option>
+                <option value="Real Estate">Real Estate</option><option value="Immigration">Immigration</option>
               </select>
             </div>
           </div>
@@ -608,10 +611,10 @@
           <button class="go" onclick="searchGo()">🔍 Search</button>
         </div>
         <div class="chips">
-          <span class="chip" onclick="chipGo('family')">Divorce lawyer</span>
-          <span class="chip" onclick="chipGo('property')">Property dispute</span>
-          <span class="chip" onclick="chipGo('criminal')">Cheque bounce</span>
-          <span class="chip" onclick="chipGo('corporate')">Startup compliance</span>
+          <span class="chip" onclick="chipGo('Family')">Divorce lawyer</span>
+          <span class="chip" onclick="chipGo('Property')">Property dispute</span>
+          <span class="chip" onclick="chipGo('Criminal')">Cheque bounce</span>
+          <span class="chip" onclick="chipGo('Corporate')">Startup compliance</span>
           <span class="chip" onclick="go('qa')">Ask a free question →</span>
         </div>
       </div>
@@ -727,13 +730,21 @@
     <aside class="filters">
       <h3>Filter results</h3>
       <div class="fgroup"><label>Practice area</label>
-        <select id="f-area" onchange="applyFilters()"><option value="all">All practice areas</option><option value="family">Family &amp; Divorce</option><option value="property">Property</option><option value="criminal">Criminal Defense</option><option value="corporate">Corporate</option><option value="tax">Tax</option></select>
+        <select id="f-area" onchange="applyFilters()">
+          <option value="all">All practice areas</option>
+          <option value="Civil">Civil</option><option value="Criminal">Criminal Defense</option>
+          <option value="Family">Family &amp; Divorce</option><option value="Corporate">Corporate</option>
+          <option value="Property">Property</option><option value="Tax">Tax</option>
+          <option value="Labour & Employment">Labour &amp; Employment</option><option value="IP">Intellectual Property</option>
+          <option value="Cyber Law">Cyber Law</option><option value="Consumer">Consumer</option>
+          <option value="Real Estate">Real Estate</option><option value="Immigration">Immigration</option>
+        </select>
       </div>
       <div class="fgroup"><label>State</label>
-        <select id="f-state" onchange="applyFilters()"><option value="all">All states</option><option>Delhi</option><option>Maharashtra</option><option>Karnataka</option><option>Tamil Nadu</option><option>Uttar Pradesh</option></select>
+        <select id="f-state" onchange="applyFilters()"><option value="all">All states</option></select>
       </div>
       <div class="fgroup"><label>City</label>
-        <select id="f-city" onchange="applyFilters()"><option value="all">All cities</option><option>Mumbai</option><option>Pune</option><option>Aurangabad</option><option>Nagpur</option></select>
+        <select id="f-city" onchange="applyFilters()"><option value="all">All cities</option></select>
       </div>
       <div class="fgroup"><label>Experience</label>
         <div class="pillrow" id="pill-exp"><span class="pill on" data-v="any" onclick="pillPick(this)">Any</span><span class="pill" data-v="0-3" onclick="pillPick(this)">0–3 yrs</span><span class="pill" data-v="3-7" onclick="pillPick(this)">3–7 yrs</span><span class="pill" data-v="7-15" onclick="pillPick(this)">7–15 yrs</span><span class="pill" data-v="15-99" onclick="pillPick(this)">15+ yrs</span></div>
@@ -1951,75 +1962,36 @@ function go(v){
   window.scrollTo({top:0});
 }
 /* ==================================================================
-   PRODUCTION INTEGRATION POINT #3 (Database):
-   ADVOCATES is the demo stand-in for your Supabase `advocate_profiles`
-   table. Only records with status:'verified' are shown publicly.
-   In production:
-     - renderDirectory() fetches: select * from advocate_profiles where status='verified'
-     - the registration wizard inserts a row with status:'pending'
-     - admin Approve updates status to 'verified' → profile goes live
-   Keep the same field names and everything below works unchanged.
+   Live advocate directory — reads from Supabase `advocate_profiles`
+   (only rows with verification_status:'approved' are shown publicly).
+   Populated by loadAdvocates() in the module script near the end of
+   this file. ADVOCATES stays empty until that fetch resolves.
    ================================================================== */
-let ADVOCATES = [
-  { id:'dev', name:'Dev Chaurasiya', ini:'DC', color:'#3e5bd9', status:'verified',
-    area:'tax', headline:'Tax Law Specialist', tags:['Tax Law','GST','Income Tax Notices','Tax Appeals (ITAT)','TDS Issues'],
-    city:'Aurangabad', state:'Maharashtra', exp:12, fee:1500, modes:'video phone',
-    langs:'Hindi, Marathi, English', rating:4.0, reviews:12, bar:'Maharashtra & Goa · 2014',
-    courts:'Bombay HC (Aurangabad), ITAT', consults:'140+ on platform',
-    about:'Practising tax law for 12 years with a focus on income-tax assessments, GST disputes, and departmental notices for individuals and small businesses. Regular appearances before the Income Tax Appellate Tribunal and the Aurangabad bench of the Bombay High Court. Known for plain-language advice — you\'ll leave the consultation knowing exactly what your options are and what each will cost.',
-    expTl:[['Independent Practice — Tax Law','Bombay High Court (Aurangabad Bench) & ITAT','2019 – Present'],['Senior Associate, Tax Disputes','Mehta Tax Chambers, Pune','2016 – 2019'],['Associate Advocate','Kulkarni & Co., Aurangabad','2014 – 2016']],
-    eduTl:[['LL.M., Taxation Law','Symbiosis Law School, Pune','2014'],['B.A. LL.B. (Hons.)','Government Law College, Aurangabad','2012'],['Certificate — GST Practitioner','NACIN','2018']],
-    reviewItems:[['★★★★★','Explained my GST notice in simple words and resolved it in two hearings. Fee was exactly as listed.','Small business owner, Aurangabad'],['★★★★☆','Quick to respond, practical advice on my income tax appeal. Would consult again.','Salaried professional, Nashik']] },
-  { id:'meera', name:'Meera Kulkarni', ini:'MK', color:'#0e8a5f', status:'verified',
-    area:'family', headline:'Family & Divorce', tags:['Divorce','Child Custody','Maintenance','Domestic Violence Act'],
-    city:'Pune', state:'Maharashtra', exp:9, fee:1200, modes:'video phone inperson',
-    langs:'Marathi, Hindi, English', rating:4.8, reviews:31, bar:'Maharashtra & Goa · 2017',
-    courts:'Family Court Pune, Bombay HC', consults:'210+ on platform',
-    about:'Nine years in family law, with a practice focused on mutual-consent and contested divorce, custody, and maintenance matters in Pune family courts. Believes most family disputes settle faster with clear expectations set on day one.',
-    expTl:[['Independent Practice — Family Law','Family Court, Pune','2020 – Present'],['Associate','Deshpande Law Chambers, Pune','2017 – 2020']],
-    eduTl:[['B.A. LL.B.','ILS Law College, Pune','2017'],['PG Diploma, Family Dispute Resolution','NALSAR (Distance)','2019']],
-    reviewItems:[['★★★★★','Handled my custody matter with tremendous patience. Always reachable.','Parent, Pune'],['★★★★★','Clear about costs and timelines from the first call.','Client, Pimpri']] },
-  { id:'arjun', name:'Arjun Sethi', ini:'AS', color:'#b45309', status:'verified',
-    area:'criminal', headline:'Criminal Defense', tags:['Bail','FIR Quashing','Trials','Cheque Bounce (138 NI)'],
-    city:'Mumbai', state:'Maharashtra', exp:15, fee:2500, modes:'phone inperson',
-    langs:'Hindi, English', rating:4.5, reviews:54, bar:'Maharashtra & Goa · 2011',
-    courts:'Sessions Court Mumbai, Bombay HC', consults:'320+ on platform',
-    about:'Fifteen years of criminal trial and appellate work — bail applications, FIR quashing, economic offences, and cheque-bounce prosecutions. Direct about the strength of your case; no false promises.',
-    expTl:[['Independent Practice — Criminal Law','Sessions Court & Bombay HC, Mumbai','2016 – Present'],['Junior to Sr. Adv. R. Malhotra','Bombay High Court','2011 – 2016']],
-    eduTl:[['LL.B.','Government Law College, Mumbai','2011']],
-    reviewItems:[['★★★★★','Got bail listed and granted in 48 hours. Worth every rupee.','Family member of client, Thane'],['★★★★☆','Blunt, thorough, knows the courtrooms inside out.','Business owner, Mumbai']] },
-  { id:'nisha', name:'Nisha Bhatt', ini:'NB', color:'#7c3aed', status:'verified',
-    area:'corporate', headline:'Corporate & Startup', tags:['Contracts','Compliance','Fundraising','ESOPs'],
-    city:'Mumbai', state:'Maharashtra', exp:4, fee:900, modes:'video',
-    langs:'English, Hindi, Gujarati', rating:0, reviews:0, bar:'Maharashtra & Goa · 2022',
-    courts:'NCLT Mumbai (filings), transactional practice', consults:'New on platform',
-    about:'Corporate and startup practice: founder agreements, fundraising documentation, ESOP policies, and ongoing compliance for early-stage companies. Previously in-house at a fintech startup, so advice comes with business context, not just legal caution.',
-    expTl:[['Independent Practice — Corporate','Mumbai (remote-first)','2024 – Present'],['Legal Counsel','PayFast Fintech Pvt. Ltd.','2022 – 2024']],
-    eduTl:[['B.B.A. LL.B.','NMIMS School of Law, Mumbai','2022']],
-    reviewItems:[] }
-];
+let ADVOCATES = [];
+const ADV_COLORS = ['#3e5bd9','#0e8a5f','#b45309','#7c3aed','#c0392b','#0891b2'];
+function colorFor(str){ let h=0; for(const c of (str||'')) h=(h*31+c.charCodeAt(0))%ADV_COLORS.length; return ADV_COLORS[h]; }
+function initialsFor(name){ return (name||'?').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
 function starStr(r){ const f=Math.round(r); return '★★★★★'.slice(0,f)+'☆☆☆☆☆'.slice(0,5-f); }
-let currentAdv = ADVOCATES[0];
+let currentAdv = null;
 function renderDirectory(){
   const list=document.getElementById('adv-list');
   list.innerHTML='';
-  ADVOCATES.filter(a=>a.status==='verified').forEach(a=>{
+  ADVOCATES.forEach(a=>{
     const card=document.createElement('div');
     card.className='adv-card';
-    card.dataset.area=a.area; card.dataset.state=a.state; card.dataset.city=a.city;
-    card.dataset.exp=a.exp; card.dataset.fee=a.fee; card.dataset.modes=a.modes; card.dataset.rating=a.rating;
-    const ratingHtml = a.reviews>0
-      ? '<div class="stars">'+starStr(a.rating)+' <span>'+a.rating.toFixed(1)+' ('+a.reviews+')</span></div>'
-      : '<span class="newbadge">New on LegalConnects</span>';
+    card.dataset.area=(a.practice_areas||[]).join('|');
+    card.dataset.state=a.state||''; card.dataset.city=a.city||'';
+    card.dataset.exp=a.experience_years||0; card.dataset.fee=a.consultation_fee||0;
+    card.dataset.modes=(a.consultation_modes||[]).join(' '); card.dataset.rating=0;
     card.innerHTML =
-      '<div class="avatar" style="background:'+a.color+'">'+a.ini+'</div>'
+      (a.photo_url ? '<img class="avatar" style="object-fit:cover" src="'+a.photo_url+'">' : '<div class="avatar" style="background:'+colorFor(a.name)+'">'+initialsFor(a.name)+'</div>')
       +'<div><h3></h3><div class="adv-meta"></div><div class="tagrow"></div></div>'
-      +'<div class="adv-side">'+ratingHtml
-      +'<div class="fee">Consultation<b>₹'+a.fee.toLocaleString('en-IN')+'</b></div>'
+      +'<div class="adv-side"><span class="newbadge">New on LegalConnects</span>'
+      +'<div class="fee">Consultation<b>'+(a.consultation_fee ? '₹'+Number(a.consultation_fee).toLocaleString('en-IN') : 'Not listed')+'</b></div>'
       +'<button class="btn btn-primary">View Profile</button></div>';
     card.querySelector('h3').innerHTML='Adv. '+a.name+' <span class="vbadge">✓ Bar Council Verified</span>';
-    card.querySelector('.adv-meta').textContent=a.headline+' · '+a.city+', '+a.state+' · '+a.exp+' years · '+a.langs;
-    card.querySelector('.tagrow').innerHTML=a.tags.slice(0,3).map(t=>'<span class="tag">'+t+'</span>').join('');
+    card.querySelector('.adv-meta').textContent=[a.headline, [a.city,a.state].filter(Boolean).join(', '), a.experience_years?a.experience_years+' years':null, (a.languages||[]).join(', ')].filter(Boolean).join(' · ');
+    card.querySelector('.tagrow').innerHTML=(a.practice_areas||[]).slice(0,3).map(t=>'<span class="tag">'+t+'</span>').join('');
     card.querySelector('button').onclick=()=>openProfile(a.id);
     list.appendChild(card);
   });
@@ -2029,29 +2001,34 @@ function openProfile(id){
   const a=ADVOCATES.find(x=>x.id===id); if(!a) return;
   currentAdv=a;
   document.getElementById('p-crumb').textContent='Home · Find an Advocate · Adv. '+a.name;
-  const av=document.getElementById('p-avatar'); av.textContent=a.ini; av.style.background=a.color;
+  const av=document.getElementById('p-avatar');
+  if(a.photo_url){ av.innerHTML='<img src="'+a.photo_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">'; }
+  else { av.textContent=initialsFor(a.name); av.style.background=colorFor(a.name); }
   document.getElementById('p-name').textContent='Adv. '+a.name;
-  document.getElementById('p-meta').textContent=a.headline+' · '+a.city+', '+a.state;
-  document.getElementById('p-stars').innerHTML = a.reviews>0 ? starStr(a.rating)+' <span>'+a.rating.toFixed(1)+' · '+a.reviews+' client reviews</span>' : '<span class="newbadge">New on LegalConnects — no reviews yet</span>';
-  const creds=[['Experience',a.exp+' years'],['Bar Council',a.bar],['Languages',a.langs],['Courts',a.courts],['Response time','Usually within 2 hours'],['Consultations',a.consults]];
+  document.getElementById('p-meta').textContent=[a.headline, [a.city,a.state].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+  document.getElementById('p-stars').innerHTML = '<span class="newbadge">New on LegalConnects — no reviews yet</span>';
+  const creds=[
+    ['Experience', a.experience_years ? a.experience_years+' years' : 'Not specified'],
+    ['Bar Council', a.bar_number || 'Not specified'],
+    ['Languages', (a.languages||[]).join(', ') || 'Not specified'],
+    ['Consultation modes', (a.consultation_modes||[]).map(m=>({video:'Video',phone:'Phone',inperson:'In-person'}[m]||m)).join(', ') || 'Not specified'],
+  ];
   document.getElementById('p-creds').innerHTML=creds.map(c=>{const d=document.createElement('div');d.textContent=c[1];return '<div class="cred">'+c[0]+'<b>'+d.innerHTML+'</b></div>';}).join('');
-  document.getElementById('p-about').textContent=a.about;
-  document.getElementById('p-tags').innerHTML=a.tags.map(t=>'<span class="tag">'+t+'</span>').join('');
-  document.getElementById('p-exp').innerHTML=a.expTl.map(e=>'<div class="tl-item"><b></b><div class="org"></div><div class="yrs"></div></div>').join('');
-  [...document.querySelectorAll('#p-exp .tl-item')].forEach((el,i)=>{el.querySelector('b').textContent=a.expTl[i][0];el.querySelector('.org').textContent=a.expTl[i][1];el.querySelector('.yrs').textContent=a.expTl[i][2];});
-  document.getElementById('p-edu').innerHTML=a.eduTl.map(e=>'<div class="tl-item"><b></b><div class="org"></div><div class="yrs"></div></div>').join('');
-  [...document.querySelectorAll('#p-edu .tl-item')].forEach((el,i)=>{el.querySelector('b').textContent=a.eduTl[i][0];el.querySelector('.org').textContent=a.eduTl[i][1];el.querySelector('.yrs').textContent=a.eduTl[i][2];});
-  document.getElementById('p-qact').style.display = a.id==='dev' ? '' : 'none';
+  document.getElementById('p-about').textContent=a.bio || 'This advocate hasn\'t added a bio yet.';
+  document.getElementById('p-tags').innerHTML=(a.practice_areas||[]).map(t=>'<span class="tag">'+t+'</span>').join('');
+  const expTl=a.experience_timeline||[]; const eduTl=a.education_timeline||[];
+  document.getElementById('p-exp').innerHTML = expTl.length
+    ? expTl.map(e=>'<div class="tl-item"><b></b><div class="org"></div><div class="yrs"></div></div>').join('')
+    : '<div class="empty-reviews">No work experience added yet.</div>';
+  [...document.querySelectorAll('#p-exp .tl-item')].forEach((el,i)=>{el.querySelector('b').textContent=expTl[i].title||'';el.querySelector('.org').textContent=expTl[i].org||'';el.querySelector('.yrs').textContent=expTl[i].period||'';});
+  document.getElementById('p-edu').innerHTML = eduTl.length
+    ? eduTl.map(e=>'<div class="tl-item"><b></b><div class="org"></div><div class="yrs"></div></div>').join('')
+    : '<div class="empty-reviews">No education added yet.</div>';
+  [...document.querySelectorAll('#p-edu .tl-item')].forEach((el,i)=>{el.querySelector('b').textContent=eduTl[i].degree||'';el.querySelector('.org').textContent=eduTl[i].institution||'';el.querySelector('.yrs').textContent=eduTl[i].period||'';});
+  document.getElementById('p-qact').style.display = 'none';
   const rv=document.getElementById('p-reviews');
-  if(a.reviewItems.length){
-    rv.innerHTML='<h3>Client reviews ('+a.reviews+')</h3>'
-      + a.reviewItems.map(r=>{const p=document.createElement('p');p.style.marginBottom='14px';p.innerHTML='<span class="stars">'+r[0]+'</span> ';p.append('“'+r[1]+'”');const s=document.createElement('span');s.style.color='var(--ink-faint)';s.textContent=' — '+r[2];p.appendChild(s);return p.outerHTML;}).join('')
-      + '<div class="empty-reviews" style="margin-top:14px">Reviews are collected only from clients who completed a paid consultation — they cannot be bought or edited by the advocate.</div>';
-  } else {
-    rv.innerHTML='<h3>Client reviews</h3><div class="empty-reviews">No reviews yet — reviews appear only after completed paid consultations.</div>';
-  }
-  const feeStr='₹'+a.fee.toLocaleString('en-IN');
-  document.getElementById('p-bookfee').textContent=feeStr;
+  rv.innerHTML='<h3>Client reviews</h3><div class="empty-reviews">No reviews yet — reviews appear only after completed paid consultations.</div>';
+  document.getElementById('p-bookfee').textContent = a.consultation_fee ? '₹'+Number(a.consultation_fee).toLocaleString('en-IN') : 'Not listed';
   go('prof');
 }
 /* Hero search → directory filters */
@@ -2060,7 +2037,8 @@ function searchGo(){
   const cityTxt=document.getElementById('q-city').value.trim().toLowerCase();
   go('dir');
   // apply practice area if it maps to a directory filter
-  document.getElementById('f-area').value = ['family','property','criminal','corporate','tax'].includes(area) ? area : 'all';
+  const areaSel = document.getElementById('f-area');
+  areaSel.value = [...areaSel.options].some(o=>o.value===area) ? area : 'all';
   // apply city if it matches a known option
   const citySel=document.getElementById('f-city');
   let matched='all';
@@ -2166,23 +2144,9 @@ function wstep(n){
   window.scrollTo({top:0});
 }
 function finishWizard(){
-  // PRODUCTION: insert row into advocate_profiles with status:'pending'
-  const name=document.getElementById('w-name').value.trim()||user.name;
-  const city=document.getElementById('w-city').value.trim()||'Pune';
-  const state=document.getElementById('w-state').value;
-  const fee=parseInt(document.getElementById('w-fee').value)||1000;
-  const ini=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  if(!ADVOCATES.find(a=>a.id==='me')){
-    ADVOCATES.push({ id:'me', name, ini, color:'#0f766e', status:'pending',
-      area:'tax', headline:'Advocate', tags:['General Practice'],
-      city, state, exp:3, fee, modes:'video phone',
-      langs:'Hindi, English', rating:0, reviews:0, bar:state+' · pending verification',
-      courts:'—', consults:'New on platform',
-      about:'Profile under Bar Council verification. Details appear once approved.',
-      expTl:[['Details from your registration','Shown here once verified','—']],
-      eduTl:[['Details from your registration','Shown here once verified','—']],
-      reviewItems:[] });
-  }
+  // This simulated wizard is separate demo theatre — real advocate profiles
+  // are created at /app/dashboard/advocate-profile.html and stored in
+  // Supabase. Not pushed into the live ADVOCATES directory data.
   onLogin();
   wstep(5);
 }
@@ -2222,10 +2186,11 @@ function dgo(pane){
 let leadCaptured=false;
 function openBook(){
   leadCaptured=false;
-  const a=currentAdv, feeStr='₹'+a.fee.toLocaleString('en-IN');
-  document.getElementById('bk-ini').textContent=a.ini;
-  document.getElementById('bk-ini').style.background=a.color;
-  document.getElementById('bk-advline').textContent='Adv. '+a.name+' · '+a.headline;
+  const a=currentAdv;
+  const feeStr = a.consultation_fee ? '₹'+Number(a.consultation_fee).toLocaleString('en-IN') : 'Fee not listed';
+  document.getElementById('bk-ini').textContent=initialsFor(a.name);
+  document.getElementById('bk-ini').style.background=colorFor(a.name);
+  document.getElementById('bk-advline').textContent='Adv. '+a.name+' · '+(a.headline||'');
   document.getElementById('bk-slotline').textContent='Tue 8 · 11:30 · 🎥 Video · '+feeStr;
   document.getElementById('bk-fee1').textContent=feeStr;
   document.getElementById('bk-feetotal').textContent=feeStr;
@@ -2346,15 +2311,18 @@ function copyCardLink(){
   else toast('✓ Link copied — paste it anywhere');
 }
 function fillVCard(){
-  const a=ADVOCATES.find(x=>x.id==='me')
-    || (user && user.role==='adv'
-        ? { name:user.name, ini:user.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(),
-            headline:'Advocate', status:user.verified?'verified':'pending',
-            bar:'From your registration', city:'Your city', tags:['Your practice areas'],
-            fee:1000, modes:'video phone' }
-        : ADVOCATES[0]);
+  // This card belongs to the simulated demo advocate dashboard (tied to the
+  // fake `user` login), so it uses placeholder data from that fake session —
+  // it never reads from the live ADVOCATES directory (real people's data).
+  const a = (user && user.role==='adv')
+    ? { name:user.name, headline:'Advocate', status:user.verified?'verified':'pending',
+        bar:'From your registration', city:'Your city', tags:['Your practice areas'],
+        fee:1000, modes:'video phone' }
+    : { name:'Your Name', headline:'Advocate', status:'pending',
+        bar:'From your registration', city:'Your city', tags:['Your practice areas'],
+        fee:1000, modes:'video phone' };
   const slug=a.name.toLowerCase().replace(/[^a-z]+/g,'-');
-  document.getElementById('vc-ini').textContent=a.ini;
+  document.getElementById('vc-ini').textContent=initialsFor(a.name);
   document.getElementById('vc-name').textContent='Adv. '+a.name;
   document.getElementById('vc-head').textContent=a.headline+(a.status==='verified'?' · ✓ Bar Council Verified':' · ⏳ Verification pending');
   document.getElementById('vc-info').innerHTML='<span>Enrolment</span> '+a.bar+'<br><span>Practice</span> '+a.city+' · '+a.tags.slice(0,3).join(', ')+'<br><span>Consultation</span> ₹'+a.fee.toLocaleString('en-IN')+' · '+a.modes.split(' ').join(' / ');
@@ -2405,7 +2373,7 @@ function applyFilters(){
   let n=0;
   document.querySelectorAll('#adv-list .adv-card').forEach(c=>{
     const d=c.dataset; let show=true;
-    if(area!=='all' && d.area!==area) show=false;
+    if(area!=='all' && !('|'+d.area+'|').includes('|'+area+'|')) show=false;
     if(state!=='all' && d.state!==state) show=false;
     if(city!=='all' && d.city!==city) show=false;
     if(show && exp!=='any'){ const [lo,hi]=exp.split('-').map(Number); show = +d.exp>=lo && +d.exp<=hi; }
@@ -2671,7 +2639,7 @@ go = function(v){
 
 <!-- ================= REAL DATA: Jobs, Courses, Team (Supabase-backed) ================= -->
 <script type="module">
-import { listJobsPublic, listCoursesPublic, listTeamPublic, submitJobApplication, submitCourseEnrollment } from './app/js/cms.js';
+import { listJobsPublic, listCoursesPublic, listTeamPublic, submitJobApplication, submitCourseEnrollment, listApprovedAdvocatesPublic } from './app/js/cms.js';
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function timeAgo(iso){
@@ -2830,9 +2798,51 @@ window.submitCourseEnroll = async function() {
   } finally { btn.disabled = false; btn.textContent = 'Confirm Enrollment'; }
 };
 
+async function loadAdvocates() {
+  try {
+    const rows = await listApprovedAdvocatesPublic();
+    // Map DB rows (name lives on the joined profiles record) into the
+    // flat shape the directory/profile rendering functions expect.
+    // (Reassigns the `let ADVOCATES` declared in the classic script above —
+    // module scripts share the page's global lexical scope for existing
+    // top-level bindings, so this updates the same array those functions read.)
+    ADVOCATES = rows.map(r => ({
+      id: r.id,
+      name: r.profiles?.full_name || 'Advocate',
+      headline: r.headline,
+      city: r.city,
+      state: r.state,
+      practice_areas: r.practice_areas || [],
+      languages: r.languages || [],
+      consultation_modes: r.consultation_modes || [],
+      experience_years: r.experience_years,
+      consultation_fee: r.consultation_fee,
+      bar_number: r.bar_number,
+      bio: r.bio,
+      photo_url: r.photo_url,
+      experience_timeline: r.experience_timeline || [],
+      education_timeline: r.education_timeline || [],
+    }));
+
+    // Populate State/City filter dropdowns from whatever real data exists —
+    // no hardcoded location lists.
+    const states = [...new Set(ADVOCATES.map(a => a.state).filter(Boolean))].sort();
+    const cities = [...new Set(ADVOCATES.map(a => a.city).filter(Boolean))].sort();
+    const stateSel = document.getElementById('f-state');
+    const citySel = document.getElementById('f-city');
+    states.forEach(s => stateSel.insertAdjacentHTML('beforeend', `<option>${s}</option>`));
+    cities.forEach(c => citySel.insertAdjacentHTML('beforeend', `<option>${c}</option>`));
+
+    if (typeof renderDirectory === 'function') renderDirectory();
+  } catch (e) {
+    // Directory stays empty rather than breaking the page.
+  }
+}
+
 renderJobs();
 renderCourses();
 renderTeam();
+loadAdvocates();
 </script>
 </body>
 </html>

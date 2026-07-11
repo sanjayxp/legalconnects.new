@@ -35,7 +35,9 @@
   .status-banner.approved{display:block;background:var(--green-soft);border:1px solid #b8e6d5;color:var(--green)}
   .status-banner.rejected{display:block;background:var(--red-soft);border:1px solid #f0b8b0;color:var(--red)}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px;margin-bottom:20px}
+  .card h2{font-size:16px;font-weight:800;margin-bottom:4px}
+  .card .cardsub{font-size:13px;color:var(--ink-soft);margin-bottom:16px}
   .photo-row{display:flex;align-items:center;gap:18px;margin-bottom:22px}
   .photo-preview{width:88px;height:88px;border-radius:50%;object-fit:cover;background:var(--accent-soft)}
   .photo-actions label.upl{display:inline-block;padding:9px 16px;border-radius:9px;border:1.5px solid var(--line);font-size:13.5px;font-weight:600;cursor:pointer;color:var(--ink-soft)}
@@ -47,10 +49,21 @@
   input:focus,select:focus,textarea:focus{border-color:var(--accent)}
   textarea{resize:vertical;min-height:90px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
   .chip{padding:6px 13px;border-radius:99px;border:1.5px solid var(--line);font-size:13px;cursor:pointer;user-select:none;color:var(--ink-soft)}
   .chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-dark);font-weight:700}
-  .actions-row{display:flex;justify-content:flex-end;gap:10px;margin-top:26px}
+  .modecheck{display:flex;gap:18px;margin-top:8px}
+  .modecheck label{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink);margin:0;cursor:pointer}
+  .modecheck input{width:auto}
+
+  .timeline-row{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;position:relative}
+  .timeline-row .remove{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:13px;font-weight:700}
+  .timeline-row .remove:hover{color:var(--red)}
+  .addrow-btn{margin-top:12px;background:transparent;border:1.5px dashed var(--line);border-radius:10px;padding:10px;width:100%;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .addrow-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+  .actions-row{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
   .btn{border:none;border-radius:10px;padding:12px 22px;font:inherit;font-size:14.5px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer}
   .btn:hover{background:var(--accent-dark)}
   .btn:disabled{opacity:.6;cursor:wait}
@@ -75,6 +88,9 @@
   <div class="status-banner" id="statusBanner"></div>
 
   <div class="card">
+    <h2>Basics</h2>
+    <div class="cardsub">Photo, headline, and where you practice.</div>
+
     <label>Profile photo</label>
     <div class="photo-row">
       <img class="photo-preview" id="photoPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88'%3E%3Crect width='88' height='88' fill='%23eef1fd'/%3E%3C/svg%3E">
@@ -83,6 +99,38 @@
         <input type="file" id="f-photo" accept="image/*" style="display:none">
         <div class="photo-hint">JPG or PNG, under 3MB.</div>
       </div>
+    </div>
+
+    <label>Headline</label>
+    <input id="f-headline" placeholder="e.g. Tax Law Specialist">
+
+    <div class="grid2">
+      <div>
+        <label>City</label>
+        <input id="f-city" placeholder="e.g. Pune">
+      </div>
+      <div>
+        <label>State</label>
+        <input id="f-state" placeholder="e.g. Maharashtra">
+      </div>
+    </div>
+
+    <label>Languages you consult in</label>
+    <input id="f-languages" placeholder="e.g. Hindi, Marathi, English (comma separated)">
+  </div>
+
+  <div class="card">
+    <h2>Practice &amp; consultation</h2>
+    <div class="cardsub">What you handle, how clients can reach you, and your fee.</div>
+
+    <label>Practice areas</label>
+    <div class="chips" id="chips"></div>
+
+    <label>Consultation modes</label>
+    <div class="modecheck">
+      <label><input type="checkbox" id="mode-video" value="video"> 🎥 Video</label>
+      <label><input type="checkbox" id="mode-phone" value="phone"> 📞 Phone</label>
+      <label><input type="checkbox" id="mode-inperson" value="inperson"> 🏛 In-person</label>
     </div>
 
     <div class="grid2">
@@ -96,19 +144,30 @@
       </div>
     </div>
 
-    <label>Practice areas</label>
-    <div class="chips" id="chips"></div>
-
-    <label>Fee range (per consultation)</label>
-    <input id="f-fee" placeholder="e.g. ₹1,500–₹3,000">
+    <label>Consultation fee (₹, per 30 min)</label>
+    <input id="f-fee" type="number" min="0" placeholder="e.g. 1500">
 
     <label>About you</label>
     <textarea id="f-bio" placeholder="A short professional bio clients will see on your profile."></textarea>
+  </div>
 
-    <div class="msg" id="msg"></div>
-    <div class="actions-row">
-      <button class="btn" id="saveBtn">Save profile</button>
-    </div>
+  <div class="card">
+    <h2>Work experience</h2>
+    <div class="cardsub">Add your current and past roles, most recent first.</div>
+    <div id="expRows"></div>
+    <button class="addrow-btn" id="addExpBtn" type="button">+ Add a role</button>
+  </div>
+
+  <div class="card">
+    <h2>Education</h2>
+    <div class="cardsub">Degrees and certifications.</div>
+    <div id="eduRows"></div>
+    <button class="addrow-btn" id="addEduBtn" type="button">+ Add a qualification</button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+  <div class="actions-row">
+    <button class="btn" id="saveBtn">Save profile</button>
   </div>
 </main>
 
@@ -155,13 +214,50 @@ function renderStatus(status) {
   else if (status === 'rejected') { banner.className = 'status-banner rejected'; banner.innerHTML = '<b>✕ Changes needed</b>Your last submission wasn\'t approved. Update your details below and save to resubmit for review.'; }
 }
 
+// ---- Repeatable timeline rows (work experience / education) ----
+function makeTimelineRow(container, fields, values) {
+  const row = document.createElement('div');
+  row.className = 'timeline-row';
+  row.innerHTML = `<button type="button" class="remove">✕ Remove</button>` +
+    fields.map(f => `<label>${f.label}</label><input data-key="${f.key}" placeholder="${f.placeholder}" value="${(values?.[f.key] || '').replace(/"/g,'&quot;')}">`).join('');
+  row.querySelector('.remove').addEventListener('click', () => row.remove());
+  container.appendChild(row);
+  return row;
+}
+function readTimelineRows(container) {
+  return [...container.querySelectorAll('.timeline-row')].map(row => {
+    const obj = {};
+    row.querySelectorAll('input[data-key]').forEach(inp => { obj[inp.dataset.key] = inp.value.trim(); });
+    return obj;
+  }).filter(obj => Object.values(obj).some(v => v));
+}
+
+const EXP_FIELDS = [
+  { key: 'title', label: 'Role / title', placeholder: 'e.g. Independent Practice — Tax Law' },
+  { key: 'org',   label: 'Organisation / court', placeholder: 'e.g. Bombay High Court (Aurangabad Bench)' },
+  { key: 'period',label: 'Period', placeholder: 'e.g. 2019 – Present' },
+];
+const EDU_FIELDS = [
+  { key: 'degree', label: 'Degree / certificate', placeholder: 'e.g. LL.M., Taxation Law' },
+  { key: 'institution', label: 'Institution', placeholder: 'e.g. Symbiosis Law School, Pune' },
+  { key: 'period', label: 'Year', placeholder: 'e.g. 2014' },
+];
+const expRows = document.getElementById('expRows');
+const eduRows = document.getElementById('eduRows');
+document.getElementById('addExpBtn').addEventListener('click', () => makeTimelineRow(expRows, EXP_FIELDS));
+document.getElementById('addEduBtn').addEventListener('click', () => makeTimelineRow(eduRows, EDU_FIELDS));
+
 const existing = await getAdvocateProfile(session.user.id);
 if (existing) {
   isFirstSubmit = false;
   renderStatus(existing.verification_status);
+  document.getElementById('f-headline').value = existing.headline || '';
+  document.getElementById('f-city').value = existing.city || '';
+  document.getElementById('f-state').value = existing.state || '';
+  document.getElementById('f-languages').value = (existing.languages || []).join(', ');
   document.getElementById('f-bar').value = existing.bar_number || '';
   document.getElementById('f-exp').value = existing.experience_years ?? '';
-  document.getElementById('f-fee').value = existing.fee_range || '';
+  document.getElementById('f-fee').value = existing.consultation_fee ?? '';
   document.getElementById('f-bio').value = existing.bio || '';
   currentPhotoUrl = existing.photo_url || '';
   if (currentPhotoUrl) document.getElementById('photoPreview').src = currentPhotoUrl;
@@ -169,6 +265,12 @@ if (existing) {
     const chip = chipsEl.querySelector(`[data-area="${CSS.escape(a)}"]`);
     if (chip) { selected.add(a); chip.classList.add('on'); }
   });
+  (existing.consultation_modes || []).forEach(m => {
+    const cb = document.getElementById('mode-' + m);
+    if (cb) cb.checked = true;
+  });
+  (existing.experience_timeline || []).forEach(v => makeTimelineRow(expRows, EXP_FIELDS, v));
+  (existing.education_timeline || []).forEach(v => makeTimelineRow(eduRows, EDU_FIELDS, v));
 } else {
   renderStatus(null);
 }
@@ -184,13 +286,23 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
       const path = `${session.user.id}/photo.${ext}`;
       photoUrl = await uploadPhoto('advocate-photos', path, pendingPhotoFile);
     }
+    const modes = ['video','phone','inperson'].filter(m => document.getElementById('mode-'+m).checked);
+    const languages = document.getElementById('f-languages').value.split(',').map(s => s.trim()).filter(Boolean);
+    const feeVal = parseFloat(document.getElementById('f-fee').value);
     const fields = {
+      headline: document.getElementById('f-headline').value.trim(),
+      city: document.getElementById('f-city').value.trim(),
+      state: document.getElementById('f-state').value.trim(),
+      languages,
       bar_number: document.getElementById('f-bar').value.trim(),
       experience_years: parseInt(document.getElementById('f-exp').value) || null,
-      fee_range: document.getElementById('f-fee').value.trim(),
+      consultation_fee: isNaN(feeVal) ? null : feeVal,
+      consultation_modes: modes,
       bio: document.getElementById('f-bio').value.trim(),
       practice_areas: Array.from(selected),
       photo_url: photoUrl || null,
+      experience_timeline: readTimelineRows(expRows),
+      education_timeline: readTimelineRows(eduRows),
     };
     // Resubmitting after rejection sends it back to pending review.
     if (existing && existing.verification_status === 'rejected') {

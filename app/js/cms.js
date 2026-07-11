@@ -170,6 +170,17 @@ export async function upsertAdvocateProfile(userId, fields, isFirstSubmit) {
   }
 }
 
+// Public directory — only advocates who have been approved by an admin.
+export async function listApprovedAdvocatesPublic() {
+  const { data, error } = await supabase
+    .from('advocate_profiles')
+    .select('*, profiles!advocate_profiles_id_fkey(full_name)')
+    .eq('verification_status', 'approved')
+    .order('updated_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export async function listPendingAdvocates() {
   // advocate_profiles has two foreign keys into profiles (id, and reviewed_by),
   // so the embed must specify which relationship to follow — otherwise
