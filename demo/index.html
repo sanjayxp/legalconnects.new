@@ -2640,6 +2640,8 @@ go = function(v){
 <!-- ================= REAL DATA: Jobs, Courses, Team (Supabase-backed) ================= -->
 <script type="module">
 import { listJobsPublic, listCoursesPublic, listTeamPublic, submitJobApplication, submitCourseEnrollment, listApprovedAdvocatesPublic } from './app/js/cms.js';
+  import { supabase } from './app/js/config.js';
+import { getCurrentProfile } from './app/js/auth.js';
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function timeAgo(iso){
@@ -2839,10 +2841,28 @@ async function loadAdvocates() {
   }
 }
 
+async function syncAccountNav() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const profile = await getCurrentProfile();
+    if (!profile) return;
+    const loginBtn = document.querySelector('.nav-cta .btn-ghost');
+    if (!loginBtn) return;
+    const routes = { admin: 'app/admin/', advocate: 'app/dashboard/advocate.html', client: 'app/dashboard/client.html' };
+    const dest = routes[profile.role];
+    if (!dest) return;
+    loginBtn.textContent = profile.role === 'admin' ? 'Admin dashboard' : 'My dashboard';
+    loginBtn.onclick = () => { window.location.href = dest; };
+  } catch (e) {
+  }
+}
+
 renderJobs();
 renderCourses();
 renderTeam();
 loadAdvocates();
+syncAccountNav();
 </script>
 </body>
 </html>
