@@ -194,10 +194,42 @@ export async function listPendingAdvocates() {
   return data || [];
 }
 
+// Admin management view — every advocate profile regardless of status,
+// newest submissions first.
+export async function listAllAdvocates() {
+  const { data, error } = await supabase
+    .from('advocate_profiles')
+    .select('*, profiles!advocate_profiles_id_fkey(full_name, phone)')
+    .order('submitted_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export async function reviewAdvocateProfile(userId, status, reviewerId) {
   const { error } = await supabase
     .from('advocate_profiles')
     .update({ verification_status: status, reviewed_at: new Date().toISOString(), reviewed_by: reviewerId })
+    .eq('id', userId);
+  if (error) throw error;
+}
+
+// Admin editing an advocate's own profile fields directly (typo fixes, etc.)
+// without disturbing verification_status unless explicitly included in `fields`.
+export async function adminUpdateAdvocateProfile(userId, fields) {
+  const { error } = await supabase
+    .from('advocate_profiles')
+    .update(fields)
+    .eq('id', userId);
+  if (error) throw error;
+}
+
+// Removes the advocate_profiles row only. The advocate's login/account is
+// untouched — if they log back in, it looks like a fresh, unfilled profile
+// (verification_status/submitted_at reset to nothing) and they can start over.
+export async function deleteAdvocateProfile(userId) {
+  const { error } = await supabase
+    .from('advocate_profiles')
+    .delete()
     .eq('id', userId);
   if (error) throw error;
 }
