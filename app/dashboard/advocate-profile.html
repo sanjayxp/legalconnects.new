@@ -101,6 +101,9 @@
       </div>
     </div>
 
+    <label>Full name</label>
+    <input id="f-name" placeholder="As on Bar Council records">
+
     <label>Headline</label>
     <input id="f-headline" placeholder="e.g. Tax Law Specialist">
 
@@ -173,7 +176,7 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile } from '../js/auth.js';
-import { getAdvocateProfile, upsertAdvocateProfile, uploadPhoto } from '../js/cms.js';
+import { getAdvocateProfile, upsertAdvocateProfile, uploadPhoto, updateOwnName } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -181,6 +184,7 @@ if (profile && profile.role !== 'advocate') {
   const routes = { client: 'client.html', admin: 'admin.html' };
   window.location.href = routes[profile.role] || '../auth/login.html';
 }
+document.getElementById('f-name').value = profile?.full_name || '';
 
 const AREAS = ['Civil','Criminal','Family','Corporate','Property','Tax','Labour & Employment','IP','Cyber Law','Consumer','Real Estate','Immigration'];
 const chipsEl = document.getElementById('chips');
@@ -308,6 +312,8 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     if (existing && existing.verification_status === 'rejected') {
       fields.verification_status = 'pending';
     }
+    const nameVal = document.getElementById('f-name').value.trim();
+    if (nameVal) await updateOwnName(session.user.id, nameVal);
     await upsertAdvocateProfile(session.user.id, fields, isFirstSubmit);
     isFirstSubmit = false;
     currentPhotoUrl = photoUrl;
