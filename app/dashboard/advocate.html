@@ -80,26 +80,26 @@
       <span class="coming-soon" id="profileCta">Open →</span>
     </a>
 
-    <div class="card">
+    <a class="card" href="advocate-bookings.html" style="display:block">
       <div class="card-icon" style="background:var(--green-soft)">📥</div>
       <h3>My Leads</h3>
       <p>Clients who have requested a consultation with you.</p>
-      <span class="coming-soon">Coming soon</span>
-    </div>
+      <span class="coming-soon" id="leadsTag">Open →</span>
+    </a>
 
-    <div class="card">
+    <a class="card" href="advocate-bookings.html" style="display:block">
       <div class="card-icon" style="background:var(--amber-soft)">📋</div>
       <h3>My Bookings</h3>
-      <p>Confirmed consultations and hearing diary.</p>
-      <span class="coming-soon">Coming soon</span>
-    </div>
+      <p>Confirmed consultations, plus set your available times.</p>
+      <span class="coming-soon">Open →</span>
+    </a>
   </div>
 </main>
 
 <script type="module">
 import { supabase } from '../js/config.js';
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { getAdvocateProfile } from '../js/cms.js';
+import { getAdvocateProfile, listMySlots } from '../js/cms.js';
 
 const session = await requireAuth();
 if (!session) {}
@@ -141,6 +141,15 @@ try {
   }
 } catch (e) {
   // banner stays as default
+}
+
+// New-leads count on the "My Leads" card
+try {
+  const slots = await listMySlots(session.user.id);
+  const n = slots.filter(s => s.status === 'booked').length;
+  if (n > 0) document.getElementById('leadsTag').textContent = `${n} new →`;
+} catch (e) {
+  // Card stays with the default label
 }
 
 document.getElementById('signoutBtn').addEventListener('click', signOut);
