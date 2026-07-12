@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leads & Bookings — LegalConnects</title>
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --red:#c0392b;--red-soft:#fdecea;
+    --amber:#b45309;--amber-soft:#fdf3e3;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+  header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  .nav{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:24px;height:64px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;letter-spacing:-.02em}
+  .logo-mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .btn-ghost{padding:8px 16px;border-radius:9px;font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);background:transparent;cursor:pointer;transition:all .15s}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  main{max-width:1120px;margin:0 auto;padding:32px 24px}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:22px}
+
+  .tabs{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+  .tab{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:8px 16px;font:inherit;font-size:13.5px;font-weight:700;color:var(--ink-soft);cursor:pointer}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .tab .cnt{opacity:.75;margin-left:4px}
+
+  .pane{display:none}
+  .pane.on{display:block}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px 22px;margin-bottom:14px}
+  .card .top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start}
+  .card h3{font-size:15.5px;font-weight:800;margin-bottom:2px}
+  .card .meta{font-size:13px;color:var(--ink-soft);margin-bottom:6px}
+  .card .field{font-size:13.5px;margin-top:4px}
+  .card .field b{color:var(--ink-soft);font-weight:600}
+  .pill{display:inline-flex;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .pill.open{background:var(--accent-soft);color:var(--accent-dark)}
+  .pill.booked{background:var(--amber-soft);color:var(--amber)}
+  .pill.confirmed{background:var(--green-soft);color:var(--green)}
+  .pill.completed{background:#eee;color:var(--ink-faint)}
+  .pill.cancelled{background:var(--red-soft);color:var(--red)}
+  .actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+  .btn{border:none;border-radius:9px;padding:9px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .btn-approve{background:var(--green-soft);color:var(--green)}
+  .btn-approve:hover{background:#d3f0e2}
+  .btn-reject{background:var(--red-soft);color:var(--red)}
+  .btn-reject:hover{background:#f9d9d5}
+  .btn-outline{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft)}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+  .empty{text-align:center;padding:50px 20px;color:var(--ink-faint)}
+
+  .addform{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px;margin-bottom:22px}
+  .addform h3{font-size:15px;font-weight:800;margin-bottom:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end}
+  label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px}
+  input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none}
+  input:focus{border-color:var(--accent)}
+  .msg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:8px;display:none}
+  .msg.err{display:block;background:var(--red-soft);color:var(--red)}
+  .msg.ok{display:block;background:var(--green-soft);color:var(--green)}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="advocate.html" class="logo"><div class="logo-mark">⚖</div>LegalConnects</a>
+    <div class="nav-right">
+      <a class="btn-ghost" href="advocate.html">← Back to dashboard</a>
+      <button class="btn-ghost" id="signoutBtn">Sign out</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <h1>Leads &amp; bookings</h1>
+  <div class="sub">New requests wait in Leads until you confirm them. Set your available times in Availability so clients can book you.</div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="content">
+    <div class="pane on" id="pane-leads"><div class="empty">Loading…</div></div>
+    <div class="pane" id="pane-upcoming"></div>
+    <div class="pane" id="pane-availability">
+      <div class="addform">
+        <h3>Add an available slot</h3>
+        <div class="grid3">
+          <div><label>Date</label><input type="date" id="f-date"></div>
+          <div><label>Start time</label><input type="time" id="f-start"></div>
+          <div><label>End time</label><input type="time" id="f-end"></div>
+        </div>
+        <button class="btn" id="addSlotBtn" style="background:var(--accent);color:#fff;margin-top:14px">+ Add slot</button>
+        <div class="msg" id="addMsg"></div>
+      </div>
+      <div id="availList"></div>
+    </div>
+    <div class="pane" id="pane-past"></div>
+  </div>
+</main>
+
+<script type="module">
+import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
+import { listMySlots, createSlot, deleteSlot, updateSlotStatus } from '../js/cms.js';
+
+const session = await requireAuth();
+const profile = await getCurrentProfile();
+if (profile && profile.role !== 'advocate') {
+  const routes = { client: 'client.html', admin: '../admin/' };
+  window.location.href = routes[profile.role] || '../auth/login.html';
+}
+document.getElementById('signoutBtn').addEventListener('click', signOut);
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function fmt(iso){ return new Date(iso).toLocaleString('en-IN', { weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit' }); }
+const MODE_LABEL = { video: '🎥 Video', phone: '📞 Phone', inperson: '🏛 In-person' };
+
+const TABS = [
+  { key: 'leads', label: 'Leads' },
+  { key: 'upcoming', label: 'Upcoming' },
+  { key: 'availability', label: 'Availability' },
+  { key: 'past', label: 'Past' },
+];
+let currentTab = 'leads';
+let ALL = [];
+
+function renderTabs() {
+  const now = new Date();
+  const counts = {
+    leads: ALL.filter(s => s.status === 'booked').length,
+    upcoming: ALL.filter(s => s.status === 'confirmed' && new Date(s.slot_start) >= now).length,
+    availability: ALL.filter(s => s.status === 'open' && new Date(s.slot_start) >= now).length,
+    past: ALL.filter(s => s.status === 'completed' || s.status === 'cancelled' || (s.status === 'confirmed' && new Date(s.slot_start) < now)).length,
+  };
+  document.getElementById('tabs').innerHTML = TABS.map(t =>
+    `<button class="tab ${t.key===currentTab?'on':''}" data-tab="${t.key}">${t.label} <span class="cnt">${counts[t.key]}</span></button>`
+  ).join('');
+  document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
+    currentTab = b.dataset.tab;
+    renderTabs();
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+    document.getElementById('pane-' + currentTab).classList.add('on');
+  }));
+}
+
+function slotCard(s, actionsHtml) {
+  return `<div class="card">
+    <div class="top">
+      <div>
+        <h3>${esc(s.client_name || 'Open slot')} <span class="pill ${s.status}">${s.status}</span></h3>
+        <div class="meta">${fmt(s.slot_start)} ${s.mode ? '· ' + MODE_LABEL[s.mode] : ''}</div>
+        ${s.client_email ? `<div class="field"><b>Contact:</b> ${esc(s.client_email)} · ${esc(s.client_phone || '—')}</div>` : ''}
+        ${s.client_notes ? `<div class="field"><b>Notes:</b> ${esc(s.client_notes)}</div>` : ''}
+      </div>
+      <div class="actions">${actionsHtml || ''}</div>
+    </div>
+  </div>`;
+}
+
+function renderLeads() {
+  const rows = ALL.filter(s => s.status === 'booked').sort((a,b) => new Date(a.slot_start) - new Date(b.slot_start));
+  const pane = document.getElementById('pane-leads');
+  if (!rows.length) { pane.innerHTML = '<div class="empty">No new requests right now.</div>'; return; }
+  pane.innerHTML = rows.map(s => slotCard(s,
+    `<button class="btn btn-approve" data-confirm="${s.id}">✓ Confirm</button>
+     <button class="btn btn-reject" data-decline="${s.id}">✕ Decline</button>`
+  )).join('');
+  pane.querySelectorAll('[data-confirm]').forEach(b => b.addEventListener('click', () => act(b.dataset.confirm, 'confirmed')));
+  pane.querySelectorAll('[data-decline]').forEach(b => b.addEventListener('click', () => {
+    if (confirm('Decline this request? The client will need to book a different time.')) act(b.dataset.decline, 'cancelled');
+  }));
+}
+
+function renderUpcoming() {
+  const now = new Date();
+  const rows = ALL.filter(s => s.status === 'confirmed' && new Date(s.slot_start) >= now).sort((a,b) => new Date(a.slot_start) - new Date(b.slot_start));
+  const pane = document.getElementById('pane-upcoming');
+  if (!rows.length) { pane.innerHTML = '<div class="empty">No upcoming confirmed bookings.</div>'; return; }
+  pane.innerHTML = rows.map(s => slotCard(s,
+    `<button class="btn btn-approve" data-complete="${s.id}">Mark completed</button>
+     <button class="btn btn-reject" data-cancel="${s.id}">Cancel</button>`
+  )).join('');
+  pane.querySelectorAll('[data-complete]').forEach(b => b.addEventListener('click', () => act(b.dataset.complete, 'completed')));
+  pane.querySelectorAll('[data-cancel]').forEach(b => b.addEventListener('click', () => {
+    if (confirm('Cancel this confirmed booking?')) act(b.dataset.cancel, 'cancelled');
+  }));
+}
+
+function renderAvailability() {
+  const now = new Date();
+  const rows = ALL.filter(s => s.status === 'open' && new Date(s.slot_start) >= now).sort((a,b) => new Date(a.slot_start) - new Date(b.slot_start));
+  const box = document.getElementById('availList');
+  if (!rows.length) { box.innerHTML = '<div class="empty">No open slots yet — add one above so clients can book you.</div>'; return; }
+  box.innerHTML = rows.map(s => slotCard(s, `<button class="btn btn-outline" data-del="${s.id}">Remove</button>`)).join('');
+  box.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Remove this open slot?')) return;
+    await deleteSlot(b.dataset.del);
+    await load();
+  }));
+}
+
+function renderPast() {
+  const now = new Date();
+  const rows = ALL.filter(s => s.status === 'completed' || s.status === 'cancelled' || (s.status === 'confirmed' && new Date(s.slot_start) < now))
+    .sort((a,b) => new Date(b.slot_start) - new Date(a.slot_start));
+  const pane = document.getElementById('pane-past');
+  if (!rows.length) { pane.innerHTML = '<div class="empty">Nothing here yet.</div>'; return; }
+  pane.innerHTML = rows.map(s => slotCard(s)).join('');
+}
+
+async function act(slotId, status) {
+  try { await updateSlotStatus(slotId, status); await load(); }
+  catch (e) { alert(e.message || 'Could not update this booking.'); }
+}
+
+document.getElementById('addSlotBtn').addEventListener('click', async () => {
+  const msg = document.getElementById('addMsg');
+  msg.className = 'msg'; msg.textContent = '';
+  const date = document.getElementById('f-date').value;
+  const start = document.getElementById('f-start').value;
+  const end = document.getElementById('f-end').value;
+  if (!date || !start || !end) { msg.className = 'msg err'; msg.textContent = 'Pick a date, start time, and end time.'; return; }
+  const slotStart = new Date(`${date}T${start}`);
+  const slotEnd = new Date(`${date}T${end}`);
+  if (slotEnd <= slotStart) { msg.className = 'msg err'; msg.textContent = 'End time must be after the start time.'; return; }
+  if (slotStart < new Date()) { msg.className = 'msg err'; msg.textContent = 'Pick a time in the future.'; return; }
+  try {
+    await createSlot(session.user.id, slotStart.toISOString(), slotEnd.toISOString());
+    document.getElementById('f-date').value = '';
+    document.getElementById('f-start').value = '';
+    document.getElementById('f-end').value = '';
+    msg.className = 'msg ok'; msg.textContent = 'Slot added.';
+    await load();
+  } catch (e) {
+    msg.className = 'msg err'; msg.textContent = e.message || 'Could not add slot.';
+  }
+});
+
+async function load() {
+  ALL = await listMySlots(session.user.id);
+  renderTabs();
+  renderLeads();
+  renderUpcoming();
+  renderAvailability();
+  renderPast();
+}
+load();
+</script>
+</body>
+</html>
