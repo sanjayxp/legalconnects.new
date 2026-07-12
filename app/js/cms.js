@@ -297,6 +297,82 @@ export async function promoteToAdmin(userId) {
   if (error) throw error;
 }
 
+// Lets a signed-in user (client or advocate) update their own display name.
+export async function updateOwnName(userId, fullName) {
+  const { error } = await supabase.from('profiles').update({ full_name: fullName }).eq('id', userId);
+  if (error) throw error;
+}
+
+// ---------- BOOKINGS (advocate availability + client booking requests) ----------
+// Lifecycle of a row: open (advocate's free slot) -> booked (client claimed
+// it, awaiting advocate confirmation — this is a "lead") -> confirmed
+// (advocate accepted — this is an upcoming booking) -> completed / cancelled.
+
+// Public — open slots for a specific advocate, for the booking widget on
+// their profile. Client PII columns are always null on open rows.
+export async function listOpenSlotsPublic(advocateId) {
+  const { data, error } = await supabase
+    .from('booking_slots')
+    .select('*')
+    .eq('advocate_id', advocateId)
+    .eq('status', 'open')
+    .gt('slot_start', new Date().toISOString())
+    .order('slot_start', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+// Public — claim an open slot. Fails (throws) if someone else claimed it
+// first, since the update only matches rows still 'open'.
+export async function bookSlot(slotId, { mode, client_name, client_email, client_phone, client_notes }) {
+  const { data, error } = await supabase
+    .from('booking_slots')
+    .update({
+      status: 'booked',
+      mode, client_name, client_email, client_phone, client_notes,
+      booked_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', slotId)
+    .eq('status', 'open')
+    .select();
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('Sorry, that slot was just taken. Please pick another time.');
+  return data[0];
+}
+
+// Advocate — every slot they own, regardless of status.
+export async function listMySlots(advocateId) {
+  const { data, error } = await supabase
+    .from('booking_slots')
+    .select('*')
+    .eq('advocate_id', advocateId)
+    .order('slot_start', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+// Advocate — add a new open (bookable) slot to their calendar.
+export async function createSlot(advocateId, slotStart, slotEnd) {
+  const { error } = await supabase
+    .from('booking_slots')
+    .insert({ advocate_id: advocateId, slot_start: slotStart, slot_end: slotEnd, status: 'open' });
+  if (error) throw error;
+}
+
+export async function deleteSlot(slotId) {
+  const { error } = await supabase.from('booking_slots').delete().eq('id', slotId);
+  if (error) throw error;
+}
+
+export async function updateSlotStatus(slotId, status) {
+  const { error } = await supabase
+    .from('booking_slots')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', slotId);
+  if (error) throw error;
+}
+
 // ---------- PHOTO UPLOAD ----------
 // bucket: 'advocate-photos' (path must start with the user's own uid folder)
 //         'team-photos'     (admin only)
