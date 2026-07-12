@@ -81,7 +81,9 @@
       <a href="jobs.html" class="on">Jobs</a>
       <a href="courses.html">Courses</a>
       <a href="team.html">Team</a>
-      <a href="verify-advocates.html">Verifications</a>
+      <a href="verify-advocates.html">Advocates</a>
+      <a href="clients.html">Clients</a>
+      <a href="admins.html">Admins</a>
     </div>
     <div class="nav-right">
       <button class="btn-ghost" id="signoutBtn">Sign out</button>
@@ -105,6 +107,17 @@
     </table>
   </div>
 </main>
+
+<!-- Applicants viewer modal -->
+<div class="modal-bg" id="applicantsModal">
+  <div class="modal">
+    <h2 id="applicantsTitle">Applicants</h2>
+    <div id="applicantsList" style="margin-top:14px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="applicantsCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- Job editor modal -->
 <div class="modal-bg" id="jobModal">
@@ -143,7 +156,7 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { listJobsAdmin, saveJob, deleteJob, countApplications } from '../js/cms.js';
+import { listJobsAdmin, saveJob, deleteJob, countApplications, listJobApplicants } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -187,7 +200,7 @@ async function render() {
       <td><b>${esc(j.title)}</b><div style="color:var(--ink-faint);font-size:12.5px">${esc(j.experience_level||'')}</div></td>
       <td>${esc(j.firm_name)}</td>
       <td><span class="pill ${j.status}">${j.status}</span></td>
-      <td>${apps}</td>
+      <td>${apps > 0 ? `<button class="btn btn-sm btn-outline" data-applicants="${j.id}" data-title="${esc(j.title)}">${apps} →</button>` : '0'}</td>
       <td class="row-actions">
         <button class="btn btn-sm btn-outline" data-edit="${j.id}">Edit</button>
         <button class="btn btn-sm btn-danger" data-del="${j.id}">Delete</button>
@@ -205,7 +218,29 @@ async function render() {
     await deleteJob(b.dataset.del);
     render();
   }));
+  tbody.querySelectorAll('[data-applicants]').forEach(b => b.addEventListener('click', () => openApplicants(b.dataset.applicants, b.dataset.title)));
 }
+
+async function openApplicants(jobId, title) {
+  document.getElementById('applicantsTitle').textContent = `Applicants — ${title}`;
+  const list = document.getElementById('applicantsList');
+  list.innerHTML = '<div class="empty">Loading…</div>';
+  document.getElementById('applicantsModal').classList.add('open');
+  try {
+    const applicants = await listJobApplicants(jobId);
+    if (!applicants.length) { list.innerHTML = '<div class="empty">No applicants yet.</div>'; return; }
+    list.innerHTML = applicants.map(a => `
+      <div style="border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px">
+        <div style="font-weight:700">${esc(a.full_name)}</div>
+        <div style="font-size:13px;color:var(--ink-soft);margin-top:2px">${esc(a.email)} · ${esc(a.phone || 'no phone given')}</div>
+        <div style="font-size:12px;color:var(--ink-faint);margin-top:4px">Applied ${new Date(a.applied_at).toLocaleString()}</div>
+        ${a.cover_note ? `<div style="font-size:13.5px;margin-top:8px;white-space:pre-wrap">${esc(a.cover_note)}</div>` : ''}
+      </div>`).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="empty">Could not load applicants.</div>';
+  }
+}
+document.getElementById('applicantsCloseBtn').addEventListener('click', () => document.getElementById('applicantsModal').classList.remove('open'));
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 document.getElementById('saveBtn').addEventListener('click', async () => {
