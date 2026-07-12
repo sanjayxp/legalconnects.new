@@ -29,8 +29,8 @@
   .nav{display:flex;align-items:center;gap:28px;height:64px}
   .logo{font-size:20px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
   .logo .mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px}
-  .navlinks{display:flex;gap:30px;font-size:14.5px;color:var(--ink-soft);flex:1;justify-content:center}
-  .navlinks a{position:relative;padding:21px 2px;font-weight:500;transition:color .15s}
+  .navlinks{display:flex;gap:22px;font-size:14px;color:var(--ink-soft);flex:1;justify-content:center}
+  .navlinks a{position:relative;padding:21px 2px;font-weight:500;transition:color .15s;white-space:nowrap}
   .navlinks a::after{content:"";position:absolute;left:50%;right:50%;bottom:0;height:2.5px;border-radius:99px 99px 0 0;background:var(--accent);transition:left .22s ease,right .22s ease}
   .navlinks a:hover{color:var(--accent)}
   .navlinks a.active{color:var(--accent);font-weight:600}
@@ -193,7 +193,7 @@
   .topic:hover{background:var(--accent-soft);color:var(--accent-dark)}
   .topic.on{background:var(--accent-soft);color:var(--accent-dark);font-weight:700}
   .topic .n{font-size:12px;color:var(--ink-faint)}
-  .q-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;display:grid;grid-template-columns:52px 1fr;gap:16px;box-shadow:var(--shadow);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+  .q-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;display:grid;grid-template-columns:1fr;gap:16px;box-shadow:var(--shadow);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
   .q-card:hover{transform:translateY(-2px);border-color:var(--accent)}
   .votebox{display:flex;flex-direction:column;align-items:center;gap:2px}
   .vote{width:36px;height:32px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--ink-faint);font-size:14px;display:grid;place-items:center;transition:all .15s}
