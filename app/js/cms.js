@@ -385,3 +385,111 @@ export async function uploadPhoto(bucket, path, file) {
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
+
+// ---------- LEGAL Q&A (real, public forum) ----------
+// Anyone can read and ask a question (anonymous by default). Only a
+// signed-in, Bar Council-approved advocate can post an answer.
+
+export async function listQuestionsPublic(topic) {
+  let q = supabase.from('questions').select('*, answers(count)').order('created_at', { ascending: false });
+  if (topic && topic !== 'all') q = q.eq('topic', topic);
+  const { data, error } = await q;
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getQuestionDetail(questionId) {
+  const { data: question, error: qErr } = await supabase.from('questions').select('*').eq('id', questionId).maybeSingle();
+  if (qErr) throw qErr;
+  if (!question) return null;
+  // `answers` only has a foreign key to `profiles` (for the display name) —
+  // there's no direct FK to `advocate_profiles`, so headline/practice_areas
+  // are fetched in a second query and merged client-side rather than via
+  // a PostgREST embed (which requires an actual FK relationship).
+  const { data: answers, error: aErr } = await supabase
+    .from('answers')
+    .select('*, profiles!answers_advocate_id_fkey(full_name)')
+    .eq('question_id', questionId)
+    .order('upvote_count', { ascending: false });
+  if (aErr) throw aErr;
+  const advocateIds = [...new Set((answers || []).map(a => a.advocate_id))];
+  let advocateInfo = {};
+  if (advocateIds.length) {
+    const { data: profs, error: pErr } = await supabase
+      .from('advocate_profiles')
+      .select('id, headline, practice_areas')
+      .in('id', advocateIds);
+    if (pErr) throw pErr;
+    (profs || []).forEach(p => { advocateInfo[p.id] = p; });
+  }
+  const answersWithProfiles = (answers || []).map(a => ({ ...a, advocate_profiles: advocateInfo[a.advocate_id] || null }));
+  const answerIds = answersWithProfiles.map(a => a.id);
+  let comments = [];
+  if (answerIds.length) {
+    const { data: c, error: cErr } = await supabase.from('answer_comments').select('*').in('answer_id', answerIds).order('created_at', { ascending: true });
+    if (cErr) throw cErr;
+    comments = c || [];
+  }
+  return { question, answers: answersWithProfiles, comments };
+}
+
+export async function incrementQuestionViews(questionId) {
+  const { error } = await supabase.rpc('increment_question_views', { q_id: questionId });
+  if (error) throw error;
+}
+
+export async function submitQuestion({ topic, title, body, budget, client_id }) {
+  const { data, error } = await supabase.from('questions').insert({ topic, title, body, budget, client_id: client_id || null }).select().maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function submitAnswer(questionId, advocateId, body) {
+  const { error } = await supabase.from('answers').insert({ question_id: questionId, advocate_id: advocateId, body });
+  if (error) throw error;
+}
+
+export async function upvoteAnswer(answerId) {
+  const { error } = await supabase.rpc('increment_answer_upvotes', { a_id: answerId });
+  if (error) throw error;
+}
+
+export async function addAnswerComment(answerId, authorRole, authorId, body) {
+  const { error } = await supabase.from('answer_comments').insert({ answer_id: answerId, author_role: authorRole, author_id: authorId || null, body });
+  if (error) throw error;
+}
+
+// How many real answers this advocate has posted (used on the Overview stats card).
+export async function countMyAnswers(advocateId) {
+  const { count, error } = await supabase.from('answers').select('id', { count: 'exact', head: true }).eq('advocate_id', advocateId);
+  if (error) throw error;
+  return count || 0;
+}
+
+// ---------- CASE TRACKING (manual now, CRN field ready for eCourts sync later) ----------
+export async function listMyCases(advocateId) {
+  const { data, error } = await supabase.from('court_cases').select('*').eq('advocate_id', advocateId).order('next_hearing_date', { ascending: true, nullsFirst: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createCase(advocateId, fields) {
+  const { error } = await supabase.from('court_cases').insert({ advocate_id: advocateId, source: 'manual', ...fields });
+  if (error) throw error;
+}
+
+export async function updateCase(caseId, fields) {
+  const { error } = await supabase.from('court_cases').update({ ...fields, updated_at: new Date().toISOString() }).eq('id', caseId);
+  if (error) throw error;
+}
+
+export async function deleteCase(caseId) {
+  const { error } = await supabase.from('court_cases').delete().eq('id', caseId);
+  if (error) throw error;
+}
+
+// ---------- PROFILE VIEWS ----------
+export async function incrementProfileView(advocateProfileId) {
+  const { error } = await supabase.rpc('increment_profile_view', { profile_id: advocateProfileId });
+  if (error) throw error;
+}
