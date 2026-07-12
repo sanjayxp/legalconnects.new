@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Generator — LegalConnects</title>
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --red:#c0392b;--red-soft:#fdecea;
+    --amber:#b45309;--amber-soft:#fdf3e3;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+  header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  .nav{max-width:1180px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:24px;height:64px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;letter-spacing:-.02em}
+  .logo-mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .btn-ghost{padding:8px 16px;border-radius:9px;font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);background:transparent;cursor:pointer;transition:all .15s}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  main{max-width:1180px;margin:0 auto;padding:32px 24px}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:22px}
+
+  .tplgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .tplcard{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px;cursor:pointer;transition:border-color .15s,transform .15s}
+  .tplcard:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .tplcard h3{font-size:15.5px;font-weight:800;margin-bottom:6px}
+  .tplcard p{font-size:13px;color:var(--ink-soft);line-height:1.5}
+
+  .workspace{display:none;gap:24px;grid-template-columns:380px 1fr;align-items:start}
+  .workspace.on{display:grid}
+  .formcol{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px;position:sticky;top:84px}
+  .formcol h2{font-size:16px;font-weight:800;margin-bottom:4px}
+  .formcol .blurb{font-size:13px;color:var(--ink-soft);margin-bottom:16px}
+  label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin:12px 0 6px}
+  input,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none;resize:vertical}
+  input:focus,textarea:focus{border-color:var(--accent)}
+  textarea{min-height:70px}
+  .req{color:var(--red)}
+  .actionrow{display:flex;gap:10px;margin-top:20px}
+  .btn{border:none;border-radius:9px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-dark)}
+  .btn-outline{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft)}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+  .msg{font-size:13px;margin-top:12px;padding:10px 12px;border-radius:8px;display:none}
+  .msg.err{display:block;background:var(--red-soft);color:var(--red)}
+
+  .previewcol{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:0;overflow:hidden}
+  .previewbar{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid var(--line);background:#fbfbfd}
+  .previewbar b{font-size:13.5px;color:var(--ink-soft)}
+  #docsheet{padding:48px 56px;font-family:'Times New Roman',Georgia,serif;font-size:14.5px;line-height:1.7;color:#111;min-height:400px}
+  #docsheet p{margin-bottom:12px}
+  #docsheet ol{margin-bottom:12px}
+  .footnote{margin-top:40px;padding-top:16px;border-top:1px dashed var(--line);font-family:'Segoe UI',system-ui,sans-serif;font-size:11.5px;color:var(--ink-faint)}
+
+  @media (max-width: 860px){ .workspace.on{grid-template-columns:1fr} .formcol{position:static} }
+
+  @media print{
+    header, .formcol, .previewbar, .footnote { display:none !important; }
+    body, main { background:#fff; padding:0; margin:0; }
+    .workspace.on { display:block !important; }
+    .previewcol { border:none; box-shadow:none; }
+    #docsheet { padding:0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="advocate.html" class="logo"><div class="logo-mark">⚖</div>LegalConnects</a>
+    <div class="nav-right">
+      <a class="btn-ghost" href="advocate.html">← Back to dashboard</a>
+      <button class="btn-ghost" id="signoutBtn">Sign out</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <h1>Document generator</h1>
+  <div class="sub">Fill in the details and get a formatted draft, ready to review, adapt, and print or save as PDF.</div>
+
+  <div id="picker">
+    <div class="tplgrid" id="tplGrid"></div>
+  </div>
+
+  <div class="workspace" id="workspace">
+    <div class="formcol">
+      <button class="btn-ghost" id="backBtn" style="margin-bottom:14px">← Choose a different template</button>
+      <h2 id="tplTitle"></h2>
+      <div class="blurb" id="tplBlurb"></div>
+      <div id="fieldsBox"></div>
+      <div class="msg err" id="formMsg"></div>
+      <div class="actionrow">
+        <button class="btn btn-primary" id="printBtn">🖨 Print / Save as PDF</button>
+      </div>
+    </div>
+    <div class="previewcol">
+      <div class="previewbar"><b>Live preview</b><span id="previewHint" style="font-size:12px;color:var(--ink-faint)">Updates as you type</span></div>
+      <div id="docsheet"></div>
+      <div class="footnote">This is a starting-point draft generated by LegalConnects. Review, adapt, and verify it against the facts of your matter before use — it is not a substitute for your own professional judgment.</div>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
+import { DOC_TEMPLATES, getTemplate } from '../js/doc-templates.js';
+
+const session = await requireAuth();
+const profile = await getCurrentProfile();
+if (profile && profile.role !== 'advocate') {
+  const routes = { client: 'client.html', admin: '../admin/' };
+  window.location.href = routes[profile.role] || '../auth/login.html';
+}
+document.getElementById('signoutBtn').addEventListener('click', signOut);
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+const grid = document.getElementById('tplGrid');
+grid.innerHTML = DOC_TEMPLATES.map(t => `
+  <div class="tplcard" data-key="${t.key}">
+    <h3>${esc(t.title)}</h3>
+    <p>${esc(t.blurb)}</p>
+  </div>
+`).join('');
+grid.querySelectorAll('.tplcard').forEach(el => el.addEventListener('click', () => openTemplate(el.dataset.key)));
+
+let currentTemplate = null;
+
+function openTemplate(key) {
+  currentTemplate = getTemplate(key);
+  if (!currentTemplate) return;
+  document.getElementById('picker').style.display = 'none';
+  document.getElementById('workspace').classList.add('on');
+  document.getElementById('tplTitle').textContent = currentTemplate.title;
+  document.getElementById('tplBlurb').textContent = currentTemplate.blurb;
+
+  const box = document.getElementById('fieldsBox');
+  box.innerHTML = currentTemplate.fields.map(f => {
+    const tag = f.type === 'textarea' ? 'textarea' : 'input';
+    const typeAttr = f.type === 'textarea' ? '' : `type="${f.type === 'date' ? 'date' : (f.type === 'number' ? 'number' : 'text')}"`;
+    return `<label>${esc(f.label)}${f.required ? ' <span class="req">*</span>' : ''}</label>
+      <${tag} id="f-${f.key}" ${typeAttr} placeholder="${esc(f.placeholder || '')}"></${tag}>`;
+  }).join('');
+
+  box.querySelectorAll('input, textarea').forEach(el => el.addEventListener('input', renderPreview));
+  renderPreview();
+}
+
+document.getElementById('backBtn').addEventListener('click', () => {
+  document.getElementById('workspace').classList.remove('on');
+  document.getElementById('picker').style.display = 'block';
+  currentTemplate = null;
+});
+
+function collectFields() {
+  const values = {};
+  currentTemplate.fields.forEach(f => {
+    values[f.key] = document.getElementById('f-' + f.key).value.trim();
+  });
+  return values;
+}
+
+function renderPreview() {
+  if (!currentTemplate) return;
+  const values = collectFields();
+  document.getElementById('docsheet').innerHTML = currentTemplate.render(values);
+}
+
+document.getElementById('printBtn').addEventListener('click', () => {
+  if (!currentTemplate) return;
+  const values = collectFields();
+  const missing = currentTemplate.fields.filter(f => f.required && !values[f.key]);
+  const msg = document.getElementById('formMsg');
+  if (missing.length) {
+    msg.style.display = 'block';
+    msg.textContent = 'Please fill in: ' + missing.map(f => f.label).join(', ');
+    return;
+  }
+  msg.style.display = 'none';
+  window.print();
+});
+</script>
+
+</body>
+</html>
