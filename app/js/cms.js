@@ -234,6 +234,69 @@ export async function deleteAdvocateProfile(userId) {
   if (error) throw error;
 }
 
+// ---------- JOB APPLICANTS / COURSE ENROLLEES (admin) ----------
+export async function listJobApplicants(jobId) {
+  const { data, error } = await supabase
+    .from('job_applications')
+    .select('*')
+    .eq('job_id', jobId)
+    .order('applied_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function listCourseEnrollees(courseId) {
+  const { data, error } = await supabase
+    .from('course_enrollments')
+    .select('*')
+    .eq('course_id', courseId)
+    .order('enrolled_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+// ---------- CLIENTS (admin, read-only) ----------
+export async function listClients() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('role', 'client')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+// ---------- ADMIN ACCOUNTS ----------
+export async function listAdmins() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('role', 'admin')
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+// Looks up an already-registered account (signed up normally as a client or
+// advocate) by email, so an existing admin can promote them.
+export async function findProfileByEmail(email) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .ilike('email', email.trim())
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function promoteToAdmin(userId) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ role: 'admin' })
+    .eq('id', userId);
+  if (error) throw error;
+}
+
 // ---------- PHOTO UPLOAD ----------
 // bucket: 'advocate-photos' (path must start with the user's own uid folder)
 //         'team-photos'     (admin only)
