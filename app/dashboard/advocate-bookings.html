@@ -17,11 +17,26 @@
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
   a{text-decoration:none;color:inherit}
-  header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
-  .nav{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:24px;height:64px;flex-wrap:wrap}
-  .logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;letter-spacing:-.02em}
-  .logo-mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px}
-  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+
+  .shell{display:flex;min-height:100vh}
+  .sidebar{width:230px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);padding:20px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .sidebar .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em;padding:0 8px;margin-bottom:20px}
+  .sidebar .logo-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px}
+  .side-avatar{display:flex;align-items:center;gap:10px;padding:10px 8px;margin-bottom:14px;border-radius:10px;background:var(--bg)}
+  .side-avatar img, .side-avatar .initials{width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:15px;flex-shrink:0}
+  .side-avatar .name{font-size:13.5px;font-weight:700}
+  .side-avatar .role{font-size:11.5px;color:var(--ink-faint)}
+  .sidebar nav{display:flex;flex-direction:column;gap:2px;flex:1}
+  .sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ink-soft)}
+  .sidebar nav a:hover{background:var(--bg)}
+  .sidebar nav a.on{background:var(--accent-soft);color:var(--accent-dark)}
+  .sidebar nav a.external{margin-top:10px;border-top:1px solid var(--line);padding-top:14px}
+  .sidebar .signout{padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);background:transparent;cursor:pointer;text-align:left;margin-top:8px}
+  .sidebar .signout:hover{border-color:var(--accent);color:var(--accent)}
+  .main-area{flex:1;min-width:0}
+
+  @media (max-width: 780px){ .shell{flex-direction:column} .sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;padding:14px;gap:10px} .sidebar nav{flex-direction:row;flex-wrap:wrap} .side-avatar{display:none} }
+
   .btn-ghost{padding:8px 16px;border-radius:9px;font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);background:transparent;cursor:pointer;transition:all .15s}
   .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
 
@@ -72,16 +87,25 @@
 </head>
 <body>
 
-<header>
-  <nav class="nav">
-    <a href="advocate.html" class="logo"><div class="logo-mark">⚖</div>LegalConnects</a>
-    <div class="nav-right">
-      <a class="btn-ghost" href="advocate.html">← Back to dashboard</a>
-      <button class="btn-ghost" id="signoutBtn">Sign out</button>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-mark">⚖</div>LegalConnects</div>
+    <div class="side-avatar">
+      <div class="initials" id="sideAvatar">?</div>
+      <div><div class="name" id="sideName">…</div><div class="role">Advocate</div></div>
     </div>
-  </nav>
-</header>
+    <nav>
+      <a href="advocate.html">📊 Overview</a>
+      <a href="advocate-profile.html">👤 Profile</a>
+      <a href="advocate-bookings.html" class="on">📥 Leads &amp; Bookings</a>
+      <a href="advocate-cases.html">⚖ My Cases</a>
+      <a href="documents.html">📄 Documents</a>
+      <a href="../../index.html" target="_blank" rel="noopener" class="external">🌐 Visit Website</a>
+    </nav>
+    <button class="signout" id="signoutBtn">🚪 Sign out</button>
+  </aside>
 
+  <div class="main-area">
 <main>
   <h1>Leads &amp; bookings</h1>
   <div class="sub">New requests wait in Leads until you confirm them. Set your available times in Availability so clients can book you.</div>
@@ -106,10 +130,12 @@
     <div class="pane" id="pane-past"></div>
   </div>
 </main>
+  </div>
+</div>
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { listMySlots, createSlot, deleteSlot, updateSlotStatus } from '../js/cms.js';
+import { listMySlots, createSlot, deleteSlot, updateSlotStatus, getAdvocateProfile } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -118,6 +144,15 @@ if (profile && profile.role !== 'advocate') {
   window.location.href = routes[profile.role] || '../auth/login.html';
 }
 document.getElementById('signoutBtn').addEventListener('click', signOut);
+if (profile) {
+  const n = profile.full_name || session.user.email;
+  document.getElementById('sideName').textContent = n.split(' ')[0];
+  document.getElementById('sideAvatar').textContent = n.charAt(0).toUpperCase();
+}
+try {
+  const adv = await getAdvocateProfile(session.user.id);
+  if (adv?.photo_url) document.getElementById('sideAvatar').outerHTML = `<img src="${adv.photo_url}" id="sideAvatar">`;
+} catch (e) {}
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmt(iso){ return new Date(iso).toLocaleString('en-IN', { weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit' }); }
