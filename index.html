@@ -557,8 +557,6 @@
 </head>
 <body>
 
-<div class="proto">🎨 <b>Redesign prototype</b> — sample advocate data shown for layout purposes. Click around: search, cards, and booking are interactive.</div>
-
 <header>
   <div class="wrap nav">
     <a class="logo" onclick="go('home')"><span class="mark">⚖</span>LegalConnects</a>
@@ -872,15 +870,15 @@
     <p style="color:var(--ink-soft);font-size:15px">Real questions, answered publicly by verified advocates. Asking is free and anonymous.</p>
   </div>
   <div class="wrap qa-layout">
-    <aside class="topics">
+    <aside class="topics" id="topicsList">
       <h3>Topics</h3>
-      <div class="topic on" data-t="all" onclick="topicPick(this)">All questions <span class="n">128</span></div>
-      <div class="topic" data-t="family" onclick="topicPick(this)">Family &amp; Divorce <span class="n">34</span></div>
-      <div class="topic" data-t="property" onclick="topicPick(this)">Property <span class="n">29</span></div>
-      <div class="topic" data-t="criminal" onclick="topicPick(this)">Criminal <span class="n">21</span></div>
-      <div class="topic" data-t="employment" onclick="topicPick(this)">Employment <span class="n">17</span></div>
-      <div class="topic" data-t="consumer" onclick="topicPick(this)">Consumer <span class="n">14</span></div>
-      <div class="topic" data-t="tax" onclick="topicPick(this)">Tax <span class="n">13</span></div>
+      <div class="topic on" data-t="all" onclick="topicPick(this)">All questions <span class="n" id="cnt-all">0</span></div>
+      <div class="topic" data-t="family" onclick="topicPick(this)">Family &amp; Divorce <span class="n" id="cnt-family">0</span></div>
+      <div class="topic" data-t="property" onclick="topicPick(this)">Property <span class="n" id="cnt-property">0</span></div>
+      <div class="topic" data-t="criminal" onclick="topicPick(this)">Criminal <span class="n" id="cnt-criminal">0</span></div>
+      <div class="topic" data-t="employment" onclick="topicPick(this)">Employment <span class="n" id="cnt-employment">0</span></div>
+      <div class="topic" data-t="consumer" onclick="topicPick(this)">Consumer <span class="n" id="cnt-consumer">0</span></div>
+      <div class="topic" data-t="tax" onclick="topicPick(this)">Tax <span class="n" id="cnt-tax">0</span></div>
     </aside>
     <div>
       <div class="qa-cta">
@@ -888,57 +886,7 @@
         <button class="btn btn-primary" onclick="openAsk()">Ask a Question</button>
       </div>
 
-      <div class="q-card" data-topic="property">
-        <div class="votebox">
-          <button class="vote" onclick="voteQ(this)">▲</button>
-          <span class="vcount">24</span>
-        </div>
-        <div>
-          <div class="q-title" onclick="go('qd')">My landlord is refusing to return my security deposit after I vacated. What are my options?</div>
-          <div class="q-snippet">You can start with a formal legal notice demanding the refund with interest. If the landlord doesn't respond within the notice period, you can approach…</div>
-          <div class="q-meta"><span class="tag">Property</span><span>3 answers</span><span>1.2k views</span><span>Asked 2 days ago · Anonymous</span></div>
-          <div class="ansby"><span class="mini" style="background:#0e8a5f">MK</span> Top answer by <b>Adv. Meera Kulkarni</b> · ✓ Verified · Property &amp; Tenancy</div>
-        </div>
-      </div>
-
-      <div class="q-card" data-topic="employment">
-        <div class="votebox">
-          <button class="vote" onclick="voteQ(this)">▲</button>
-          <span class="vcount">18</span>
-        </div>
-        <div>
-          <div class="q-title" onclick="toast('Full thread built for the deposit question — tap that one to see the detail view')">My employer terminated me without notice and is withholding my last two months' salary. Can I recover it?</div>
-          <div class="q-snippet">Yes. Unpaid wages can be recovered under the Payment of Wages Act or through the labour commissioner. First step is a written demand…</div>
-          <div class="q-meta"><span class="tag">Employment</span><span>2 answers</span><span>860 views</span><span>Asked 4 days ago · Anonymous</span></div>
-          <div class="ansby"><span class="mini" style="background:#b45309">AS</span> Top answer by <b>Adv. Arjun Sethi</b> · ✓ Verified · Labour &amp; Criminal</div>
-        </div>
-      </div>
-
-      <div class="q-card" data-topic="tax">
-        <div class="votebox">
-          <button class="vote" onclick="voteQ(this)">▲</button>
-          <span class="vcount">11</span>
-        </div>
-        <div>
-          <div class="q-title" onclick="toast('Full thread built for the deposit question — tap that one to see the detail view')">I received an income tax notice under Section 143(1) with a demand I don't agree with. What should I do?</div>
-          <div class="q-snippet">Don't ignore the deadline. You can file a rectification request under Section 154 online if it's a computational error, or respond to the intimation…</div>
-          <div class="q-meta"><span class="tag">Tax</span><span>1 answer</span><span>430 views</span><span>Asked 5 days ago · Anonymous</span></div>
-          <div class="ansby"><span class="mini" style="background:#3e5bd9">DC</span> Top answer by <b>Adv. Dev Chaurasiya</b> · ✓ Verified · Tax Law</div>
-        </div>
-      </div>
-
-      <div class="q-card" data-topic="family">
-        <div class="votebox">
-          <button class="vote" onclick="voteQ(this)">▲</button>
-          <span class="vcount">7</span>
-        </div>
-        <div>
-          <div class="q-title" onclick="toast('Full thread built for the deposit question — tap that one to see the detail view')">My husband and I have agreed to separate amicably. How long does mutual consent divorce take?</div>
-          <div class="q-snippet">Mutual consent divorce under Section 13B requires two motions with a cooling-off period of 6 months, though courts can waive it…</div>
-          <div class="q-meta"><span class="tag">Family &amp; Divorce</span><span>4 answers</span><span>2.1k views</span><span>Asked 1 week ago · Anonymous</span></div>
-          <div class="ansby"><span class="mini" style="background:#0e8a5f">MK</span> Top answer by <b>Adv. Meera Kulkarni</b> · ✓ Verified · Family Law</div>
-        </div>
-      </div>
+      <div id="qa-list"><div class="empty-state">Loading questions…</div></div>
 
       <div class="empty-state" id="no-q" style="display:none">
         No questions in this topic yet — be the first to ask.<br>
@@ -953,25 +901,27 @@
 <!-- ================= Q&A DETAIL ================= -->
 <div class="view" id="view-qd">
   <div class="wrap dir-head">
-    <div class="crumb">Home · Legal Q&amp;A · Property</div>
+    <div class="crumb" id="qd-crumb">Home · Legal Q&amp;A</div>
   </div>
   <div class="wrap" style="max-width:820px;padding-bottom:64px">
     <div class="qd-q">
-      <div class="q-meta" style="margin-bottom:12px"><span class="tag">Property</span><span>Asked 2 days ago · Anonymous</span><span>1.2k views</span></div>
-      <h2>My landlord is refusing to return my security deposit after I vacated. What are my options?</h2>
-      <div class="body">I rented a 2BHK in Pune for three years and vacated last month after giving proper notice. The flat was in good condition and I have photos and the handover email. The landlord first said he'd transfer the deposit (₹90,000) in a week, and now he's not answering calls. There was no clause in the agreement about deductions.</div>
+      <div class="q-meta" style="margin-bottom:12px" id="qd-meta"></div>
+      <h2 id="qd-title"></h2>
+      <div class="body" id="qd-body"></div>
     </div>
 
     <div class="locked" id="ans-locked">
       ⚖ Are you an advocate? <b>Sign in to answer this question</b> — every answer carries your credentials and links to your booking page.
       <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="go('auth')">Sign in to Answer</button>
+        <a class="btn btn-primary" href="app/auth/login.html">Sign in to Answer</a>
         <button class="btn btn-ghost" onclick="go('grow')">Why advocates join →</button>
       </div>
     </div>
+    <div class="pendbadge" id="ans-pending" style="display:none;padding:14px 18px;border-radius:12px;text-align:center;margin-bottom:20px">⏳ Your advocate profile is still pending Bar Council verification — you can answer publicly once it's approved.</div>
     <div class="compose" id="ans-compose" style="display:none">
-      <h3>Your answer <span class="pendbadge" id="compose-badge">⏳ Verification pending</span></h3>
+      <h3>Your answer <span class="vbadge" id="compose-badge">✓ Verified</span></h3>
       <textarea id="ans-text" placeholder="Write clear, general guidance. Avoid case-specific advice and don't request personal details here."></textarea>
+      <div class="msg" id="ans-msg" style="display:none;margin-top:8px;padding:9px 12px;border-radius:8px;background:#fdecea;color:#c0392b;font-size:13.5px"></div>
       <div class="crow">
         <span class="cnote">Answering publicly builds your profile — answers link to your booking page.</span>
         <button class="btn btn-primary" onclick="postAnswer()">Post Answer</button>
@@ -979,74 +929,9 @@
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <h3 style="font-size:16px" id="ans-count">3 answers</h3>
-      <select style="padding:8px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;background:#fff"><option>Sort: Most upvoted</option><option>Newest first</option></select>
+      <h3 style="font-size:16px" id="ans-count">0 answers</h3>
     </div>
-
-    <div class="answer">
-      <div class="ans-head">
-        <span class="mini" style="background:#0e8a5f">MK</span>
-        <div class="who">
-          <b onclick="openProfile('meera')">Adv. Meera Kulkarni <span class="vbadge">✓ Verified</span></b>
-          <span>Family, Property &amp; Tenancy · Pune · 9 years · ★ 4.8</span>
-        </div>
-        <button class="btn btn-ghost" style="margin-left:auto;padding:7px 14px;font-size:13px" onclick="openProfile('meera')">Consult ₹1,200</button>
-      </div>
-      <div class="txt">Since you have photographic evidence, the handover email, and no deduction clause, you're in a strong position. Recommended sequence: <br><br>1. <b>Send a legal notice</b> demanding the deposit with interest within 15 days — often this alone resolves it.<br>2. If ignored, file in <b>consumer forum or civil court</b> depending on how the tenancy is characterised; for ₹90,000 the small causes court in Pune is the usual route and is relatively fast.<br>3. Keep a record of every call and message from this point on.</div>
-      <div class="ans-foot">
-        <button class="upbtn" onclick="voteA(this)">▲ Upvote · <span>41</span></button>
-        <button class="upbtn" onclick="toggleComments(this)">💬 <span class="ccount">2</span> Comments</button>
-        <button class="upbtn" title="Report this answer" onclick="toast('✓ Reported — sent to the moderation queue for review')">⚑ Report</button>
-        <span class="helped">This answer helped 38 people</span>
-      </div>
-      <div class="cthread">
-        <div class="comment"><b>Anonymous (asker)</b>Thank you! Does the legal notice have to come from an advocate, or can I send it myself?</div>
-        <div class="comment"><b>Adv. Meera Kulkarni ✓</b>You can send it yourself, but a notice on an advocate's letterhead is taken far more seriously and preserves your record for court.</div>
-        <div class="cinput"><input placeholder="Add a comment…" onkeydown="if(event.key==='Enter')postComment(this)"><button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="postComment(this.previousElementSibling)">Post</button></div>
-      </div>
-    </div>
-
-    <div class="answer">
-      <div class="ans-head">
-        <span class="mini" style="background:#7c3aed">NB</span>
-        <div class="who">
-          <b onclick="openProfile('nisha')">Adv. Nisha Bhatt <span class="vbadge">✓ Verified</span></b>
-          <span>Corporate &amp; Contracts · Mumbai · 4 years</span>
-        </div>
-        <button class="btn btn-ghost" style="margin-left:auto;padding:7px 14px;font-size:13px" onclick="openProfile('nisha')">Consult ₹900</button>
-      </div>
-      <div class="txt">Adding to the above — check if your agreement was registered. Even if unregistered, your payment trail (bank transfer of the deposit) is admissible evidence. Also check whether Maharashtra Rent Control Act protections apply to your tenancy; if the deposit exceeded the legal cap, that strengthens your notice.</div>
-      <div class="ans-foot">
-        <button class="upbtn" onclick="voteA(this)">▲ Upvote · <span>17</span></button>
-        <button class="upbtn" onclick="toggleComments(this)">💬 <span class="ccount">0</span> Comments</button>
-        <button class="upbtn" title="Report this answer" onclick="toast('✓ Reported — sent to the moderation queue for review')">⚑ Report</button>
-        <span class="helped">This answer helped 12 people</span>
-      </div>
-      <div class="cthread">
-        <div class="cinput"><input placeholder="Add a comment…" onkeydown="if(event.key==='Enter')postComment(this)"><button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="postComment(this.previousElementSibling)">Post</button></div>
-      </div>
-    </div>
-
-    <div class="answer">
-      <div class="ans-head">
-        <span class="mini" style="background:#3e5bd9">DC</span>
-        <div class="who">
-          <b onclick="openProfile('dev')">Adv. Dev Chaurasiya <span class="vbadge">✓ Verified</span></b>
-          <span>Tax Law · Aurangabad · 12 years · ★ 4.0</span>
-        </div>
-        <button class="btn btn-ghost" style="margin-left:auto;padding:7px 14px;font-size:13px" onclick="openProfile('dev')">Consult ₹1,500</button>
-      </div>
-      <div class="txt">One practical point: if the landlord claims the deposit was adjusted against "damages", the burden is on him to prove them. Your dated photos at handover make that very difficult. A firmly worded notice from an advocate usually settles deposit disputes without litigation.</div>
-      <div class="ans-foot">
-        <button class="upbtn" onclick="voteA(this)">▲ Upvote · <span>9</span></button>
-        <button class="upbtn" onclick="toggleComments(this)">💬 <span class="ccount">0</span> Comments</button>
-        <button class="upbtn" title="Report this answer" onclick="toast('✓ Reported — sent to the moderation queue for review')">⚑ Report</button>
-        <span class="helped">This answer helped 6 people</span>
-      </div>
-      <div class="cthread">
-        <div class="cinput"><input placeholder="Add a comment…" onkeydown="if(event.key==='Enter')postComment(this)"><button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="postComment(this.previousElementSibling)">Post</button></div>
-      </div>
-    </div>
+    <div id="qd-answers"></div>
 
     <div class="disclaimer">Answers are general legal information, not legal advice for your specific case.</div>
     <span class="backlink" onclick="go('qa')">← Back to all questions</span>
@@ -1433,42 +1318,43 @@
 <!-- ================= BOOKING MODAL ================= -->
 <div class="modal-bg" id="bookModal" onclick="if(event.target===this)closeBook()">
   <div class="modal">
-    <!-- Step 1: client details (lead capture) -->
+    <!-- Step 1: pick a real open slot -->
     <div id="bk1">
-      <h3>Your details</h3>
-      <div class="hint">Step 1 of 2 — the advocate needs this to prepare for your consultation.</div>
-      <div class="bk-summary"><span class="mini" id="bk-ini">DC</span><div><b id="bk-advline">Adv. Dev Chaurasiya · Tax Law</b><span id="bk-slotline">Tue 8 · 11:30 · 🎥 Video · ₹1,500</span></div></div>
-      <label>Full name</label>
-      <input id="bk-name" placeholder="Your name">
-      <label>Phone</label>
-      <input id="bk-phone" placeholder="+91">
-      <label>Briefly, what is the matter about?</label>
-      <textarea id="bk-desc" placeholder="2–3 lines is enough. Don't share anything you consider sensitive yet."></textarea>
-      <div class="anon">🔒 Shared only with this advocate. Never sold or shown publicly.</div>
+      <h3>Pick a time</h3>
+      <div class="hint" id="bk-advline">Loading advocate's availability…</div>
+      <div id="bk-slotlist" style="margin:14px 0"></div>
       <div class="row">
         <button class="btn btn-ghost" onclick="closeBook()">Cancel</button>
-        <button class="btn btn-primary" onclick="bkNext()">Continue to Payment</button>
       </div>
     </div>
-    <!-- Step 2: payment -->
+    <!-- Step 2: your details -->
     <div id="bk2" style="display:none">
-      <h3>Payment</h3>
-      <div class="hint">Step 2 of 2 — secure payment via Razorpay.</div>
-      <div class="payrow"><span>Consultation (30 min)</span><span id="bk-fee1">₹1,500</span></div>
-      <div class="payrow"><span>Platform fee</span><span>₹0</span></div>
-      <div class="payrow total"><span>Total</span><span id="bk-feetotal">₹1,500</span></div>
-      <div class="leadnote">↩ Covered by the first-consultation refund guarantee.</div>
+      <h3>Your details</h3>
+      <div class="hint">The advocate needs this to prepare for your consultation.</div>
+      <div class="bk-summary"><span class="mini" id="bk-ini">·</span><div><b id="bk-advline2"></b><span id="bk-slotline"></span></div></div>
+      <label>Full name</label>
+      <input id="bk-name" placeholder="Your name">
+      <label>Email</label>
+      <input id="bk-email" placeholder="you@example.com">
+      <label>Phone</label>
+      <input id="bk-phone" placeholder="+91">
+      <label id="bk-mode-label">Consultation mode</label>
+      <select id="bk-mode"></select>
+      <label>Briefly, what is the matter about? <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+      <textarea id="bk-desc" placeholder="2–3 lines is enough. Don't share anything you consider sensitive yet."></textarea>
+      <div class="anon">🔒 Shared only with this advocate. Never sold or shown publicly.</div>
+      <div class="msg" id="bk-msg" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#fdecea;color:#c0392b;font-size:13.5px"></div>
       <div class="row">
-        <button class="btn btn-ghost" onclick="bkDrop()">Pay later</button>
-        <button class="btn btn-primary" onclick="bkPay()" id="bk-paybtn">Pay ₹1,500</button>
+        <button class="btn btn-ghost" onclick="bkBack()">← Back</button>
+        <button class="btn btn-primary" onclick="bkSubmit()" id="bk-submitbtn">Request This Slot</button>
       </div>
     </div>
     <!-- Step 3: confirmed -->
     <div id="bk3" style="display:none">
       <div class="success-card" style="padding:16px 4px">
         <div class="big">✓</div>
-        <h3>Booking confirmed!</h3>
-        <p>Adv. Dev Chaurasiya will meet you <b>Tue 8 at 11:30</b> over video. Details sent by SMS &amp; email. You can reschedule free up to 4 hours before.</p>
+        <h3>Request sent!</h3>
+        <p id="bk-confirm-text">The advocate has been notified and will confirm your slot shortly.</p>
         <button class="btn btn-primary" onclick="closeBook()">Done</button>
       </div>
     </div>
@@ -1915,15 +1801,30 @@
     <h3>Ask a legal question</h3>
     <div class="hint">Free · Anonymous by default · Verified advocates usually answer within hours</div>
     <label>Your question</label>
-    <input placeholder="e.g. Can my employer withhold my final salary?">
+    <input id="aq-title" placeholder="e.g. Can my employer withhold my final salary?">
     <label>Details (optional)</label>
-    <textarea placeholder="Add context — dates, documents you have, what's happened so far. Don't include names or personal identifiers."></textarea>
+    <textarea id="aq-body" placeholder="Add context — dates, documents you have, what's happened so far. Don't include names or personal identifiers."></textarea>
     <label>Topic</label>
-    <select><option>Select a topic</option><option>Family &amp; Divorce</option><option>Property</option><option>Criminal</option><option>Employment</option><option>Consumer</option><option>Tax</option><option>Other</option></select>
+    <select id="aq-topic">
+      <option value="">Select a topic</option>
+      <option value="family">Family &amp; Divorce</option>
+      <option value="property">Property</option>
+      <option value="criminal">Criminal</option>
+      <option value="corporate">Corporate</option>
+      <option value="employment">Employment</option>
+      <option value="consumer">Consumer</option>
+      <option value="tax">Tax</option>
+      <option value="ip">Intellectual Property</option>
+      <option value="cyber">Cyber Law</option>
+      <option value="realestate">Real Estate</option>
+      <option value="immigration">Immigration</option>
+      <option value="other">Other</option>
+    </select>
     <div class="anon">🔒 Your identity stays hidden. Questions are posted as "Anonymous".</div>
+    <div class="msg" id="aq-msg" style="display:none;margin-top:8px;padding:9px 12px;border-radius:8px;background:#fdecea;color:#c0392b;font-size:13.5px"></div>
     <div class="row">
       <button class="btn btn-ghost" onclick="closeAsk()">Cancel</button>
-      <button class="btn btn-primary" onclick="closeAsk();toast('✓ Question posted (prototype) — advocates will be notified')">Post Question</button>
+      <button class="btn btn-primary" id="aq-submit" onclick="submitQuestionReal()">Post Question</button>
     </div>
   </div>
 </div>
@@ -1997,9 +1898,13 @@ function renderDirectory(){
   });
   if(typeof applyFilters==='function') applyFilters();
 }
-function openProfile(id){
+function openProfile(id, skipHash){
   const a=ADVOCATES.find(x=>x.id===id); if(!a) return;
   currentAdv=a;
+  if(!skipHash){
+    if(location.hash !== '#advocate='+id) history.replaceState(null,'','#advocate='+id);
+    import('/app/js/cms.js').then(m=>m.incrementProfileView(id)).catch(()=>{});
+  }
   document.getElementById('p-crumb').textContent='Home · Find an Advocate · Adv. '+a.name;
   const av=document.getElementById('p-avatar');
   if(a.photo_url){ av.innerHTML='<img src="'+a.photo_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">'; }
@@ -2051,16 +1956,16 @@ function chipGo(area){
   document.getElementById('q-area').value=area;
   searchGo();
 }
-/* Q&A votes */
-function voteQ(btn){
-  const c=btn.parentElement.querySelector('.vcount');
-  const on=btn.classList.toggle('on');
-  c.textContent=+c.textContent+(on?1:-1);
-}
-function voteA(btn){
+/* Q&A answer upvotes — real, persisted via increment_answer_upvotes() */
+async function voteA(btn){
+  if(btn.classList.contains('on')) return;   // one upvote per page-view, simplest anti-double-click guard
+  btn.classList.add('on');
   const s=btn.querySelector('span');
-  const on=btn.classList.toggle('on');
-  s.textContent=+s.textContent+(on?1:-1);
+  s.textContent=+s.textContent+1;
+  try{
+    const { upvoteAnswer } = await import('/app/js/cms.js');
+    await upvoteAnswer(btn.dataset.answerId);
+  }catch(e){ /* count already shown optimistically; not worth surfacing an error for a vote */ }
 }
 /* Jobs/Education tabs */
 function jtab(btn,pane){
@@ -2182,73 +2087,83 @@ function dgo(pane){
   const map={'dp-over':0,'dp-leads':1,'dp-book':2,'dp-qa':3,'dp-diary':4};
   dtab(items[map[pane]],pane);
 }
-/* Booking flow with lead capture */
-let leadCaptured=false;
-function openBook(){
-  leadCaptured=false;
-  const a=currentAdv;
-  const feeStr = a.consultation_fee ? '₹'+Number(a.consultation_fee).toLocaleString('en-IN') : 'Fee not listed';
+/* Real booking flow — reads/writes booking_slots via Supabase (cms.js) */
+let bkSelectedSlot=null;
+const BK_MODE_LABEL={video:'🎥 Video',phone:'📞 Phone',inperson:'🤝 In-person'};
+function bkFmtSlot(s){
+  const d=new Date(s.slot_start);
+  const day=d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  const time=d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'});
+  return day+' · '+time;
+}
+async function openBook(){
+  const a=currentAdv; if(!a) return;
+  bkSelectedSlot=null;
+  document.getElementById('bk-advline').textContent='Adv. '+a.name+' · '+(a.headline||'');
+  document.getElementById('bk-advline2').textContent='Adv. '+a.name;
   document.getElementById('bk-ini').textContent=initialsFor(a.name);
   document.getElementById('bk-ini').style.background=colorFor(a.name);
-  document.getElementById('bk-advline').textContent='Adv. '+a.name+' · '+(a.headline||'');
-  document.getElementById('bk-slotline').textContent='Tue 8 · 11:30 · 🎥 Video · '+feeStr;
-  document.getElementById('bk-fee1').textContent=feeStr;
-  document.getElementById('bk-feetotal').textContent=feeStr;
-  document.getElementById('bk-paybtn').textContent='Pay '+feeStr;
+  document.getElementById('bk-msg').style.display='none';
+  const list=document.getElementById('bk-slotlist');
+  list.innerHTML='<div class="hint">Loading available times…</div>';
   bkShow(1);
   document.getElementById('bookModal').classList.add('open');
+  try{
+    const { listOpenSlotsPublic } = await import('/app/js/cms.js');
+    const slots=await listOpenSlotsPublic(a.id);
+    if(!slots.length){
+      list.innerHTML='<div class="hint">This advocate has no open slots right now. Please check back soon.</div>';
+      return;
+    }
+    list.innerHTML='';
+    slots.forEach(s=>{
+      const row=document.createElement('div');
+      row.className='card';
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:12px 14px;margin-bottom:8px;cursor:pointer;border:1px solid var(--line,#e6e9f0);border-radius:10px';
+      row.innerHTML='<span><b>'+bkFmtSlot(s)+'</b></span><button class="btn btn-primary" type="button">Select</button>';
+      row.querySelector('button').onclick=()=>bkPickSlot(s,a);
+      list.appendChild(row);
+    });
+  }catch(e){
+    list.innerHTML='<div class="hint">Couldn\'t load availability. Please try again in a moment.</div>';
+  }
 }
+function bkPickSlot(slot,a){
+  bkSelectedSlot=slot;
+  document.getElementById('bk-slotline').textContent=bkFmtSlot(slot);
+  const modeSel=document.getElementById('bk-mode');
+  const modes=(a.consultation_modes&&a.consultation_modes.length)?a.consultation_modes:['video','phone','inperson'];
+  modeSel.innerHTML=modes.map(m=>'<option value="'+m+'">'+(BK_MODE_LABEL[m]||m)+'</option>').join('');
+  document.getElementById('bk-msg').style.display='none';
+  bkShow(2);
+}
+function bkBack(){ bkShow(1); }
 function closeBook(){ document.getElementById('bookModal').classList.remove('open'); }
 function bkShow(n){
   for(let i=1;i<=3;i++) document.getElementById('bk'+i).style.display = i===n?'':'none';
 }
-function bkNext(){
+async function bkSubmit(){
   const name=document.getElementById('bk-name').value.trim();
+  const email=document.getElementById('bk-email').value.trim();
   const phone=document.getElementById('bk-phone').value.trim();
-  if(!name||!phone){ toast('Name and phone are needed so the advocate can reach you'); return; }
-  captureLead('new','New');
-  leadCaptured=true;
-  bkShow(2);
-  toast('✓ Details saved — the advocate can now see your request');
-}
-function bkDrop(){
-  updateLeadStatus('dropped','Payment pending');
-  closeBook();
-  toast('No problem — your request is saved. The advocate may reach out to you.');
-}
-function bkPay(){
-  updateLeadStatus('booked','Booked');
-  const tb=document.getElementById('book-body');
-  const tr=document.createElement('tr');
-  tr.innerHTML='<td><b>Tue 8, 11:30</b></td><td></td><td>🎥 Video</td><td>₹1,500</td><td><span class="lstat booked">Confirmed</span></td>';
-  tr.children[1].textContent=document.getElementById('bk-name').value+' — '+(document.getElementById('bk-desc').value||'New consultation');
-  tb.insertBefore(tr,tb.firstChild);
-  const sb=document.getElementById('stat-book');
-  sb.textContent=+sb.textContent+1;
-  bkShow(3);
-}
-let lastLeadRow=null;
-function captureLead(cls,label){
-  const name=document.getElementById('bk-name').value;
-  const phone=document.getElementById('bk-phone').value;
-  const desc=document.getElementById('bk-desc').value||'—';
-  const tr=document.createElement('tr');
-  tr.innerHTML='<td></td><td></td><td>Video · ₹1,500</td><td>Just now</td>'
-    +'<td><span class="lstat '+cls+'">'+label+'</span></td>'
-    +'<td><span class="rowact" onclick="contactLead(this)">Contact</span></td>';
-  tr.children[0].innerHTML='<b></b><br>'; tr.children[0].querySelector('b').textContent=name;
-  tr.children[0].append(phone);
-  tr.children[1].textContent=desc;
-  const tb=document.getElementById('leads-body');
-  tb.insertBefore(tr,tb.firstChild);
-  lastLeadRow=tr;
-  const badge=document.getElementById('lead-badge'), st=document.getElementById('stat-leads');
-  badge.textContent=+badge.textContent+1; st.textContent=+st.textContent+1;
-}
-function updateLeadStatus(cls,label){
-  if(!lastLeadRow) return;
-  const s=lastLeadRow.querySelector('.lstat');
-  s.className='lstat '+cls; s.textContent=label;
+  const mode=document.getElementById('bk-mode').value;
+  const notes=document.getElementById('bk-desc').value.trim();
+  const msg=document.getElementById('bk-msg');
+  if(!name||!phone){ msg.textContent='Name and phone are needed so the advocate can reach you.'; msg.style.display='block'; return; }
+  if(!bkSelectedSlot){ msg.textContent='Please go back and pick a time slot.'; msg.style.display='block'; return; }
+  const btn=document.getElementById('bk-submitbtn');
+  btn.disabled=true; btn.textContent='Sending…';
+  try{
+    const { bookSlot } = await import('/app/js/cms.js');
+    await bookSlot(bkSelectedSlot.id, { mode, client_name:name, client_email:email||null, client_phone:phone, client_notes:notes||null });
+    document.getElementById('bk-confirm-text').textContent='Adv. '+currentAdv.name+' has been notified of your request for '+bkFmtSlot(bkSelectedSlot)+'. You\'ll hear back once they confirm.';
+    bkShow(3);
+  }catch(e){
+    msg.textContent=e.message||'Something went wrong. Please try picking another slot.';
+    msg.style.display='block';
+  }finally{
+    btn.disabled=false; btn.textContent='Request This Slot';
+  }
 }
 
 /* ===== Phase 5 ===== */
@@ -2256,17 +2171,30 @@ function updateLeadStatus(cls,label){
 function toggleComments(btn){
   btn.closest('.answer').querySelector('.cthread').classList.toggle('open');
 }
-function postComment(inp){
-  if(!inp.value.trim()){ toast('Write a comment first'); return; }
-  const who = user ? (user.role==='adv' ? 'Adv. '+user.name+(user.verified?' ✓':' ⏳') : user.name) : 'Anonymous';
-  const c=document.createElement('div');
-  c.className='comment';
-  const b=document.createElement('b'); b.textContent=who;
-  c.appendChild(b); c.append(inp.value);
-  inp.closest('.cthread').insertBefore(c, inp.closest('.cinput'));
-  inp.value='';
-  const counter = inp.closest('.answer').querySelector('.ccount');
-  if(counter) counter.textContent = +counter.textContent+1;
+async function postComment(inp){
+  const body = inp.value.trim();
+  if(!body){ toast('Write a comment first'); return; }
+  const answerEl = inp.closest('.answer');
+  const answerId = answerEl.dataset.answerId;
+  inp.disabled = true;
+  try{
+    const { addAnswerComment } = await import('/app/js/cms.js');
+    const { supabase } = await import('/app/js/config.js');
+    const { data:{ session } } = await supabase.auth.getSession();
+    await addAnswerComment(answerId, session ? 'advocate' : 'anonymous', session ? session.user.id : null, body);
+    const c=document.createElement('div');
+    c.className='comment';
+    const b=document.createElement('b'); b.textContent = session ? 'You' : 'Anonymous (asker)';
+    c.appendChild(b); c.append(body);
+    inp.closest('.cthread').insertBefore(c, inp.closest('.cinput'));
+    inp.value='';
+    const counter = answerEl.querySelector('.ccount');
+    if(counter) counter.textContent = +counter.textContent+1;
+  }catch(e){
+    toast(e.message || 'Could not post your comment.');
+  }finally{
+    inp.disabled = false;
+  }
 }
 /* Jobs & courses */
 function requireAdvocate(action){
@@ -2553,50 +2481,191 @@ function modAction(btn,what){
   if(what==='removed') row.classList.add('hidden-row');
   toast(what==='removed' ? '✓ Answer removed + warning sent to advocate' : '✓ Flag dismissed — answer kept');
 }
-/* Hash routing: url#admin → admin login (simulates url/admin) */
+/* Hash routing: url#admin → admin login, url#q=<id> → a real question,
+   url#advocate=<id> → a real advocate's public profile (shareable link
+   used by the Digital Visiting Card on the advocate dashboard). */
 function routeHash(){
-  if(location.hash==='#admin') go('adminlogin');
+  if(location.hash==='#admin'){ go('adminlogin'); return; }
+  if(location.hash.startsWith('#q=')){
+    const id = location.hash.slice(3);
+    go('qd');
+    openQuestion(id, false);
+    return;
+  }
+  if(location.hash.startsWith('#advocate=')){
+    const id = location.hash.slice('#advocate='.length);
+    openProfile(id, true);   // skipHash=true: don't rewrite the hash we just navigated to
+  }
 }
 window.addEventListener('hashchange', routeHash);
 
-/* Q&A topic filter */
+/* ================= Real Q&A (questions/answers tables via cms.js) ================= */
+const QA_TOPIC_LABEL = { family:'Family & Divorce', property:'Property', criminal:'Criminal', corporate:'Corporate',
+  tax:'Tax', employment:'Employment', consumer:'Consumer', ip:'Intellectual Property', cyber:'Cyber Law',
+  realestate:'Real Estate', immigration:'Immigration', other:'Other' };
+let QA_ALL = [];
+let qaCurrentTopic = 'all';
+
+function qaEsc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function qaTimeAgo(iso){
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if(d<=0) return 'Today'; if(d===1) return '1 day ago'; if(d<7) return d+' days ago';
+  const w = Math.floor(d/7); return w===1 ? '1 week ago' : w+' weeks ago';
+}
+
+async function loadQA(){
+  try{
+    const { listQuestionsPublic } = await import('/app/js/cms.js');
+    QA_ALL = await listQuestionsPublic();
+  }catch(e){ QA_ALL = []; }
+  const counts = { all: QA_ALL.length };
+  QA_ALL.forEach(q => { counts[q.topic] = (counts[q.topic]||0)+1; });
+  Object.keys(QA_TOPIC_LABEL).concat('all').forEach(t => {
+    const el = document.getElementById('cnt-'+t);
+    if(el) el.textContent = counts[t]||0;
+  });
+  renderQAList(qaCurrentTopic);
+}
+
+function renderQAList(topic){
+  qaCurrentTopic = topic;
+  const rows = topic==='all' ? QA_ALL : QA_ALL.filter(q => q.topic===topic);
+  const box = document.getElementById('qa-list');
+  document.getElementById('no-q').style.display = rows.length ? 'none' : '';
+  if(!rows.length){ box.innerHTML=''; return; }
+  box.innerHTML = rows.map(q => {
+    const n = q.answers && q.answers[0] ? q.answers[0].count : 0;
+    return `<div class="q-card" data-topic="${q.topic}">
+      <div>
+        <div class="q-title" onclick="location.hash='q='+'${q.id}'">${qaEsc(q.title)}</div>
+        <div class="q-snippet">${qaEsc((q.body||'').slice(0,180))}${(q.body||'').length>180?'…':''}</div>
+        <div class="q-meta"><span class="tag">${qaEsc(QA_TOPIC_LABEL[q.topic]||q.topic)}</span><span>${n} answer${n===1?'':'s'}</span><span>${q.view_count||0} views</span><span>Asked ${qaTimeAgo(q.created_at)} · Anonymous</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function topicPick(el){
   document.querySelectorAll('.topic').forEach(t=>t.classList.remove('on'));
   el.classList.add('on');
-  const t=el.dataset.t; let n=0;
-  document.querySelectorAll('#view-qa .q-card').forEach(c=>{
-    const show = t==='all' || c.dataset.topic===t;
-    c.style.display = show ? '' : 'none';
-    if(show) n++;
-  });
-  document.getElementById('no-q').style.display = n ? 'none' : '';
+  renderQAList(el.dataset.t);
 }
-function postAnswer(){
+
+let qdCurrentId = null;
+async function openQuestion(id, pushHash){
+  qdCurrentId = id;
+  if(pushHash!==false && location.hash !== 'q='+id) location.hash = 'q='+id;
+  document.getElementById('qd-title').textContent = 'Loading…';
+  document.getElementById('qd-body').textContent = '';
+  document.getElementById('qd-answers').innerHTML = '';
+  try{
+    const { getQuestionDetail, incrementQuestionViews } = await import('/app/js/cms.js');
+    const detail = await getQuestionDetail(id);
+    if(!detail){ document.getElementById('qd-title').textContent = 'Question not found'; return; }
+    const { question, answers, comments } = detail;
+    incrementQuestionViews(id).catch(()=>{});
+    document.getElementById('qd-crumb').textContent = 'Home · Legal Q&A · ' + (QA_TOPIC_LABEL[question.topic]||question.topic);
+    document.getElementById('qd-meta').innerHTML = `<span class="tag">${qaEsc(QA_TOPIC_LABEL[question.topic]||question.topic)}</span><span>Asked ${qaTimeAgo(question.created_at)} · Anonymous</span><span>${question.view_count||0} views</span>`;
+    document.getElementById('qd-title').textContent = question.title;
+    document.getElementById('qd-body').textContent = question.body || '';
+    document.getElementById('ans-count').textContent = answers.length + ' answer' + (answers.length===1?'':'s');
+    const answersBox = document.getElementById('qd-answers');
+    if(!answers.length){
+      answersBox.innerHTML = '<div class="disclaimer" style="text-align:left">No answers yet — be the first verified advocate to respond.</div>';
+    } else {
+      answersBox.innerHTML = answers.map(a => {
+        const advName = a.profiles?.full_name || 'Verified Advocate';
+        const areas = (a.advocate_profiles?.practice_areas||[]).slice(0,2).join(', ');
+        const ini = advName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const myComments = comments.filter(c => c.answer_id===a.id);
+        return `<div class="answer" data-answer-id="${a.id}">
+          <div class="ans-head">
+            <span class="mini" style="background:#3e5bd9">${qaEsc(ini)}</span>
+            <div class="who"><b>Adv. ${qaEsc(advName)} <span class="vbadge">✓ Verified</span></b><span>${qaEsc(areas)}</span></div>
+          </div>
+          <div class="txt">${qaEsc(a.body)}</div>
+          <div class="ans-foot">
+            <button class="upbtn" data-answer-id="${a.id}" onclick="voteA(this)">▲ Upvote · <span>${a.upvote_count||0}</span></button>
+            <button class="upbtn" onclick="toggleComments(this)">💬 <span class="ccount">${myComments.length}</span> Comments</button>
+          </div>
+          <div class="cthread">
+            ${myComments.map(c => `<div class="comment"><b>${c.author_role==='advocate'?'Advocate':'Anonymous (asker)'}</b>${qaEsc(c.body)}</div>`).join('')}
+            <div class="cinput"><input placeholder="Add a comment…" onkeydown="if(event.key==='Enter')postComment(this)"><button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="postComment(this.previousElementSibling)">Post</button></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    await refreshAnswerGate();
+  }catch(e){
+    document.getElementById('qd-title').textContent = 'Could not load this question';
+  }
+}
+
+async function refreshAnswerGate(){
+  const locked = document.getElementById('ans-locked');
+  const pending = document.getElementById('ans-pending');
+  const compose = document.getElementById('ans-compose');
+  locked.style.display = 'none'; pending.style.display = 'none'; compose.style.display = 'none';
+  try{
+    const { supabase } = await import('/app/js/config.js');
+    const { getCurrentProfile } = await import('/app/js/auth.js');
+    const { data:{ session } } = await supabase.auth.getSession();
+    if(!session){ locked.style.display=''; return; }
+    const profile = await getCurrentProfile();
+    if(!profile || profile.role!=='advocate'){ locked.style.display=''; return; }
+    const { getAdvocateProfile } = await import('/app/js/cms.js');
+    const adv = await getAdvocateProfile(session.user.id);
+    if(adv?.verification_status === 'approved'){ compose.style.display=''; }
+    else { pending.style.display='block'; }
+  }catch(e){ locked.style.display=''; }
+}
+
+async function postAnswer(){
   const t = document.getElementById('ans-text');
-  if(!t.value.trim()){ toast('Write your answer first'); return; }
-  const el = document.createElement('div');
-  el.className = 'answer';
-  const ini = user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  const abadge = user.verified ? '<span class="vbadge">✓ Verified</span>' : '<span class="pendbadge">⏳ Verification pending</span>';
-  const asub = user.verified ? 'Your answer · just now · public' : 'Your answer · just now · visible publicly once your profile is verified';
-  const afoot = user.verified ? 'Posted publicly' : 'Awaiting verification review';
-  el.innerHTML =
-    '<div class="ans-head"><span class="mini" style="background:#0f766e">'+ini+'</span>'
-    + '<div class="who"><b>Adv. '+user.name+' '+abadge+'</b>'
-    + '<span>'+asub+'</span></div></div>'
-    + '<div class="txt"></div>'
-    + '<div class="ans-foot"><button class="upbtn" onclick="voteA(this)">▲ Upvote · <span>0</span></button>'
-    + '<button class="upbtn" onclick="toggleComments(this)">💬 <span class="ccount">0</span> Comments</button>'
-    + '<span class="helped">'+afoot+'</span></div>'
-    + '<div class="cthread"><div class="cinput"><input placeholder="Add a comment…" onkeydown="if(event.key===\'Enter\')postComment(this)">'
-    + '<button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="postComment(this.previousElementSibling)">Post</button></div></div>';
-  el.querySelector('.txt').textContent = t.value;   // escape user input
-  const first = document.querySelector('#view-qd .answer');
-  first.parentElement.insertBefore(el, first);
-  const c = document.getElementById('ans-count');
-  c.textContent = (parseInt(c.textContent)+1) + ' answers';
-  t.value='';
-  toast('✓ Answer posted — it goes public once verification completes');
+  const msg = document.getElementById('ans-msg');
+  msg.style.display='none';
+  if(!t.value.trim()){ msg.textContent='Write your answer first'; msg.style.display='block'; return; }
+  try{
+    const { supabase } = await import('/app/js/config.js');
+    const { submitAnswer } = await import('/app/js/cms.js');
+    const { data:{ session } } = await supabase.auth.getSession();
+    if(!session) throw new Error('Please sign in as an advocate first.');
+    await submitAnswer(qdCurrentId, session.user.id, t.value.trim());
+    t.value='';
+    toast('✓ Answer posted publicly');
+    await openQuestion(qdCurrentId, false);
+  }catch(e){
+    msg.textContent = e.message || 'Could not post your answer.';
+    msg.style.display='block';
+  }
+}
+
+async function submitQuestionReal(){
+  const title = document.getElementById('aq-title').value.trim();
+  const body = document.getElementById('aq-body').value.trim();
+  const topic = document.getElementById('aq-topic').value;
+  const msg = document.getElementById('aq-msg');
+  msg.style.display='none';
+  if(!title || !topic){ msg.textContent='Please add your question and pick a topic.'; msg.style.display='block'; return; }
+  const btn = document.getElementById('aq-submit');
+  btn.disabled = true; btn.textContent = 'Posting…';
+  try{
+    const { supabase } = await import('/app/js/config.js');
+    const { submitQuestion } = await import('/app/js/cms.js');
+    const { data:{ session } } = await supabase.auth.getSession();
+    await submitQuestion({ topic, title, body, client_id: session ? session.user.id : null });
+    document.getElementById('aq-title').value='';
+    document.getElementById('aq-body').value='';
+    document.getElementById('aq-topic').value='';
+    closeAsk();
+    toast('✓ Question posted — advocates can now see and answer it');
+    await loadQA();
+  }catch(e){
+    msg.textContent = e.message || 'Could not post your question.';
+    msg.style.display='block';
+  }finally{
+    btn.disabled = false; btn.textContent = 'Post Question';
+  }
 }
 function pick(el, sel){
   el.parentElement.querySelectorAll(sel).forEach(x=>x.classList.remove('on'));
@@ -2609,7 +2678,8 @@ function toast(msg){
   clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2600);
 }
 renderDirectory();
-openProfile('dev');   // pre-fill profile template with the first advocate
+openProfile('dev', true);   // pre-fill profile template with the first advocate, no hash/view-count side effects
+loadQA();
 go('home');
 routeHash();
 
@@ -2836,6 +2906,7 @@ async function loadAdvocates() {
     cities.forEach(c => citySel.insertAdjacentHTML('beforeend', `<option>${c}</option>`));
 
     if (typeof renderDirectory === 'function') renderDirectory();
+    if (typeof routeHash === 'function' && location.hash.startsWith('#advocate=')) routeHash();
   } catch (e) {
     // Directory stays empty rather than breaking the page.
   }
