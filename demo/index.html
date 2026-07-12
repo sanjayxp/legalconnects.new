@@ -1433,42 +1433,43 @@
 <!-- ================= BOOKING MODAL ================= -->
 <div class="modal-bg" id="bookModal" onclick="if(event.target===this)closeBook()">
   <div class="modal">
-    <!-- Step 1: client details (lead capture) -->
+    <!-- Step 1: pick a real open slot -->
     <div id="bk1">
-      <h3>Your details</h3>
-      <div class="hint">Step 1 of 2 — the advocate needs this to prepare for your consultation.</div>
-      <div class="bk-summary"><span class="mini" id="bk-ini">DC</span><div><b id="bk-advline">Adv. Dev Chaurasiya · Tax Law</b><span id="bk-slotline">Tue 8 · 11:30 · 🎥 Video · ₹1,500</span></div></div>
-      <label>Full name</label>
-      <input id="bk-name" placeholder="Your name">
-      <label>Phone</label>
-      <input id="bk-phone" placeholder="+91">
-      <label>Briefly, what is the matter about?</label>
-      <textarea id="bk-desc" placeholder="2–3 lines is enough. Don't share anything you consider sensitive yet."></textarea>
-      <div class="anon">🔒 Shared only with this advocate. Never sold or shown publicly.</div>
+      <h3>Pick a time</h3>
+      <div class="hint" id="bk-advline">Loading advocate's availability…</div>
+      <div id="bk-slotlist" style="margin:14px 0"></div>
       <div class="row">
         <button class="btn btn-ghost" onclick="closeBook()">Cancel</button>
-        <button class="btn btn-primary" onclick="bkNext()">Continue to Payment</button>
       </div>
     </div>
-    <!-- Step 2: payment -->
+    <!-- Step 2: your details -->
     <div id="bk2" style="display:none">
-      <h3>Payment</h3>
-      <div class="hint">Step 2 of 2 — secure payment via Razorpay.</div>
-      <div class="payrow"><span>Consultation (30 min)</span><span id="bk-fee1">₹1,500</span></div>
-      <div class="payrow"><span>Platform fee</span><span>₹0</span></div>
-      <div class="payrow total"><span>Total</span><span id="bk-feetotal">₹1,500</span></div>
-      <div class="leadnote">↩ Covered by the first-consultation refund guarantee.</div>
+      <h3>Your details</h3>
+      <div class="hint">The advocate needs this to prepare for your consultation.</div>
+      <div class="bk-summary"><span class="mini" id="bk-ini">·</span><div><b id="bk-advline2"></b><span id="bk-slotline"></span></div></div>
+      <label>Full name</label>
+      <input id="bk-name" placeholder="Your name">
+      <label>Email</label>
+      <input id="bk-email" placeholder="you@example.com">
+      <label>Phone</label>
+      <input id="bk-phone" placeholder="+91">
+      <label id="bk-mode-label">Consultation mode</label>
+      <select id="bk-mode"></select>
+      <label>Briefly, what is the matter about? <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+      <textarea id="bk-desc" placeholder="2–3 lines is enough. Don't share anything you consider sensitive yet."></textarea>
+      <div class="anon">🔒 Shared only with this advocate. Never sold or shown publicly.</div>
+      <div class="msg" id="bk-msg" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#fdecea;color:#c0392b;font-size:13.5px"></div>
       <div class="row">
-        <button class="btn btn-ghost" onclick="bkDrop()">Pay later</button>
-        <button class="btn btn-primary" onclick="bkPay()" id="bk-paybtn">Pay ₹1,500</button>
+        <button class="btn btn-ghost" onclick="bkBack()">← Back</button>
+        <button class="btn btn-primary" onclick="bkSubmit()" id="bk-submitbtn">Request This Slot</button>
       </div>
     </div>
     <!-- Step 3: confirmed -->
     <div id="bk3" style="display:none">
       <div class="success-card" style="padding:16px 4px">
         <div class="big">✓</div>
-        <h3>Booking confirmed!</h3>
-        <p>Adv. Dev Chaurasiya will meet you <b>Tue 8 at 11:30</b> over video. Details sent by SMS &amp; email. You can reschedule free up to 4 hours before.</p>
+        <h3>Request sent!</h3>
+        <p id="bk-confirm-text">The advocate has been notified and will confirm your slot shortly.</p>
         <button class="btn btn-primary" onclick="closeBook()">Done</button>
       </div>
     </div>
@@ -2182,73 +2183,83 @@ function dgo(pane){
   const map={'dp-over':0,'dp-leads':1,'dp-book':2,'dp-qa':3,'dp-diary':4};
   dtab(items[map[pane]],pane);
 }
-/* Booking flow with lead capture */
-let leadCaptured=false;
-function openBook(){
-  leadCaptured=false;
-  const a=currentAdv;
-  const feeStr = a.consultation_fee ? '₹'+Number(a.consultation_fee).toLocaleString('en-IN') : 'Fee not listed';
+/* Real booking flow — reads/writes booking_slots via Supabase (cms.js) */
+let bkSelectedSlot=null;
+const BK_MODE_LABEL={video:'🎥 Video',phone:'📞 Phone',inperson:'🤝 In-person'};
+function bkFmtSlot(s){
+  const d=new Date(s.slot_start);
+  const day=d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  const time=d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'});
+  return day+' · '+time;
+}
+async function openBook(){
+  const a=currentAdv; if(!a) return;
+  bkSelectedSlot=null;
+  document.getElementById('bk-advline').textContent='Adv. '+a.name+' · '+(a.headline||'');
+  document.getElementById('bk-advline2').textContent='Adv. '+a.name;
   document.getElementById('bk-ini').textContent=initialsFor(a.name);
   document.getElementById('bk-ini').style.background=colorFor(a.name);
-  document.getElementById('bk-advline').textContent='Adv. '+a.name+' · '+(a.headline||'');
-  document.getElementById('bk-slotline').textContent='Tue 8 · 11:30 · 🎥 Video · '+feeStr;
-  document.getElementById('bk-fee1').textContent=feeStr;
-  document.getElementById('bk-feetotal').textContent=feeStr;
-  document.getElementById('bk-paybtn').textContent='Pay '+feeStr;
+  document.getElementById('bk-msg').style.display='none';
+  const list=document.getElementById('bk-slotlist');
+  list.innerHTML='<div class="hint">Loading available times…</div>';
   bkShow(1);
   document.getElementById('bookModal').classList.add('open');
+  try{
+    const { listOpenSlotsPublic } = await import('/app/js/cms.js');
+    const slots=await listOpenSlotsPublic(a.id);
+    if(!slots.length){
+      list.innerHTML='<div class="hint">This advocate has no open slots right now. Please check back soon.</div>';
+      return;
+    }
+    list.innerHTML='';
+    slots.forEach(s=>{
+      const row=document.createElement('div');
+      row.className='card';
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:12px 14px;margin-bottom:8px;cursor:pointer;border:1px solid var(--line,#e6e9f0);border-radius:10px';
+      row.innerHTML='<span><b>'+bkFmtSlot(s)+'</b></span><button class="btn btn-primary" type="button">Select</button>';
+      row.querySelector('button').onclick=()=>bkPickSlot(s,a);
+      list.appendChild(row);
+    });
+  }catch(e){
+    list.innerHTML='<div class="hint">Couldn\'t load availability. Please try again in a moment.</div>';
+  }
 }
+function bkPickSlot(slot,a){
+  bkSelectedSlot=slot;
+  document.getElementById('bk-slotline').textContent=bkFmtSlot(slot);
+  const modeSel=document.getElementById('bk-mode');
+  const modes=(a.consultation_modes&&a.consultation_modes.length)?a.consultation_modes:['video','phone','inperson'];
+  modeSel.innerHTML=modes.map(m=>'<option value="'+m+'">'+(BK_MODE_LABEL[m]||m)+'</option>').join('');
+  document.getElementById('bk-msg').style.display='none';
+  bkShow(2);
+}
+function bkBack(){ bkShow(1); }
 function closeBook(){ document.getElementById('bookModal').classList.remove('open'); }
 function bkShow(n){
   for(let i=1;i<=3;i++) document.getElementById('bk'+i).style.display = i===n?'':'none';
 }
-function bkNext(){
+async function bkSubmit(){
   const name=document.getElementById('bk-name').value.trim();
+  const email=document.getElementById('bk-email').value.trim();
   const phone=document.getElementById('bk-phone').value.trim();
-  if(!name||!phone){ toast('Name and phone are needed so the advocate can reach you'); return; }
-  captureLead('new','New');
-  leadCaptured=true;
-  bkShow(2);
-  toast('✓ Details saved — the advocate can now see your request');
-}
-function bkDrop(){
-  updateLeadStatus('dropped','Payment pending');
-  closeBook();
-  toast('No problem — your request is saved. The advocate may reach out to you.');
-}
-function bkPay(){
-  updateLeadStatus('booked','Booked');
-  const tb=document.getElementById('book-body');
-  const tr=document.createElement('tr');
-  tr.innerHTML='<td><b>Tue 8, 11:30</b></td><td></td><td>🎥 Video</td><td>₹1,500</td><td><span class="lstat booked">Confirmed</span></td>';
-  tr.children[1].textContent=document.getElementById('bk-name').value+' — '+(document.getElementById('bk-desc').value||'New consultation');
-  tb.insertBefore(tr,tb.firstChild);
-  const sb=document.getElementById('stat-book');
-  sb.textContent=+sb.textContent+1;
-  bkShow(3);
-}
-let lastLeadRow=null;
-function captureLead(cls,label){
-  const name=document.getElementById('bk-name').value;
-  const phone=document.getElementById('bk-phone').value;
-  const desc=document.getElementById('bk-desc').value||'—';
-  const tr=document.createElement('tr');
-  tr.innerHTML='<td></td><td></td><td>Video · ₹1,500</td><td>Just now</td>'
-    +'<td><span class="lstat '+cls+'">'+label+'</span></td>'
-    +'<td><span class="rowact" onclick="contactLead(this)">Contact</span></td>';
-  tr.children[0].innerHTML='<b></b><br>'; tr.children[0].querySelector('b').textContent=name;
-  tr.children[0].append(phone);
-  tr.children[1].textContent=desc;
-  const tb=document.getElementById('leads-body');
-  tb.insertBefore(tr,tb.firstChild);
-  lastLeadRow=tr;
-  const badge=document.getElementById('lead-badge'), st=document.getElementById('stat-leads');
-  badge.textContent=+badge.textContent+1; st.textContent=+st.textContent+1;
-}
-function updateLeadStatus(cls,label){
-  if(!lastLeadRow) return;
-  const s=lastLeadRow.querySelector('.lstat');
-  s.className='lstat '+cls; s.textContent=label;
+  const mode=document.getElementById('bk-mode').value;
+  const notes=document.getElementById('bk-desc').value.trim();
+  const msg=document.getElementById('bk-msg');
+  if(!name||!phone){ msg.textContent='Name and phone are needed so the advocate can reach you.'; msg.style.display='block'; return; }
+  if(!bkSelectedSlot){ msg.textContent='Please go back and pick a time slot.'; msg.style.display='block'; return; }
+  const btn=document.getElementById('bk-submitbtn');
+  btn.disabled=true; btn.textContent='Sending…';
+  try{
+    const { bookSlot } = await import('/app/js/cms.js');
+    await bookSlot(bkSelectedSlot.id, { mode, client_name:name, client_email:email||null, client_phone:phone, client_notes:notes||null });
+    document.getElementById('bk-confirm-text').textContent='Adv. '+currentAdv.name+' has been notified of your request for '+bkFmtSlot(bkSelectedSlot)+'. You\'ll hear back once they confirm.';
+    bkShow(3);
+  }catch(e){
+    msg.textContent=e.message||'Something went wrong. Please try picking another slot.';
+    msg.style.display='block';
+  }finally{
+    btn.disabled=false; btn.textContent='Request This Slot';
+  }
 }
 
 /* ===== Phase 5 ===== */
@@ -2640,7 +2651,7 @@ go = function(v){
 <!-- ================= REAL DATA: Jobs, Courses, Team (Supabase-backed) ================= -->
 <script type="module">
 import { listJobsPublic, listCoursesPublic, listTeamPublic, submitJobApplication, submitCourseEnrollment, listApprovedAdvocatesPublic } from './app/js/cms.js';
-  import { supabase } from './app/js/config.js';
+import { supabase } from './app/js/config.js';
 import { getCurrentProfile } from './app/js/auth.js';
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -2841,6 +2852,13 @@ async function loadAdvocates() {
   }
 }
 
+// If someone is already signed in (admin, advocate, or client) and lands on
+// this public homepage — e.g. an admin clicking the "LegalConnects" logo from
+// their admin pages — swap the header's "Log in" button for a direct link
+// back to their own dashboard. Without this, the only way back in was through
+// the public Log in page, which deliberately signs admin accounts out (by
+// design, so admins can't authenticate through the public form) — so an admin
+// clicking "Log in" here to get back would immediately be logged out.
 async function syncAccountNav() {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -2855,6 +2873,7 @@ async function syncAccountNav() {
     loginBtn.textContent = profile.role === 'admin' ? 'Admin dashboard' : 'My dashboard';
     loginBtn.onclick = () => { window.location.href = dest; };
   } catch (e) {
+    // Leave the default "Log in" button as-is if anything goes wrong.
   }
 }
 
