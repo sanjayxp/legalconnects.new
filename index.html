@@ -2095,7 +2095,9 @@ async function openBook(){
   document.getElementById('bookModal').classList.add('open');
   try{
     const { listOpenSlotsPublic } = await import('/app/js/cms.js');
-    const slots=await listOpenSlotsPublic(a.id);
+    const today=new Date(); const from=today.toISOString().slice(0,10);
+    const toD=new Date(today.getTime()+14*86400000); const to=toD.toISOString().slice(0,10);
+    const slots=await listOpenSlotsPublic(a.id, from, to);
     if(!slots.length){
       list.innerHTML='<div class="hint">This advocate has no open slots right now. Please check back soon.</div>';
       return;
@@ -2139,8 +2141,8 @@ async function bkSubmit(){
   const btn=document.getElementById('bk-submitbtn');
   btn.disabled=true; btn.textContent='Sending…';
   try{
-    const { bookSlot } = await import('/app/js/cms.js');
-    await bookSlot(bkSelectedSlot.id, { mode, client_name:name, client_email:email||null, client_phone:phone, client_notes:notes||null });
+    const { requestSlot } = await import('/app/js/cms.js');
+    await requestSlot(currentAdv.id, bkSelectedSlot.slot_start, bkSelectedSlot.slot_end, { mode, client_name:name, client_email:email||null, client_phone:phone, client_notes:notes||null });
     document.getElementById('bk-confirm-text').textContent='Adv. '+currentAdv.name+' has been notified of your request for '+bkFmtSlot(bkSelectedSlot)+'. You\'ll hear back once they confirm.';
     bkShow(3);
   }catch(e){
