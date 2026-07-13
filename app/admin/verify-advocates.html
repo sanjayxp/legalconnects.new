@@ -187,7 +187,7 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { listAllAdvocates, reviewAdvocateProfile, adminUpdateAdvocateProfile, deleteAdvocateProfile, uploadPhoto } from '../js/cms.js';
+import { listAllAdvocates, listIncompleteAdvocateSignups, reviewAdvocateProfile, adminUpdateAdvocateProfile, deleteAdvocateProfile, uploadPhoto } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -325,16 +325,18 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 
 // ---- Tabs + list ----
 let allAdvocates = [];
+let incompleteSignups = [];
 let currentTab = 'all';
 const TABS = [
   { key: 'all', label: 'All' },
   { key: 'pending', label: 'Pending' },
   { key: 'approved', label: 'Approved' },
   { key: 'rejected', label: 'Rejected' },
+  { key: 'notstarted', label: 'Signed up, no profile yet' },
 ];
 
 function renderTabs() {
-  const counts = { all: allAdvocates.length };
+  const counts = { all: allAdvocates.length, notstarted: incompleteSignups.length };
   ['pending','approved','rejected'].forEach(s => counts[s] = allAdvocates.filter(a => a.verification_status === s).length);
   document.getElementById('tabs').innerHTML = TABS.map(t =>
     `<button class="tab ${t.key===currentTab?'on':''}" data-tab="${t.key}">${t.label} <span class="cnt">${counts[t.key]}</span></button>`
@@ -344,7 +346,33 @@ function renderTabs() {
   }));
 }
 
+function daysAgo(iso) {
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (d <= 0) return 'today';
+  if (d === 1) return '1 day ago';
+  return d + ' days ago';
+}
+
+function renderIncomplete() {
+  const list = document.getElementById('list');
+  if (!incompleteSignups.length) { list.innerHTML = '<div class="empty">No stalled signups — everyone who registered as an advocate has started their profile.</div>'; return; }
+  list.innerHTML = incompleteSignups.map(p => `<div class="card">
+    <div class="ph">${esc((p.full_name||'?').charAt(0))}</div>
+    <div class="details">
+      <h3>${esc(p.full_name || 'Unnamed')} <span class="badge pending">no profile yet</span></h3>
+      <div class="meta">Signed up ${daysAgo(p.created_at)} (${new Date(p.created_at).toLocaleDateString()})</div>
+      <div class="field"><b>Email:</b> ${esc(p.email || '—')}</div>
+      <div class="field"><b>Phone:</b> ${esc(p.phone || '—')}</div>
+      <div class="field" style="color:var(--ink-faint);margin-top:8px">They created an account but haven't filled in the "Create your advocate profile" form — nothing to review or approve yet. Consider following up directly.</div>
+    </div>
+    <div class="actions">
+      ${p.email ? `<a class="btn btn-outline" href="mailto:${esc(p.email)}?subject=Finish%20your%20LegalConnects%20advocate%20profile">✉ Email them</a>` : ''}
+    </div>
+  </div>`).join('');
+}
+
 function renderList() {
+  if (currentTab === 'notstarted') { renderIncomplete(); return; }
   const list = document.getElementById('list');
   const rows = currentTab === 'all' ? allAdvocates : allAdvocates.filter(a => a.verification_status === currentTab);
   if (!rows.length) { list.innerHTML = '<div class="empty">Nothing here yet.</div>'; return; }
@@ -410,6 +438,7 @@ function renderList() {
 
 async function load() {
   allAdvocates = await listAllAdvocates();
+  try { incompleteSignups = await listIncompleteAdvocateSignups(); } catch (e) { incompleteSignups = []; }
   renderTabs();
   renderList();
 }
