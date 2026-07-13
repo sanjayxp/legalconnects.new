@@ -569,7 +569,7 @@
       <a id="nav-grow" onclick="go('grow')">For Advocates</a>
     </nav>
     <div class="nav-cta" id="nav-cta">
-      <button class="btn btn-ghost" onclick="window.location.href='app/auth/login.html'">Log in</button>
+      <button class="btn btn-ghost" onclick="window.location.href='/auth/login.html'">Log in</button>
       <button class="btn btn-primary" onclick="go('dir')">Find an Advocate</button>
     </div>
   </div>
@@ -913,7 +913,7 @@
     <div class="locked" id="ans-locked">
       ⚖ Are you an advocate? <b>Sign in to answer this question</b> — every answer carries your credentials and links to your booking page.
       <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-        <a class="btn btn-primary" href="app/auth/login.html">Sign in to Answer</a>
+        <a class="btn btn-primary" href="/auth/login.html">Sign in to Answer</a>
         <button class="btn btn-ghost" onclick="go('grow')">Why advocates join →</button>
       </div>
     </div>
@@ -1370,7 +1370,7 @@
         <h1>Your practice, <em>organised and growing</em> — in one place.</h1>
         <p class="sub">LegalConnects gives you the tools senior chambers have — client leads, a hearing diary that never misses a date, and a professional profile clients can trust. No listing fee. You pay only when you earn.</p>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <button class="btn btn-primary btn-lg" onclick="window.location.href='app/auth/register.html'">Create Your Free Profile</button>
+          <button class="btn btn-primary btn-lg" onclick="window.location.href='/auth/register.html'">Create Your Free Profile</button>
           <button class="btn btn-ghost btn-lg" onclick="go('qd')">See how advocates answer Q&amp;A</button>
         </div>
         <div class="cnr-hint" style="margin-top:14px">Profile live in 2 working days after Bar Council verification.</div>
@@ -1406,7 +1406,7 @@
           <span class="kicker" style="color:#9db1ff">Fair by design</span>
           <h2>No listing fees. No pay-to-rank. Ever.</h2>
           <p>Your visibility comes from your credentials and your answers — not from payments. We charge a small platform fee only on completed consultations, so we earn only when you do. Fully aligned with Bar Council norms on professional conduct.</p>
-          <button class="btn btn-primary btn-lg" onclick="window.location.href='app/auth/register.html'">Join as an Advocate</button>
+          <button class="btn btn-primary btn-lg" onclick="window.location.href='/auth/register.html'">Join as an Advocate</button>
         </div>
         <div class="qa-demo" style="animation:none">
           <div class="q">📊 Your week on LegalConnects</div>
@@ -1840,7 +1840,7 @@
       <div><h4>Company</h4><a onclick="go('legal');legalGo('about')">About Us</a><a onclick="go('legal');legalGo('privacy')">Privacy Policy</a><a onclick="go('legal');legalGo('terms')">Terms &amp; Conditions</a><a onclick="go('legal');legalGo('refund')">Refund Policy</a></div>
       <div><h4>Contact</h4><a href="mailto:info@legalconnects.in">info@legalconnects.in</a><a href="https://wa.me/919971886999">+91 99718 86999</a><a>Delhi, India</a></div>
     </div>
-    <div class="foot-note">© 2026 LegalConnects India. LegalConnects is a directory and booking platform, not a law firm, and does not provide legal advice. · Advocate profiles are verified against Bar Council records at onboarding. · <a style="display:inline;padding:0" onclick="window.location.href='app/admin/'">Admin</a></div>
+    <div class="foot-note">© 2026 LegalConnects India. LegalConnects is a directory and booking platform, not a law firm, and does not provide legal advice. · Advocate profiles are verified against Bar Council records at onboarding. · <a style="display:inline;padding:0" onclick="window.location.href='/admin/'">Admin</a></div>
   </div>
 </footer>
 
@@ -2907,7 +2907,7 @@ async function syncAccountNav() {
     if (!profile) return;
     const loginBtn = document.querySelector('.nav-cta .btn-ghost');
     if (!loginBtn) return;
-    const routes = { admin: 'app/admin/', advocate: 'app/dashboard/advocate.html', client: 'app/dashboard/client.html' };
+    const routes = { admin: '/admin/', advocate: '/dashboard/advocate.html', client: '/dashboard/client.html' };
     const dest = routes[profile.role];
     if (!dest) return;
     loginBtn.textContent = profile.role === 'admin' ? 'Admin dashboard' : 'My dashboard';
