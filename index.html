@@ -2202,22 +2202,6 @@ function requireAdvocate(action){
   if(user.role!=='adv'){ toast('Only advocate accounts can '+action); return false; }
   return true;
 }
-let jobBtn=null;
-function applyJob(btn){
-  if(!requireAdvocate('apply for jobs')) return;
-  jobBtn=btn;
-  document.getElementById('job-title').textContent=btn.closest('.job').querySelector('h3').textContent;
-  document.getElementById('job-note').value='';
-  const cv=document.getElementById('job-cv');
-  cv.classList.remove('done'); cv.textContent='📄 Click to attach PDF (optional — your profile may be enough)';
-  document.getElementById('jobModal').classList.add('open');
-}
-function closeJob(){ document.getElementById('jobModal').classList.remove('open'); }
-function submitJobApp(){
-  closeJob();
-  if(jobBtn){ jobBtn.textContent='✓ Applied'; jobBtn.classList.add('btn-done'); jobBtn.onclick=null; }
-  toast('✓ Application sent with your verified profile attached');
-}
 function forgotPass(){
   const e=document.getElementById('li-email').value.trim();
   if(!e){ toast('Type your email above first, then click Forgot password'); return; }
@@ -2255,11 +2239,6 @@ function fillVCard(){
   document.getElementById('vc-head').textContent=a.headline+(a.status==='verified'?' · ✓ Bar Council Verified':' · ⏳ Verification pending');
   document.getElementById('vc-info').innerHTML='<span>Enrolment</span> '+a.bar+'<br><span>Practice</span> '+a.city+' · '+a.tags.slice(0,3).join(', ')+'<br><span>Consultation</span> ₹'+a.fee.toLocaleString('en-IN')+' · '+a.modes.split(' ').join(' / ');
   document.getElementById('vc-link').textContent='legalconnects.in/adv/'+slug;
-}
-function enrollCourse(btn){
-  if(!requireAdvocate('enroll')) return;
-  btn.textContent='✓ Enrolled'; btn.classList.add('btn-done'); btn.onclick=null;
-  toast('✓ Enrolled — details sent to '+user.email);
 }
 /* Platform leads */
 function connectLead(btn){
@@ -2802,6 +2781,7 @@ async function renderTeam() {
 }
 
 // ---- Job apply modal ----
+window.closeJob = function() { document.getElementById('jobModal').classList.remove('open'); };
 window.openJobApply = function(jobId) {
   const job = JOBS.find(j => j.id === jobId);
   if (!job) return;
