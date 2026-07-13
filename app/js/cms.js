@@ -205,6 +205,26 @@ export async function listAllAdvocates() {
   return data || [];
 }
 
+// Advocates who created an account (role='advocate') but never submitted
+// their profile form — no advocate_profiles row exists for them yet.
+// Useful for admin follow-up on stalled signups.
+export async function listIncompleteAdvocateSignups() {
+  const { data: started, error: e1 } = await supabase
+    .from('advocate_profiles')
+    .select('id');
+  if (e1) throw e1;
+  const startedIds = new Set((started || []).map(a => a.id));
+
+  const { data: accounts, error: e2 } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('role', 'advocate')
+    .order('created_at', { ascending: false });
+  if (e2) throw e2;
+
+  return (accounts || []).filter(p => !startedIds.has(p.id));
+}
+
 export async function reviewAdvocateProfile(userId, status, reviewerId) {
   const { error } = await supabase
     .from('advocate_profiles')
