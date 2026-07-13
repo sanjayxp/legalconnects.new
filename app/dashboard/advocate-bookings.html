@@ -60,11 +60,11 @@
   .card .field{font-size:13.5px;margin-top:4px}
   .card .field b{color:var(--ink-soft);font-weight:600}
   .pill{display:inline-flex;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
-  .pill.open{background:var(--accent-soft);color:var(--accent-dark)}
-  .pill.booked{background:var(--amber-soft);color:var(--amber)}
+  .pill.requested{background:var(--amber-soft);color:var(--amber)}
   .pill.confirmed{background:var(--green-soft);color:var(--green)}
   .pill.completed{background:#eee;color:var(--ink-faint)}
   .pill.cancelled{background:var(--red-soft);color:var(--red)}
+  .pill.declined{background:var(--red-soft);color:var(--red)}
   .actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
   .btn{border:none;border-radius:9px;padding:9px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
   .btn-approve{background:var(--green-soft);color:var(--green)}
@@ -76,14 +76,39 @@
   .empty{text-align:center;padding:50px 20px;color:var(--ink-faint)}
 
   .addform{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px;margin-bottom:22px}
-  .addform h3{font-size:15px;font-weight:800;margin-bottom:14px}
+  .addform h3{font-size:15px;font-weight:800;margin-bottom:6px}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end}
   label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px}
-  input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none}
-  input:focus{border-color:var(--accent)}
+  input,select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none;background:#fff}
+  input:focus,select:focus{border-color:var(--accent)}
   .msg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:8px;display:none}
   .msg.err{display:block;background:var(--red-soft);color:var(--red)}
   .msg.ok{display:block;background:var(--green-soft);color:var(--green)}
+
+  /* Weekly hours editor */
+  .hrow{display:grid;grid-template-columns:110px 1fr auto 1fr 100px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  .hrow:last-child{border-bottom:none}
+  .hrow span{font-size:12.5px;color:var(--ink-faint);text-align:center}
+  .hchk{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
+  .hchk input{width:16px;height:16px;accent-color:var(--accent)}
+  @media (max-width:640px){ .hrow{grid-template-columns:1fr;gap:6px} .hrow span{display:none} }
+
+  /* Calendar */
+  .calbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .calbar b{font-size:14.5px}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px}
+  .cal-col{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .cal-daylabel{font-size:12px;font-weight:700;color:var(--ink-soft);text-align:center;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .cal-daylabel b{display:block;font-size:16px;color:var(--ink)}
+  .cal-dayoff{font-size:12px;color:var(--ink-faint);text-align:center;padding:14px 4px}
+  .cal-cell{border:1.5px solid var(--line);border-radius:8px;padding:6px 4px;font-size:12px;font-weight:700;text-align:center;background:#fff;width:100%}
+  button.cal-cell{cursor:pointer;font:inherit}
+  .cal-cell.open{color:var(--ink-faint);border-style:dashed}
+  .cal-cell.past{color:var(--ink-faint);opacity:.4}
+  .cal-cell.pending{background:var(--amber-soft);border-color:#f0c97e;color:var(--amber)}
+  .cal-cell.confirmed{background:var(--green-soft);border-color:#b8e6d5;color:var(--green)}
+  .cal-sub{display:block;font-size:10.5px;font-weight:600;margin-top:2px;opacity:.85}
+  @media (max-width:900px){ .calgrid{grid-template-columns:repeat(7,140px);overflow-x:auto;padding-bottom:8px} }
 </style>
 </head>
 <body>
@@ -109,24 +134,41 @@
   <div class="main-area">
 <main>
   <h1>Leads &amp; bookings</h1>
-  <div class="sub">New requests wait in Leads until you confirm them. Set your available times in Availability so clients can book you.</div>
+  <div class="sub">Set your weekly hours once in Availability — clients can then request any open time automatically. New requests wait in Leads until you confirm or decline them.</div>
 
   <div class="tabs" id="tabs"></div>
   <div id="content">
-    <div class="pane on" id="pane-leads"><div class="empty">Loading…</div></div>
-    <div class="pane" id="pane-upcoming"></div>
-    <div class="pane" id="pane-availability">
-      <div class="addform">
-        <h3>Add an available slot</h3>
-        <div class="grid3">
-          <div><label>Date</label><input type="date" id="f-date"></div>
-          <div><label>Start time</label><input type="time" id="f-start"></div>
-          <div><label>End time</label><input type="time" id="f-end"></div>
-        </div>
-        <button class="btn" id="addSlotBtn" style="background:var(--accent);color:#fff;margin-top:14px">+ Add slot</button>
-        <div class="msg" id="addMsg"></div>
+    <div class="pane on" id="pane-calendar">
+      <div class="calbar">
+        <button class="btn-ghost" id="calPrev">← Prev week</button>
+        <b id="calRange">…</b>
+        <button class="btn-ghost" id="calNext">Next week →</button>
+        <button class="btn-ghost" id="calToday">Today</button>
       </div>
-      <div id="availList"></div>
+      <div class="calgrid" id="calGrid"></div>
+      <div id="calDetail" class="card" style="display:none"></div>
+    </div>
+    <div class="pane" id="pane-leads"><div class="empty">Loading…</div></div>
+    <div class="pane" id="pane-upcoming"></div>
+    <div class="pane" id="pane-hours">
+      <div class="addform">
+        <h3>Weekly working hours</h3>
+        <div class="sub" style="margin:2px 0 14px">Turn on the days you're available. Any time inside these hours becomes automatically bookable — no need to add times one by one.</div>
+        <div id="hoursGrid"></div>
+        <button class="btn" id="saveHoursBtn" style="background:var(--accent);color:#fff;margin-top:14px">Save hours</button>
+        <div class="msg" id="hoursMsg"></div>
+      </div>
+      <div class="addform">
+        <h3>Block a specific date</h3>
+        <div class="sub" style="margin:2px 0 14px">For a court date, holiday, or leave — overrides your weekly hours for that day only.</div>
+        <div class="grid3">
+          <div><label>Date</label><input type="date" id="f-off-date"></div>
+          <div><label>Note (optional)</label><input type="text" id="f-off-note" placeholder="e.g. Court hearing"></div>
+          <div><button class="btn" id="addOffBtn" style="background:var(--accent);color:#fff;width:100%">+ Block date</button></div>
+        </div>
+        <div class="msg" id="offMsg"></div>
+      </div>
+      <div id="offList"></div>
     </div>
     <div class="pane" id="pane-past"></div>
   </div>
@@ -136,7 +178,11 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { listMySlots, createSlot, deleteSlot, updateSlotStatus, getAdvocateProfile } from '../js/cms.js';
+import {
+  listMySlots, deleteSlot, updateSlotStatus, getAdvocateProfile,
+  getAvailability, setAvailability, listTimeOff, addTimeOff, deleteTimeOff,
+  confirmBookingRequest, declineBookingRequest,
+} from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -157,27 +203,33 @@ try {
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmt(iso){ return new Date(iso).toLocaleString('en-IN', { weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit' }); }
+function toDateStr(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function startOfWeek(d){ const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - x.getDay()); return x; }
 const MODE_LABEL = { video: '🎥 Video', phone: '📞 Phone', inperson: '🏛 In-person' };
+const WEEKDAY_LABEL = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 const TABS = [
+  { key: 'calendar', label: 'Calendar' },
   { key: 'leads', label: 'Leads' },
   { key: 'upcoming', label: 'Upcoming' },
-  { key: 'availability', label: 'Availability' },
+  { key: 'hours', label: 'Availability' },
   { key: 'past', label: 'Past' },
 ];
-let currentTab = 'leads';
-let ALL = [];
+let currentTab = 'calendar';
+let ALL = [];      // every booking_slots row this advocate owns
+let AVAIL = [];    // weekly working-hours rows
+let TIMEOFF = [];  // blocked dates
+let weekStart = startOfWeek(new Date());
 
 function renderTabs() {
   const now = new Date();
   const counts = {
-    leads: ALL.filter(s => s.status === 'booked').length,
+    leads: ALL.filter(s => s.status === 'requested').length,
     upcoming: ALL.filter(s => s.status === 'confirmed' && new Date(s.slot_start) >= now).length,
-    availability: ALL.filter(s => s.status === 'open' && new Date(s.slot_start) >= now).length,
-    past: ALL.filter(s => s.status === 'completed' || s.status === 'cancelled' || (s.status === 'confirmed' && new Date(s.slot_start) < now)).length,
+    past: ALL.filter(s => ['completed','cancelled','declined'].includes(s.status) || (s.status === 'confirmed' && new Date(s.slot_start) < now)).length,
   };
   document.getElementById('tabs').innerHTML = TABS.map(t =>
-    `<button class="tab ${t.key===currentTab?'on':''}" data-tab="${t.key}">${t.label} <span class="cnt">${counts[t.key]}</span></button>`
+    `<button class="tab ${t.key===currentTab?'on':''}" data-tab="${t.key}">${t.label}${counts[t.key]!=null?` <span class="cnt">${counts[t.key]}</span>`:''}</button>`
   ).join('');
   document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
     currentTab = b.dataset.tab;
@@ -191,7 +243,7 @@ function slotCard(s, actionsHtml) {
   return `<div class="card">
     <div class="top">
       <div>
-        <h3>${esc(s.client_name || 'Open slot')} <span class="pill ${s.status}">${s.status}</span></h3>
+        <h3>${esc(s.client_name || 'Client')} <span class="pill ${s.status}">${s.status}</span></h3>
         <div class="meta">${fmt(s.slot_start)} ${s.mode ? '· ' + MODE_LABEL[s.mode] : ''}</div>
         ${s.client_email ? `<div class="field"><b>Contact:</b> ${esc(s.client_email)} · ${esc(s.client_phone || '—')}</div>` : ''}
         ${s.client_notes ? `<div class="field"><b>Notes:</b> ${esc(s.client_notes)}</div>` : ''}
@@ -201,17 +253,18 @@ function slotCard(s, actionsHtml) {
   </div>`;
 }
 
+// ---------- Leads / Upcoming / Past ----------
 function renderLeads() {
-  const rows = ALL.filter(s => s.status === 'booked').sort((a,b) => new Date(a.slot_start) - new Date(b.slot_start));
+  const rows = ALL.filter(s => s.status === 'requested').sort((a,b) => new Date(a.slot_start) - new Date(b.slot_start));
   const pane = document.getElementById('pane-leads');
   if (!rows.length) { pane.innerHTML = '<div class="empty">No new requests right now.</div>'; return; }
   pane.innerHTML = rows.map(s => slotCard(s,
     `<button class="btn btn-approve" data-confirm="${s.id}">✓ Confirm</button>
      <button class="btn btn-reject" data-decline="${s.id}">✕ Decline</button>`
   )).join('');
-  pane.querySelectorAll('[data-confirm]').forEach(b => b.addEventListener('click', () => act(b.dataset.confirm, 'confirmed')));
+  pane.querySelectorAll('[data-confirm]').forEach(b => b.addEventListener('click', () => confirmAct(b.dataset.confirm)));
   pane.querySelectorAll('[data-decline]').forEach(b => b.addEventListener('click', () => {
-    if (confirm('Decline this request? The client will need to book a different time.')) act(b.dataset.decline, 'cancelled');
+    if (confirm('Decline this request?')) declineAct(b.dataset.decline);
   }));
 }
 
@@ -230,22 +283,9 @@ function renderUpcoming() {
   }));
 }
 
-function renderAvailability() {
-  const now = new Date();
-  const rows = ALL.filter(s => s.status === 'open' && new Date(s.slot_start) >= now).sort((a,b) => new Date(a.slot_start) - new Date(b.slot_start));
-  const box = document.getElementById('availList');
-  if (!rows.length) { box.innerHTML = '<div class="empty">No open slots yet — add one above so clients can book you.</div>'; return; }
-  box.innerHTML = rows.map(s => slotCard(s, `<button class="btn btn-outline" data-del="${s.id}">Remove</button>`)).join('');
-  box.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
-    if (!confirm('Remove this open slot?')) return;
-    await deleteSlot(b.dataset.del);
-    await load();
-  }));
-}
-
 function renderPast() {
   const now = new Date();
-  const rows = ALL.filter(s => s.status === 'completed' || s.status === 'cancelled' || (s.status === 'confirmed' && new Date(s.slot_start) < now))
+  const rows = ALL.filter(s => ['completed','cancelled','declined'].includes(s.status) || (s.status === 'confirmed' && new Date(s.slot_start) < now))
     .sort((a,b) => new Date(b.slot_start) - new Date(a.slot_start));
   const pane = document.getElementById('pane-past');
   if (!rows.length) { pane.innerHTML = '<div class="empty">Nothing here yet.</div>'; return; }
@@ -256,36 +296,216 @@ async function act(slotId, status) {
   try { await updateSlotStatus(slotId, status); await load(); }
   catch (e) { alert(e.message || 'Could not update this booking.'); }
 }
+async function confirmAct(id) {
+  try { await confirmBookingRequest(id); await load(); }
+  catch (e) { alert(e.message || 'Could not confirm this request.'); }
+}
+async function declineAct(id) {
+  try { await declineBookingRequest(id); await load(); }
+  catch (e) { alert(e.message || 'Could not decline this request.'); }
+}
 
-document.getElementById('addSlotBtn').addEventListener('click', async () => {
-  const msg = document.getElementById('addMsg');
-  msg.className = 'msg'; msg.textContent = '';
-  const date = document.getElementById('f-date').value;
-  const start = document.getElementById('f-start').value;
-  const end = document.getElementById('f-end').value;
-  if (!date || !start || !end) { msg.className = 'msg err'; msg.textContent = 'Pick a date, start time, and end time.'; return; }
-  const slotStart = new Date(`${date}T${start}`);
-  const slotEnd = new Date(`${date}T${end}`);
-  if (slotEnd <= slotStart) { msg.className = 'msg err'; msg.textContent = 'End time must be after the start time.'; return; }
-  if (slotStart < new Date()) { msg.className = 'msg err'; msg.textContent = 'Pick a time in the future.'; return; }
+// ---------- Calendar (week view) ----------
+function slotTimesForDay(dayDate) {
+  const wd = dayDate.getDay();
+  const av = AVAIL.find(a => a.weekday === wd);
+  if (!av) return null;
+  if (TIMEOFF.some(t => t.off_date === toDateStr(dayDate))) return null;
+  const [sh, sm] = av.start_time.split(':').map(Number);
+  const [eh, em] = av.end_time.split(':').map(Number);
+  const start = new Date(dayDate); start.setHours(sh, sm, 0, 0);
+  const end = new Date(dayDate); end.setHours(eh, em, 0, 0);
+  const step = av.slot_minutes * 60000;
+  const out = [];
+  for (let t = start.getTime(); t + step <= end.getTime(); t += step) out.push(new Date(t));
+  return out;
+}
+
+function renderCalendar() {
+  const days = [...Array(7)].map((_, i) => { const d = new Date(weekStart); d.setDate(d.getDate() + i); return d; });
+  document.getElementById('calRange').textContent =
+    days[0].toLocaleDateString('en-IN', { day:'numeric', month:'short' }) + ' – ' +
+    days[6].toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+
+  const now = new Date();
+  const byTime = new Map();
+  ALL.forEach(s => {
+    if (s.status !== 'confirmed' && s.status !== 'requested') return;
+    const t = new Date(s.slot_start).getTime();
+    if (!byTime.has(t)) byTime.set(t, { confirmed: null, requested: [] });
+    if (s.status === 'confirmed') byTime.get(t).confirmed = s;
+    else byTime.get(t).requested.push(s);
+  });
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = days.map(d => {
+    const isOff = TIMEOFF.some(t => t.off_date === toDateStr(d));
+    const times = slotTimesForDay(d);
+    let body;
+    if (!times) {
+      body = `<div class="cal-dayoff">${isOff ? 'Blocked' : 'Not working'}</div>`;
+    } else if (!times.length) {
+      body = `<div class="cal-dayoff">No slots</div>`;
+    } else {
+      body = times.map(t => {
+        const key = t.getTime();
+        const entry = byTime.get(key);
+        const timeLabel = t.toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit' });
+        if (entry?.confirmed) {
+          const s = entry.confirmed;
+          return `<button class="cal-cell confirmed" data-slot="${s.id}">${timeLabel}<span class="cal-sub">${esc((s.client_name || 'Booked').split(' ')[0])}</span></button>`;
+        }
+        if (entry?.requested?.length) {
+          return `<button class="cal-cell pending" data-pending="${key}">${timeLabel}<span class="cal-sub">${entry.requested.length} request${entry.requested.length > 1 ? 's' : ''}</span></button>`;
+        }
+        if (t < now) return `<div class="cal-cell past">${timeLabel}</div>`;
+        return `<div class="cal-cell open">${timeLabel}</div>`;
+      }).join('');
+    }
+    return `<div class="cal-col">
+      <div class="cal-daylabel">${d.toLocaleDateString('en-IN', { weekday:'short' })}<b>${d.getDate()}</b></div>
+      ${body}
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('[data-slot]').forEach(b => b.addEventListener('click', () => openConfirmedDetail(b.dataset.slot)));
+  grid.querySelectorAll('[data-pending]').forEach(b => b.addEventListener('click', () => openPendingPicker(Number(b.dataset.pending))));
+}
+
+function closeDetail() { document.getElementById('calDetail').style.display = 'none'; }
+
+function openConfirmedDetail(id) {
+  const s = ALL.find(x => x.id === id); if (!s) return;
+  const box = document.getElementById('calDetail');
+  box.style.display = '';
+  box.innerHTML = `<h3>${esc(s.client_name || 'Client')} <span class="pill confirmed">confirmed</span></h3>
+    <div class="meta">${fmt(s.slot_start)} ${s.mode ? '· ' + MODE_LABEL[s.mode] : ''}</div>
+    ${s.client_email ? `<div class="field"><b>Contact:</b> ${esc(s.client_email)} · ${esc(s.client_phone || '—')}</div>` : ''}
+    ${s.client_notes ? `<div class="field"><b>Notes:</b> ${esc(s.client_notes)}</div>` : ''}
+    <div class="actions" style="margin-top:12px">
+      <button class="btn btn-approve" id="calMarkDone">Mark completed</button>
+      <button class="btn btn-reject" id="calCancelBooking">Cancel booking</button>
+      <button class="btn btn-outline" id="calCloseDetail">Close</button>
+    </div>`;
+  document.getElementById('calMarkDone').onclick = async () => { await act(s.id, 'completed'); closeDetail(); };
+  document.getElementById('calCancelBooking').onclick = async () => { if (confirm('Cancel this confirmed booking?')) { await act(s.id, 'cancelled'); closeDetail(); } };
+  document.getElementById('calCloseDetail').onclick = closeDetail;
+}
+
+function openPendingPicker(timeKey) {
+  const rows = ALL.filter(s => s.status === 'requested' && new Date(s.slot_start).getTime() === timeKey);
+  if (!rows.length) return;
+  const box = document.getElementById('calDetail');
+  box.style.display = '';
+  box.innerHTML = `<h3>${rows.length} request${rows.length > 1 ? 's' : ''} for ${fmt(rows[0].slot_start)}</h3>
+    <div class="sub" style="margin-bottom:10px">Confirming one automatically declines the others for this exact time.</div>
+    ${rows.map(s => `<div class="card" style="margin-bottom:10px">
+      <div class="top">
+        <div>
+          <h3 style="font-size:14px">${esc(s.client_name || 'Client')}</h3>
+          <div class="meta">${s.mode ? MODE_LABEL[s.mode] : ''}</div>
+          ${s.client_email ? `<div class="field"><b>Contact:</b> ${esc(s.client_email)} · ${esc(s.client_phone || '—')}</div>` : ''}
+          ${s.client_notes ? `<div class="field"><b>Notes:</b> ${esc(s.client_notes)}</div>` : ''}
+        </div>
+        <div class="actions">
+          <button class="btn btn-approve" data-pick-confirm="${s.id}">✓ Confirm</button>
+          <button class="btn btn-reject" data-pick-decline="${s.id}">✕ Decline</button>
+        </div>
+      </div>
+    </div>`).join('')}
+    <button class="btn btn-outline" id="calCloseDetail2">Close</button>`;
+  box.querySelectorAll('[data-pick-confirm]').forEach(b => b.addEventListener('click', async () => { await confirmAct(b.dataset.pickConfirm); closeDetail(); }));
+  box.querySelectorAll('[data-pick-decline]').forEach(b => b.addEventListener('click', async () => { if (confirm('Decline this request?')) { await declineAct(b.dataset.pickDecline); closeDetail(); } }));
+  document.getElementById('calCloseDetail2').onclick = closeDetail;
+}
+
+document.getElementById('calPrev').addEventListener('click', () => { weekStart.setDate(weekStart.getDate() - 7); closeDetail(); renderCalendar(); });
+document.getElementById('calNext').addEventListener('click', () => { weekStart.setDate(weekStart.getDate() + 7); closeDetail(); renderCalendar(); });
+document.getElementById('calToday').addEventListener('click', () => { weekStart = startOfWeek(new Date()); closeDetail(); renderCalendar(); });
+
+// ---------- Weekly hours editor ----------
+function renderHoursGrid() {
+  const grid = document.getElementById('hoursGrid');
+  grid.innerHTML = WEEKDAY_LABEL.map((lbl, wd) => {
+    const av = AVAIL.find(a => a.weekday === wd);
+    const on = !!av;
+    return `<div class="hrow" data-wd="${wd}">
+      <label class="hchk"><input type="checkbox" ${on ? 'checked' : ''} data-hon="${wd}"> ${lbl}</label>
+      <input type="time" data-hstart="${wd}" value="${av ? av.start_time.slice(0,5) : '10:00'}" ${on ? '' : 'disabled'}>
+      <span>to</span>
+      <input type="time" data-hend="${wd}" value="${av ? av.end_time.slice(0,5) : '18:00'}" ${on ? '' : 'disabled'}>
+      <select data-hdur="${wd}" ${on ? '' : 'disabled'}>
+        ${[15,30,45,60].map(m => `<option value="${m}" ${(av ? av.slot_minutes : 30) === m ? 'selected' : ''}>${m} min</option>`).join('')}
+      </select>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('[data-hon]').forEach(chk => chk.addEventListener('change', () => {
+    const row = grid.querySelector(`[data-wd="${chk.dataset.hon}"]`);
+    row.querySelectorAll('input[type=time], select').forEach(el => el.disabled = !chk.checked);
+  }));
+}
+
+document.getElementById('saveHoursBtn').addEventListener('click', async () => {
+  const msg = document.getElementById('hoursMsg'); msg.className = 'msg'; msg.textContent = '';
+  const days = [];
+  let bad = false;
+  document.querySelectorAll('#hoursGrid [data-wd]').forEach(row => {
+    const wd = Number(row.dataset.wd);
+    if (!row.querySelector(`[data-hon="${wd}"]`).checked) return;
+    const start = row.querySelector(`[data-hstart="${wd}"]`).value;
+    const end = row.querySelector(`[data-hend="${wd}"]`).value;
+    const dur = Number(row.querySelector(`[data-hdur="${wd}"]`).value);
+    if (!start || !end || end <= start) bad = true;
+    days.push({ weekday: wd, start_time: start, end_time: end, slot_minutes: dur });
+  });
+  if (bad) { msg.className = 'msg err'; msg.textContent = 'End time must be after start time on every day you turned on.'; return; }
   try {
-    await createSlot(session.user.id, slotStart.toISOString(), slotEnd.toISOString());
-    document.getElementById('f-date').value = '';
-    document.getElementById('f-start').value = '';
-    document.getElementById('f-end').value = '';
-    msg.className = 'msg ok'; msg.textContent = 'Slot added.';
+    await setAvailability(session.user.id, days);
+    msg.className = 'msg ok'; msg.textContent = 'Saved.';
     await load();
-  } catch (e) {
-    msg.className = 'msg err'; msg.textContent = e.message || 'Could not add slot.';
-  }
+  } catch (e) { msg.className = 'msg err'; msg.textContent = e.message || 'Could not save.'; }
 });
+
+// ---------- Time off ----------
+document.getElementById('addOffBtn').addEventListener('click', async () => {
+  const msg = document.getElementById('offMsg'); msg.className = 'msg'; msg.textContent = '';
+  const date = document.getElementById('f-off-date').value;
+  const note = document.getElementById('f-off-note').value.trim();
+  if (!date) { msg.className = 'msg err'; msg.textContent = 'Pick a date.'; return; }
+  try {
+    await addTimeOff(session.user.id, date, note);
+    document.getElementById('f-off-date').value = '';
+    document.getElementById('f-off-note').value = '';
+    msg.className = 'msg ok'; msg.textContent = 'Blocked.';
+    await load();
+  } catch (e) { msg.className = 'msg err'; msg.textContent = e.message || 'Could not block that date.'; }
+});
+
+function renderOffList() {
+  const box = document.getElementById('offList');
+  if (!TIMEOFF.length) { box.innerHTML = ''; return; }
+  box.innerHTML = '<h3 style="font-size:14px;margin:18px 0 10px">Blocked dates</h3>' + TIMEOFF.map(t =>
+    `<div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px">
+      <div><b>${new Date(t.off_date + 'T00:00').toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' })}</b>${t.note ? ' · ' + esc(t.note) : ''}</div>
+      <button class="btn btn-outline" data-deloff="${t.id}">Remove</button>
+    </div>`
+  ).join('');
+  box.querySelectorAll('[data-deloff]').forEach(b => b.addEventListener('click', async () => {
+    await deleteTimeOff(b.dataset.deloff);
+    await load();
+  }));
+}
 
 async function load() {
   ALL = await listMySlots(session.user.id);
+  AVAIL = await getAvailability(session.user.id);
+  TIMEOFF = await listTimeOff(session.user.id);
   renderTabs();
+  renderCalendar();
   renderLeads();
   renderUpcoming();
-  renderAvailability();
+  renderHoursGrid();
+  renderOffList();
   renderPast();
 }
 load();

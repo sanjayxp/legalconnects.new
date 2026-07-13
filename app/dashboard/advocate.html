@@ -106,7 +106,7 @@
       </div>
 
       <div class="status-banner pending" id="availabilityNudge" style="display:none">
-        <b>📅 Add your availability</b>Clients can't book a consultation with you yet — you haven't added any open slots. <a class="cta" href="advocate-bookings.html">Set your availability →</a>
+        <b>📅 Set your working hours</b>Clients can't book a consultation with you yet — you haven't set your weekly availability. <a class="cta" href="advocate-bookings.html">Set your hours →</a>
       </div>
 
       <h2 class="sec">Overview</h2>
@@ -142,7 +142,7 @@
 <script type="module">
 import { supabase } from '../js/config.js';
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { getAdvocateProfile, listMySlots, countMyAnswers } from '../js/cms.js';
+import { getAdvocateProfile, listMySlots, countMyAnswers, getAvailability } from '../js/cms.js';
 
 const SITE_URL = 'https://legalconnects.netlify.app';
 
@@ -230,18 +230,21 @@ try {
 } catch (e) {}
 try {
   const slots = await listMySlots(session.user.id);
-  const leads = slots.filter(s => s.status === 'booked').length;
+  const leads = slots.filter(s => s.status === 'requested').length;
   const now = new Date();
   const upcoming = slots.filter(s => s.status === 'confirmed' && new Date(s.slot_start) >= now).length;
   document.getElementById('stat-leads').textContent = leads;
   document.getElementById('stat-bookings').textContent = upcoming;
-  if (slots.length === 0) {
-    document.getElementById('availabilityNudge').style.display = '';
-  }
 } catch (e) {
   document.getElementById('stat-leads').textContent = '0';
   document.getElementById('stat-bookings').textContent = '0';
 }
+try {
+  const hours = await getAvailability(session.user.id);
+  if (hours.length === 0) {
+    document.getElementById('availabilityNudge').style.display = '';
+  }
+} catch (e) {}
 try {
   document.getElementById('stat-answers').textContent = await countMyAnswers(session.user.id);
 } catch (e) {
