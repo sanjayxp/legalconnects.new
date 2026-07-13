@@ -13,12 +13,12 @@ export function appPath(p) { return APP_BASE + p; }
 
 // --- REGISTER ---
 // role must be 'client' or 'advocate' (never 'admin' from UI)
-export async function registerUser({ fullName, email, password, role }) {
+export async function registerUser({ fullName, email, password, role, phone }) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { full_name: fullName, role }
+      data: { full_name: fullName, role, phone: phone || null }
     }
   });
   if (error) throw error;
