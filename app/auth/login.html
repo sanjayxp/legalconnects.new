@@ -188,13 +188,14 @@ document.getElementById('li-pass').addEventListener('keydown', e => {
 document.getElementById('btn-reg').addEventListener('click', async () => {
   const fullName = document.getElementById('rg-name').value.trim();
   const email    = document.getElementById('rg-email').value.trim();
+  const phone    = document.getElementById('rg-phone').value.trim();
   const pass     = document.getElementById('rg-pass').value;
   if (!fullName || !email) { say('Please fill in your name and email.', 'err'); return; }
   if (pass.length < 8)     { say('Password needs at least 8 characters.', 'err'); return; }
   if (!document.getElementById('rg-consent').checked) { say('Please accept the terms to continue.', 'err'); return; }
   busy('btn-reg', true, 'Create Account');
   try {
-    const data = await registerUser({ fullName, email, password: pass, role });
+    const data = await registerUser({ fullName, email, password: pass, role, phone });
     if (data.session) { await redirectByRole(); }
     else say('✓ Account created! Check your email for a confirmation link, then log in.', 'ok');
   } catch (err) {
