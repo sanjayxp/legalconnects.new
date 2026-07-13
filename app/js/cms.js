@@ -323,45 +323,94 @@ export async function updateOwnName(userId, fullName) {
   if (error) throw error;
 }
 
-// ---------- BOOKINGS (advocate availability + client booking requests) ----------
-// Lifecycle of a row: open (advocate's free slot) -> booked (client claimed
-// it, awaiting advocate confirmation — this is a "lead") -> confirmed
-// (advocate accepted — this is an upcoming booking) -> completed / cancelled.
+// ---------- BOOKINGS (recurring availability + client booking requests) ----------
+// Advocates set their working hours ONCE (advocate_availability, one row per
+// weekday) plus optional one-off blocked dates (advocate_time_off). Nobody
+// manually creates individual bookable slots anymore. A booking_slots row
+// only exists once a client actually requests a time. Lifecycle of that row:
+// requested (client asked, advocate hasn't decided) -> confirmed (advocate
+// accepted — this slot is now blocked for everyone else) or declined
+// (advocate said no, or lost to another confirmed request for the same
+// time) -> completed / cancelled after the fact.
 
-// Public — open slots for a specific advocate, for the booking widget on
-// their profile. Client PII columns are always null on open rows.
-export async function listOpenSlotsPublic(advocateId) {
+// ---- Weekly working hours ----
+// weekday: 0=Sun .. 6=Sat (matches JS Date.getDay()).
+export async function getAvailability(advocateId) {
   const { data, error } = await supabase
-    .from('booking_slots')
+    .from('advocate_availability')
     .select('*')
     .eq('advocate_id', advocateId)
-    .eq('status', 'open')
-    .gt('slot_start', new Date().toISOString())
-    .order('slot_start', { ascending: true });
+    .order('weekday', { ascending: true });
   if (error) throw error;
   return data || [];
 }
 
-// Public — claim an open slot. Fails (throws) if someone else claimed it
-// first, since the update only matches rows still 'open'.
-export async function bookSlot(slotId, { mode, client_name, client_email, client_phone, client_notes }) {
-  const { data, error } = await supabase
-    .from('booking_slots')
-    .update({
-      status: 'booked',
-      mode, client_name, client_email, client_phone, client_notes,
-      booked_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', slotId)
-    .eq('status', 'open')
-    .select();
+// Replaces the advocate's entire weekly schedule with `days`, an array of
+// { weekday, start_time, end_time, slot_minutes }. Omit a weekday to mark it
+// as a day off.
+export async function setAvailability(advocateId, days) {
+  const { error: delErr } = await supabase.from('advocate_availability').delete().eq('advocate_id', advocateId);
+  if (delErr) throw delErr;
+  if (!days.length) return;
+  const rows = days.map(d => ({ advocate_id: advocateId, ...d }));
+  const { error } = await supabase.from('advocate_availability').insert(rows);
   if (error) throw error;
-  if (!data || !data.length) throw new Error('Sorry, that slot was just taken. Please pick another time.');
-  return data[0];
 }
 
-// Advocate — every slot they own, regardless of status.
+// ---- One-off blocked dates (holidays, court dates, leave) ----
+export async function listTimeOff(advocateId) {
+  const { data, error } = await supabase
+    .from('advocate_time_off')
+    .select('*')
+    .eq('advocate_id', advocateId)
+    .order('off_date', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function addTimeOff(advocateId, offDate, note) {
+  const { error } = await supabase.from('advocate_time_off').insert({ advocate_id: advocateId, off_date: offDate, note: note || null });
+  if (error) throw error;
+}
+
+export async function deleteTimeOff(timeOffId) {
+  const { error } = await supabase.from('advocate_time_off').delete().eq('id', timeOffId);
+  if (error) throw error;
+}
+
+// ---- Public booking flow ----
+// Computed on the fly server-side (weekly hours minus time-off minus
+// confirmed bookings) — never reads booking_slots rows directly, so no
+// other client's name/email/phone is ever exposed to the browser.
+export async function listOpenSlotsPublic(advocateId, fromDate, toDate) {
+  const { data, error } = await supabase.rpc('list_open_slots', {
+    p_advocate_id: advocateId,
+    p_from: fromDate,
+    p_to: toDate,
+  });
+  if (error) throw error;
+  return data || [];
+}
+
+// Public — request a slot. Re-validated against real availability
+// server-side. Multiple clients can request the same time; only one will
+// end up confirmed.
+export async function requestSlot(advocateId, slotStart, slotEnd, { mode, client_name, client_email, client_phone, client_notes }) {
+  const { data, error } = await supabase.rpc('request_booking_slot', {
+    p_advocate_id: advocateId,
+    p_slot_start: slotStart,
+    p_slot_end: slotEnd,
+    p_mode: mode,
+    p_client_name: client_name,
+    p_client_email: client_email || null,
+    p_client_phone: client_phone,
+    p_client_notes: client_notes || null,
+  });
+  if (error) throw new Error(error.message || 'Could not send that request.');
+  return data;
+}
+
+// ---- Advocate — every request/booking they own, regardless of status ----
 export async function listMySlots(advocateId) {
   const { data, error } = await supabase
     .from('booking_slots')
@@ -372,24 +421,33 @@ export async function listMySlots(advocateId) {
   return data || [];
 }
 
-// Advocate — add a new open (bookable) slot to their calendar.
-export async function createSlot(advocateId, slotStart, slotEnd) {
-  const { error } = await supabase
-    .from('booking_slots')
-    .insert({ advocate_id: advocateId, slot_start: slotStart, slot_end: slotEnd, status: 'open' });
-  if (error) throw error;
+// Advocate — accept one pending request; every other pending request for
+// that exact same slot_start is automatically declined.
+export async function confirmBookingRequest(requestId) {
+  const { data, error } = await supabase.rpc('confirm_booking_request', { p_request_id: requestId });
+  if (error) throw new Error(error.message || 'Could not confirm that request.');
+  return data;
 }
 
-export async function deleteSlot(slotId) {
-  const { error } = await supabase.from('booking_slots').delete().eq('id', slotId);
-  if (error) throw error;
+// Advocate — decline a single pending request.
+export async function declineBookingRequest(requestId) {
+  const { data, error } = await supabase.rpc('decline_booking_request', { p_request_id: requestId });
+  if (error) throw new Error(error.message || 'Could not decline that request.');
+  return data;
 }
 
+// Advocate — housekeeping on an already-confirmed booking (mark completed
+// after the meeting happened, or cancel it).
 export async function updateSlotStatus(slotId, status) {
   const { error } = await supabase
     .from('booking_slots')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', slotId);
+  if (error) throw error;
+}
+
+export async function deleteSlot(slotId) {
+  const { error } = await supabase.from('booking_slots').delete().eq('id', slotId);
   if (error) throw error;
 }
 
