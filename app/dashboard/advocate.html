@@ -105,6 +105,10 @@
         <b>⏳ Loading…</b>
       </div>
 
+      <div class="status-banner pending" id="availabilityNudge" style="display:none">
+        <b>📅 Add your availability</b>Clients can't book a consultation with you yet — you haven't added any open slots. <a class="cta" href="advocate-bookings.html">Set your availability →</a>
+      </div>
+
       <h2 class="sec">Overview</h2>
       <div class="stats">
         <div class="stat"><div class="n" id="stat-views">–</div><div class="l">Profile views</div></div>
@@ -231,6 +235,9 @@ try {
   const upcoming = slots.filter(s => s.status === 'confirmed' && new Date(s.slot_start) >= now).length;
   document.getElementById('stat-leads').textContent = leads;
   document.getElementById('stat-bookings').textContent = upcoming;
+  if (slots.length === 0) {
+    document.getElementById('availabilityNudge').style.display = '';
+  }
 } catch (e) {
   document.getElementById('stat-leads').textContent = '0';
   document.getElementById('stat-bookings').textContent = '0';
