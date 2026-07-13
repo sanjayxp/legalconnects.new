@@ -1,0 +1,15 @@
+# Clean URLs — serve the real files that live under /app/ without
+# showing "/app/" in the address bar. These are rewrites (status 200),
+# not redirects: the browser keeps showing the clean URL while Netlify
+# quietly serves the matching file from /app/... behind the scenes.
+# The old /app/... URLs still work too — nothing is being removed.
+
+/admin           /app/admin/index.html   200
+/admin/          /app/admin/index.html   200
+/admin/*         /app/admin/:splat       200
+
+/auth/*          /app/auth/:splat        200
+
+/dashboard/*     /app/dashboard/:splat   200
+
+/js/*            /app/js/:splat          200
