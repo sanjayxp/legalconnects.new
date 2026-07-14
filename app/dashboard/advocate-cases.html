@@ -98,9 +98,22 @@
       <h1>My cases</h1>
       <div class="sub">Track your matters by CRN, court, and next hearing date.</div>
 
-      <div class="syncrow">
-        <span>🔄 <b>eCourts auto-sync</b> — not connected yet. Cases are tracked manually below until an API key is added.</span>
-        <button class="btn btn-disabled" disabled title="Coming soon">Sync via eCourts</button>
+      <div class="addform" id="lookupCard">
+        <h3>🔄 Look up a case by CNR</h3>
+        <div class="sub" style="margin-bottom:0">Pulls live case details from the eCourts network — parties, court, hearing dates, and latest order. You'll review before it's saved.</div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:14px">
+          <div style="flex:1;min-width:220px"><label style="margin-top:0">CNR</label><input id="f-lookup-cnr" placeholder="e.g. DLHC010001232024" style="text-transform:uppercase"></div>
+          <button class="btn btn-primary" id="lookupBtn">Look up</button>
+        </div>
+        <div class="msg" id="lookupMsg"></div>
+        <div id="lookupPreview" style="display:none;margin-top:16px;padding:16px;border:1.5px dashed var(--accent);border-radius:12px;background:var(--accent-soft)">
+          <div style="font-size:13px;font-weight:800;color:var(--accent-dark);margin-bottom:8px">Found this case — review before saving:</div>
+          <div id="lookupPreviewBody" style="font-size:13.5px;line-height:1.7;color:var(--ink)"></div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn btn-primary" id="lookupSaveBtn">Save to My Cases</button>
+            <button class="btn btn-outline" id="lookupDiscardBtn">Discard</button>
+          </div>
+        </div>
       </div>
 
       <div class="addform">
@@ -126,7 +139,7 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { getAdvocateProfile, listMyCases, createCase, deleteCase } from '../js/cms.js';
+import { getAdvocateProfile, listMyCases, createCase, deleteCase, lookupCaseByCNR } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -208,6 +221,67 @@ document.getElementById('addCaseBtn').addEventListener('click', async () => {
     await load();
   } catch (e) {
     msg.className='msg err'; msg.textContent = e.message || 'Could not add this case.';
+  }
+});
+
+let lookupResult = null;
+
+function fmtDateHuman(d) {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+document.getElementById('lookupBtn').addEventListener('click', async () => {
+  const msg = document.getElementById('lookupMsg');
+  const btn = document.getElementById('lookupBtn');
+  const preview = document.getElementById('lookupPreview');
+  msg.className = 'msg'; msg.textContent = '';
+  preview.style.display = 'none';
+  lookupResult = null;
+
+  const cnr = document.getElementById('f-lookup-cnr').value.trim().toUpperCase();
+  if (!cnr) { msg.className = 'msg err'; msg.textContent = 'Enter a CNR first.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Looking up…';
+  try {
+    const result = await lookupCaseByCNR(cnr);
+    lookupResult = result;
+    document.getElementById('lookupPreviewBody').innerHTML = `
+      <b>${esc(result.case_title)}</b><br>
+      ${result.crn ? 'CRN: ' + esc(result.crn) + '<br>' : ''}
+      ${result.court_name ? 'Court: ' + esc(result.court_name) + '<br>' : ''}
+      ${result.case_type ? 'Type: ' + esc(result.case_type) + '<br>' : ''}
+      ${result.filed_date ? 'Filed: ' + fmtDateHuman(result.filed_date) + '<br>' : ''}
+      ${result.next_hearing_date ? 'Next hearing: ' + fmtDateHuman(result.next_hearing_date) + '<br>' : ''}
+      ${result.stage ? 'Stage: ' + esc(result.stage) + '<br>' : ''}
+      ${result.last_order ? 'Last order: ' + esc(result.last_order) : ''}
+    `;
+    preview.style.display = 'block';
+  } catch (e) {
+    msg.className = 'msg err'; msg.textContent = e.message || 'Could not look up that CNR.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Look up';
+  }
+});
+
+document.getElementById('lookupDiscardBtn').addEventListener('click', () => {
+  lookupResult = null;
+  document.getElementById('lookupPreview').style.display = 'none';
+  document.getElementById('f-lookup-cnr').value = '';
+});
+
+document.getElementById('lookupSaveBtn').addEventListener('click', async () => {
+  if (!lookupResult) return;
+  const msg = document.getElementById('lookupMsg');
+  try {
+    await createCase(session.user.id, { ...lookupResult, source: 'ecourts_api' });
+    document.getElementById('lookupPreview').style.display = 'none';
+    document.getElementById('f-lookup-cnr').value = '';
+    lookupResult = null;
+    msg.className = 'msg ok'; msg.textContent = 'Case saved.';
+    await load();
+  } catch (e) {
+    msg.className = 'msg err'; msg.textContent = e.message || 'Could not save this case.';
   }
 });
 
