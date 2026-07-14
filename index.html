@@ -1760,12 +1760,12 @@
     <div class="hint">Your details go straight to our team — no account needed.</div>
     <label>Full name</label>
     <input id="job-name" placeholder="Your full name">
+    <label>Mobile number</label>
+    <input id="job-phone" placeholder="+91 …">
     <label>Email</label>
     <input id="job-email" type="email" placeholder="you@example.com">
-    <label>Phone (optional)</label>
-    <input id="job-phone" placeholder="+91 …">
-    <label>Cover note (optional)</label>
-    <textarea id="job-note" placeholder="Why you're a fit — 2–3 lines is plenty."></textarea>
+    <label>Resume (PDF or Word, max 5MB)</label>
+    <input type="file" id="job-resume" accept=".pdf,.doc,.docx">
     <div class="msg" id="job-msg" style="display:none;font-size:13px;padding:9px 12px;border-radius:8px;margin-top:8px;background:#fdecea;color:#c0392b"></div>
     <div class="row">
       <button class="btn btn-ghost" onclick="closeJob()">Cancel</button>
@@ -2747,7 +2747,7 @@ go = function(v){
 
 <!-- ================= REAL DATA: Jobs, Courses, Team (Supabase-backed) ================= -->
 <script type="module">
-import { listJobsPublic, listCoursesPublic, listTeamPublic, submitJobApplication, submitCourseEnrollment, listApprovedAdvocatesPublic } from './app/js/cms.js';
+import { listJobsPublic, listCoursesPublic, listTeamPublic, submitJobApplication, submitCourseEnrollment, listApprovedAdvocatesPublic, uploadResume } from './app/js/cms.js';
 import { supabase } from './app/js/config.js';
 import { getCurrentProfile } from './app/js/auth.js';
 
@@ -2778,7 +2778,7 @@ async function renderJobs() {
   grid.innerHTML = JOBS.map(j => `
     <div class="job">
       <div class="job-top">
-        <span class="firmlogo" style="background:${esc(j.firm_color||'#3e5bd9')}">${esc(j.firm_initials || j.firm_name.slice(0,2).toUpperCase())}</span>
+        <span class="firmlogo" style="background:${esc(j.firm_color||'#3e5bd9')}">${j.logo_url ? `<img src="${esc(j.logo_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : esc(j.firm_initials || j.firm_name.slice(0,2).toUpperCase())}</span>
         <div><h3>${esc(j.title)}</h3><div class="firm">${esc(j.firm_name)}</div></div>
       </div>
       <div class="job-meta">
@@ -2806,11 +2806,13 @@ async function renderCourses() {
   }
   grid.innerHTML = COURSES.map(c => `
     <div class="course">
+      ${c.image_url ? `<div style="height:130px;overflow:hidden"><img src="${esc(c.image_url)}" style="width:100%;height:100%;object-fit:cover;display:block"></div>` : ''}
       <div class="band" style="background:${esc(c.band_color||'#3e5bd9')}"></div>
       <div class="inner">
         <span class="ctag" style="background:var(--accent-soft);color:var(--accent-dark)">${esc(c.tag_type||'Course')}</span>
         <h3>${esc(c.title)}</h3>
         <div class="by">${c.instructor ? 'By '+esc(c.instructor)+' · ' : ''}${esc(c.duration||'')}${c.duration && c.mode ? ' · ' : ''}${esc(c.mode||'')}</div>
+        ${c.college_name ? `<div class="by" style="margin-top:2px">🏫 ${esc(c.college_name)}${c.college_website ? ` · <a href="${esc(c.college_website)}" target="_blank" rel="noopener" style="color:var(--accent)">Website ↗</a>` : ''}${c.college_contact ? ` · ${esc(c.college_contact)}` : ''}</div>` : ''}
         <div class="cfoot"><span>${esc(c.schedule_text||'')}</span><b>${c.is_free || !c.price ? 'Free' : '₹'+c.price}</b><button class="btn btn-ghost" style="padding:7px 16px;font-size:13px" data-enroll="${c.id}">${esc(c.cta_label||'Enroll')}</button></div>
       </div>
     </div>`).join('');
@@ -2849,29 +2851,35 @@ window.openJobApply = function(jobId) {
   document.getElementById('job-name').value = '';
   document.getElementById('job-email').value = '';
   document.getElementById('job-phone').value = '';
-  document.getElementById('job-note').value = '';
+  document.getElementById('job-resume').value = '';
   document.getElementById('job-msg').style.display = 'none';
   document.getElementById('jobModal').classList.add('open');
 };
 window.submitJobApp = async function() {
   const name = document.getElementById('job-name').value.trim();
   const email = document.getElementById('job-email').value.trim();
+  const phone = document.getElementById('job-phone').value.trim();
+  const file = document.getElementById('job-resume').files[0];
   const msg = document.getElementById('job-msg');
-  if (!name || !email) { msg.textContent = 'Please enter your name and email.'; msg.style.display = 'block'; return; }
+  msg.style.display = 'none';
+  if (!name || !email || !phone) { msg.textContent = 'Please enter your name, mobile number, and email.'; msg.style.display = 'block'; return; }
+  if (!file) { msg.textContent = 'Please attach your resume.'; msg.style.display = 'block'; return; }
+  if (file.size > 5 * 1024 * 1024) { msg.textContent = 'Resume must be under 5MB.'; msg.style.display = 'block'; return; }
   const btn = document.getElementById('job-submit-btn');
   btn.disabled = true; btn.textContent = 'Sending…';
   try {
+    const resumePath = await uploadResume(currentJobId, file);
     await submitJobApplication({
       job_id: currentJobId,
       full_name: name,
       email,
-      phone: document.getElementById('job-phone').value.trim(),
-      cover_note: document.getElementById('job-note').value.trim(),
+      phone,
+      resume_url: resumePath,
     });
     document.getElementById('jobModal').classList.remove('open');
     if (typeof toast === 'function') toast('✓ Application sent — we\'ll be in touch by email');
   } catch (e) {
-    msg.textContent = 'Could not send your application. Please try again.'; msg.style.display = 'block';
+    msg.textContent = e.message || 'Could not send your application. Please try again.'; msg.style.display = 'block';
   } finally { btn.disabled = false; btn.textContent = 'Send Application'; }
 };
 
