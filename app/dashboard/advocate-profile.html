@@ -227,7 +227,7 @@ if (profile) {
   document.getElementById('sideAvatar').textContent = n.charAt(0).toUpperCase();
 }
 
-const AREAS = ['Civil','Criminal','Family','Corporate','Property','Tax','Labour & Employment','IP','Cyber Law','Consumer','Real Estate','Immigration'];
+const AREAS = ['Civil','Criminal','Family','Corporate','Property & Real Estate','Tax','Labour & Employment','IP','Cyber Law','Consumer','Immigration'];
 const chipsEl = document.getElementById('chips');
 chipsEl.innerHTML = AREAS.map(a => `<span class="chip" data-area="${a}">${a}</span>`).join('');
 const selected = new Set();
