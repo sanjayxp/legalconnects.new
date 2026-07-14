@@ -1833,6 +1833,15 @@
 
 <script>
 function go(v){
+  // Views 'qd' (a specific question) and 'prof' (a specific advocate) are
+  // represented in the URL hash (#q=... / #advocate=...) so they can be
+  // shared/bookmarked/reloaded. Navigating to any OTHER view should clear
+  // that hash — otherwise it gets stuck in the address bar (looks wrong,
+  // and a reload would incorrectly jump back into the old question/profile
+  // instead of showing the view you're actually on).
+  if(v!=='qd' && v!=='prof' && location.hash){
+    history.replaceState(null,'',location.pathname+location.search);
+  }
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('on'));
   document.getElementById('view-'+v).classList.add('on');
   document.getElementById('nav-home').classList.toggle('active', v==='home');
