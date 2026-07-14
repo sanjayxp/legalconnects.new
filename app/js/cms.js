@@ -464,6 +464,29 @@ export async function uploadPhoto(bucket, path, file) {
   return data.publicUrl;
 }
 
+// ---------- JOB APPLICATION RESUMES ----------
+// Private bucket — anyone (including anonymous applicants) can upload their
+// own resume, but only admins can read/download one back. Path is namespaced
+// by job so admin's applicant viewer can also just list a job's folder if
+// ever needed.
+export async function uploadResume(jobId, file) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const path = `${jobId}/${Date.now()}-${safeName}`;
+  const { error } = await supabase.storage.from('job-resumes').upload(path, file, {
+    contentType: file.type,
+  });
+  if (error) throw error;
+  return path;
+}
+
+// Admin-only — the bucket is private, so viewing a resume needs a short-lived
+// signed URL rather than a public one.
+export async function getResumeSignedUrl(path) {
+  const { data, error } = await supabase.storage.from('job-resumes').createSignedUrl(path, 300);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
 // ---------- LEGAL Q&A (real, public forum) ----------
 // Anyone can read and ask a question (anonymous by default). Only a
 // signed-in, Bar Council-approved advocate can post an answer.
