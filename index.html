@@ -665,7 +665,7 @@
         <div>
           <span class="kicker" style="color:#9db1ff">Free tool</span>
           <h2>Is your case in court? Track it here.</h2>
-          <p>Enter your CNR number and get your case status in plain language, with free WhatsApp alerts every time your case moves. No account needed.</p>
+          <p>Enter your CNR number and get your live case status straight from the eCourts network. Free with a LegalConnects account.</p>
           <button class="btn btn-primary btn-lg" onclick="go('track')">Track Your Case Free</button>
         </div>
         <div class="qa-demo">
@@ -1407,35 +1407,47 @@
 <div class="view" id="view-track">
   <div class="track-hero">
     <div class="wrap">
-      <span class="eyebrow">🆓 Free for everyone — no account needed</span>
-      <h1>Track your court case, in plain language</h1>
-      <p>Enter your CNR number (printed on every court filing) and get your case status explained simply — plus free WhatsApp updates whenever your case moves.</p>
+      <span class="eyebrow">🆓 Free with a LegalConnects account</span>
+      <h1>Track your court case, straight from eCourts</h1>
+      <p>Enter your CNR number (printed on every court filing) and get your case status, hearing history, and next date — pulled live from the eCourts network.</p>
       <div class="cnr-bar">
         <input id="track-cnr" placeholder="Enter 16-digit CNR, e.g. MHAU010012342024" maxlength="16">
         <button class="btn btn-primary btn-lg" onclick="trackCase()">Track Case</button>
       </div>
-      <div class="cnr-hint">Don't know your CNR? It's on your court receipt or any order copy. <b onclick="document.getElementById('track-cnr').value='MHAU010012342024';trackCase()">See a sample case</b></div>
+      <div class="cnr-hint">Don't know your CNR? It's on your court receipt or any order copy. <b onclick="document.getElementById('track-cnr').value='DLND020047882015';trackCase()">See a sample case</b></div>
     </div>
   </div>
   <div class="wrap" style="padding-bottom:64px">
     <div class="case-card" id="case-result" style="display:none">
-      <div class="dcard">
-        <div class="status-strip">✅ <div><b>Case found</b> — Sunita Mane v. Prakash Builders Pvt. Ltd.</div></div>
+
+      <div class="dcard" id="case-signin-block" style="display:none">
+        <div class="status-strip" style="background:var(--accent-soft);color:var(--accent-dark)">🔒 <div><b>Sign in to track a case</b> — it's free and takes a minute.</div></div>
+        <div style="font-size:13.5px;color:var(--ink-soft);margin:10px 0 16px">We ask for a free account so this stays a genuinely free tool for real users, not something that can be hammered anonymously.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="window.location.href='/auth/register.html'">Create free account</button>
+          <button class="btn btn-ghost" onclick="window.location.href='/auth/login.html'">Log in</button>
+        </div>
+      </div>
+
+      <div class="dcard" id="case-notfound-block" style="display:none">
+        <div class="status-strip" style="background:#fdecea;color:#c0392b">⚠️ <div><b>No case found</b> — <span id="cr-notfound-msg">We couldn't find a case for that CNR.</span></div></div>
+        <div style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">Double-check the CNR on your court receipt or order copy — it's 16 characters (4 letters, then 12 digits), no spaces.</div>
+      </div>
+
+      <div class="dcard" id="case-found-block" style="display:none">
+        <div class="status-strip">✅ <div><b>Case found</b> — <span id="cr-title"></span></div></div>
         <table class="dtable" style="margin-bottom:16px"><tbody>
-          <tr><td>CNR</td><td><b>MHAU010012342024</b></td></tr>
-          <tr><td>Court</td><td><b>District Court, Pune — Court 4</b></td></tr>
-          <tr><td>Case type</td><td><b>Civil Suit (Recovery of security deposit)</b></td></tr>
-          <tr><td>Filed</td><td><b>12 Feb 2024</b></td></tr>
-          <tr><td>Next hearing</td><td><b style="color:var(--accent)">21 July 2026, 11:00 AM</b></td></tr>
-          <tr><td>Stage</td><td><b>Evidence of plaintiff</b></td></tr>
+          <tr><td>CNR</td><td><b id="cr-cnr"></b></td></tr>
+          <tr><td>Court</td><td><b id="cr-court"></b></td></tr>
+          <tr><td>Case type</td><td><b id="cr-type"></b></td></tr>
+          <tr><td>Filed</td><td><b id="cr-filed"></b></td></tr>
+          <tr><td>Next hearing</td><td><b style="color:var(--accent)" id="cr-next"></b></td></tr>
+          <tr><td>Stage</td><td><b id="cr-stage"></b></td></tr>
         </tbody></table>
-        <div class="plain"><b>What this means in plain language:</b> Your case is at the evidence stage — you (the plaintiff) are presenting documents and witnesses to support your claim. At the next hearing on 21 July, your side continues its evidence. After both sides finish, the court hears final arguments and then passes judgment.</div>
-        <h3 style="font-size:15.5px;margin-bottom:12px">Case history</h3>
-        <div class="timeline" style="margin-bottom:18px">
-          <div class="tl-item"><b>Adjourned — evidence to continue</b><div class="org">Plaintiff's first witness examined in part</div><div class="yrs">18 Jun 2026</div></div>
-          <div class="tl-item"><b>Issues framed</b><div class="org">Court framed 4 issues for trial</div><div class="yrs">3 Mar 2026</div></div>
-          <div class="tl-item"><b>Written statement filed</b><div class="org">Defendant denied the claim</div><div class="yrs">22 Aug 2025</div></div>
-          <div class="tl-item"><b>Summons issued</b><div class="org">Notice served on defendant</div><div class="yrs">28 Feb 2024</div></div>
+        <div class="plain" id="cr-plain"></div>
+        <div id="cr-history-wrap">
+          <h3 style="font-size:15.5px;margin-bottom:12px">Recent hearings</h3>
+          <div class="timeline" id="cr-history" style="margin-bottom:18px"></div>
         </div>
         <div class="wa-opt">
           <input id="track-phone" placeholder="WhatsApp number for free updates, +91…">
@@ -1446,7 +1458,8 @@
           <button class="btn btn-ghost" onclick="go('dir')">Find an advocate for this matter</button>
         </div>
       </div>
-      <div class="disclaimer">Case data shown is demo data. In production this is fetched live from the eCourts NJDG system. Status explanations are general information, not legal advice.</div>
+
+      <div class="disclaimer" id="cr-disclaimer" style="display:none">Case data is fetched live from the eCourts network by CNR. This is factual case status only, not legal advice.</div>
     </div>
   </div>
 </div>
@@ -2306,10 +2319,16 @@ function sortAdv(){
   cards.sort((a,b)=>key(a)-key(b)).forEach(c=>list.appendChild(c));
 }
 /* ===== Phase 7: Hearing diary & case tracker ===== */
-/* PRODUCTION INTEGRATION POINT #1 (eCourts):
-   Replace fetchCaseByCNR() with a call to your backend, which queries the
-   eCourts / NJDG CNR lookup and returns {title, court, type, filed, nextHearing, stage, history[]}.
-   Keep the same return shape and the UI below works unchanged. */
+function fmtCourtDate(d){
+  if(!d) return null;
+  const dt = new Date(d);
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+/* Legacy demo data generator — still used by the advocate-side "diary" quick-add
+   sample (dp-diary), which is a separate, still-manual feature. The public
+   Track Your Case tab below no longer calls this; it uses the real
+   lookupCaseByCNR() eCourts lookup instead. */
 function fetchCaseByCNR(cnr){
   // DEMO DATA — same sample case for any valid-looking CNR
   return {
@@ -2320,13 +2339,57 @@ function fetchCaseByCNR(cnr){
   };
 }
 function validCNR(c){ return /^[A-Z]{4}[0-9]{12}$/i.test(c.trim()); }
-function trackCase(){
-  const c=document.getElementById('track-cnr').value;
+async function trackCase(){
+  const c=document.getElementById('track-cnr').value.trim().toUpperCase();
   if(!validCNR(c)){ toast('CNR is 16 characters — 4 letters then 12 digits (e.g. MHAU010012342024)'); return; }
-  fetchCaseByCNR(c); // production: await backend
-  document.getElementById('case-result').style.display='';
-  document.getElementById('case-result').scrollIntoView({behavior:'smooth',block:'start'});
-  toast('✓ Case found on eCourts (demo data)');
+
+  const result=document.getElementById('case-result');
+  const signinBlock=document.getElementById('case-signin-block');
+  const notfoundBlock=document.getElementById('case-notfound-block');
+  const foundBlock=document.getElementById('case-found-block');
+  const disclaimer=document.getElementById('cr-disclaimer');
+  result.style.display='';
+  signinBlock.style.display='none';
+  notfoundBlock.style.display='none';
+  foundBlock.style.display='none';
+  disclaimer.style.display='none';
+  result.scrollIntoView({behavior:'smooth',block:'start'});
+
+  const { supabase } = await import('/app/js/config.js');
+  const { data:{ session } } = await supabase.auth.getSession();
+  if(!session){ signinBlock.style.display='block'; return; }
+
+  toast('Looking up case on eCourts…');
+  try{
+    const { lookupCaseByCNR } = await import('/app/js/cms.js');
+    const d = await lookupCaseByCNR(c);
+    document.getElementById('cr-title').textContent = d.case_title || '—';
+    document.getElementById('cr-cnr').textContent = d.crn || c;
+    document.getElementById('cr-court').textContent = d.court_name || 'Not available';
+    document.getElementById('cr-type').textContent = d.case_type || 'Not available';
+    document.getElementById('cr-filed').textContent = fmtCourtDate(d.filed_date) || 'Not available';
+    document.getElementById('cr-next').textContent = d.next_hearing_date ? fmtCourtDate(d.next_hearing_date) : 'Not scheduled yet';
+    document.getElementById('cr-stage').textContent = d.stage || 'Not available';
+    document.getElementById('cr-plain').innerHTML = d.case_status === 'DISPOSED'
+      ? '<b>Status:</b> This case has been disposed (concluded) by the court.'
+      : '<b>Status:</b> This case is currently pending before the court.';
+    const histWrap=document.getElementById('cr-history-wrap');
+    const histEl=document.getElementById('cr-history');
+    if(d.history && d.history.length){
+      histWrap.style.display='';
+      histEl.innerHTML = d.history.map(h=>'<div class="tl-item"><b>'+esc(h.purpose||'Hearing')+'</b>'+(h.judge?'<div class="org">'+esc(h.judge)+'</div>':'')+'<div class="yrs">'+(fmtCourtDate(h.date)||'')+'</div></div>').join('');
+    } else {
+      histWrap.style.display='none';
+      histEl.innerHTML='';
+    }
+    foundBlock.style.display='block';
+    disclaimer.style.display='block';
+    toast('✓ Case found on eCourts');
+  }catch(e){
+    document.getElementById('cr-notfound-msg').textContent = e.message || "We couldn't find a case for that CNR.";
+    notfoundBlock.style.display='block';
+    disclaimer.style.display='block';
+  }
 }
 /* PRODUCTION INTEGRATION POINT #2 (WhatsApp):
    waSubscribe() should POST {cnr, phone} to your backend, which registers a
