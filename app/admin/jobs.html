@@ -129,7 +129,15 @@
     <input id="f-title" placeholder="e.g. Associate — Corporate Law">
     <div class="grid2">
       <div><label>Firm name</label><input id="f-firm" placeholder="e.g. Khaitan Associates"></div>
-      <div><label>Firm initials (badge)</label><input id="f-initials" maxlength="3" placeholder="e.g. KA"></div>
+      <div><label>Firm initials (badge fallback)</label><input id="f-initials" maxlength="3" placeholder="e.g. KA"></div>
+    </div>
+    <label>Firm logo (optional — shown instead of initials badge if set)</label>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="logoPreviewWrap" style="width:46px;height:46px;border-radius:11px;background:var(--bg);border:1px solid var(--line);flex-shrink:0;overflow:hidden;display:grid;place-items:center;font-size:11px;color:var(--ink-faint)">
+        <img id="logoPreview" style="display:none;width:100%;height:100%;object-fit:cover">
+        <span id="logoPreviewEmpty">No logo</span>
+      </div>
+      <input type="file" id="f-logo" accept="image/*" style="flex:1">
     </div>
     <div class="grid2">
       <div><label>Employment type</label>
@@ -157,7 +165,7 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { listJobsAdmin, saveJob, deleteJob, countApplications, listJobApplicants } from '../js/cms.js';
+import { listJobsAdmin, saveJob, deleteJob, countApplications, listJobApplicants, uploadPhoto, getResumeSignedUrl } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -169,6 +177,8 @@ document.getElementById('signoutBtn').addEventListener('click', signOut);
 const modal = document.getElementById('jobModal');
 const modalMsg = document.getElementById('modalMsg');
 function sayModal(t, ok){ modalMsg.className='msg'+(t?(ok?' ok':' err'):''); modalMsg.textContent=t; }
+
+let currentLogoUrl = null;
 
 function openModal(job) {
   sayModal('');
@@ -183,10 +193,24 @@ function openModal(job) {
   document.getElementById('f-salary').value = job?.salary_range || '';
   document.getElementById('f-desc').value = job?.description || '';
   document.getElementById('f-status').value = job?.status || 'active';
+  document.getElementById('f-logo').value = '';
+  currentLogoUrl = job?.logo_url || null;
+  updateLogoPreview(currentLogoUrl);
   modal.classList.add('open');
 }
 document.getElementById('newJobBtn').addEventListener('click', () => openModal(null));
 document.getElementById('cancelBtn').addEventListener('click', () => modal.classList.remove('open'));
+
+function updateLogoPreview(url) {
+  const img = document.getElementById('logoPreview');
+  const empty = document.getElementById('logoPreviewEmpty');
+  if (url) { img.src = url; img.style.display = 'block'; empty.style.display = 'none'; }
+  else { img.style.display = 'none'; empty.style.display = 'block'; }
+}
+document.getElementById('f-logo').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) updateLogoPreview(URL.createObjectURL(file));
+});
 
 const colors = ['#3e5bd9','#0e8a5f','#b45309','#7c3aed','#c0392b','#0891b2'];
 function colorFor(str){ let h=0; for(const c of (str||'')) h=(h*31+c.charCodeAt(0))%colors.length; return colors[h]; }
@@ -236,7 +260,17 @@ async function openApplicants(jobId, title) {
         <div style="font-size:13px;color:var(--ink-soft);margin-top:2px">${esc(a.email)} · ${esc(a.phone || 'no phone given')}</div>
         <div style="font-size:12px;color:var(--ink-faint);margin-top:4px">Applied ${new Date(a.applied_at).toLocaleString()}</div>
         ${a.cover_note ? `<div style="font-size:13.5px;margin-top:8px;white-space:pre-wrap">${esc(a.cover_note)}</div>` : ''}
+        ${a.resume_url ? `<button class="btn btn-sm btn-outline" style="margin-top:10px" data-resume="${esc(a.resume_url)}">📄 View resume</button>` : '<div style="font-size:12.5px;color:var(--ink-faint);margin-top:8px">No resume attached</div>'}
       </div>`).join('');
+    list.querySelectorAll('[data-resume]').forEach(b => b.addEventListener('click', async () => {
+      b.disabled = true; const orig = b.textContent; b.textContent = 'Opening…';
+      try {
+        const url = await getResumeSignedUrl(b.dataset.resume);
+        window.open(url, '_blank', 'noopener');
+      } catch (e) {
+        alert('Could not open this resume.');
+      } finally { b.disabled = false; b.textContent = orig; }
+    }));
   } catch (e) {
     list.innerHTML = '<div class="empty">Could not load applicants.</div>';
   }
@@ -248,24 +282,34 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   const title = document.getElementById('f-title').value.trim();
   const firm  = document.getElementById('f-firm').value.trim();
   if (!title || !firm) { sayModal('Job title and firm name are required.'); return; }
-  const job = {
-    id: document.getElementById('f-id').value || undefined,
-    title, firm_name: firm,
-    firm_initials: document.getElementById('f-initials').value.trim() || firm.slice(0,2).toUpperCase(),
-    firm_color: colorFor(firm),
-    employment_type: document.getElementById('f-emptype').value,
-    location_type: document.getElementById('f-loctype').value,
-    experience_level: document.getElementById('f-exp').value.trim(),
-    salary_range: document.getElementById('f-salary').value.trim(),
-    description: document.getElementById('f-desc').value.trim(),
-    status: document.getElementById('f-status').value,
-    created_by: session.user.id,
-  };
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
   try {
+    let logoUrl = currentLogoUrl;
+    const logoFile = document.getElementById('f-logo').files[0];
+    if (logoFile) {
+      const path = `${Date.now()}-${logoFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
+      logoUrl = await uploadPhoto('job-logos', path, logoFile);
+    }
+    const job = {
+      id: document.getElementById('f-id').value || undefined,
+      title, firm_name: firm,
+      firm_initials: document.getElementById('f-initials').value.trim() || firm.slice(0,2).toUpperCase(),
+      firm_color: colorFor(firm),
+      logo_url: logoUrl,
+      employment_type: document.getElementById('f-emptype').value,
+      location_type: document.getElementById('f-loctype').value,
+      experience_level: document.getElementById('f-exp').value.trim(),
+      salary_range: document.getElementById('f-salary').value.trim(),
+      description: document.getElementById('f-desc').value.trim(),
+      status: document.getElementById('f-status').value,
+      created_by: session.user.id,
+    };
     await saveJob(job);
     modal.classList.remove('open');
     render();
   } catch (e) { sayModal(e.message || 'Could not save job.'); }
+  finally { saveBtn.disabled = false; saveBtn.textContent = 'Save job'; }
 });
 
 render();

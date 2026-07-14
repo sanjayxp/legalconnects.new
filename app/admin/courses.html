@@ -119,6 +119,14 @@
     <input type="hidden" id="f-id">
     <label>Title</label>
     <input id="f-title" placeholder="e.g. GST Litigation &amp; Departmental Proceedings">
+    <label>Course picture (optional)</label>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="imgPreviewWrap" style="width:80px;height:56px;border-radius:8px;background:var(--bg);border:1px solid var(--line);flex-shrink:0;overflow:hidden;display:grid;place-items:center;font-size:10.5px;color:var(--ink-faint)">
+        <img id="imgPreview" style="display:none;width:100%;height:100%;object-fit:cover">
+        <span id="imgPreviewEmpty">No image</span>
+      </div>
+      <input type="file" id="f-image" accept="image/*" style="flex:1">
+    </div>
     <div class="grid2">
       <div><label>Type</label>
         <select id="f-tag"><option>Certificate Course</option><option>Webinar</option><option>Workshop</option></select>
@@ -137,6 +145,12 @@
       <div><label>Price (₹, blank/0 if free)</label><input id="f-price" type="number" min="0" placeholder="e.g. 4999"></div>
       <div><label>Button label</label><input id="f-cta" placeholder="e.g. Enroll / Register"></div>
     </div>
+    <label style="margin-top:20px;padding-top:14px;border-top:1px solid var(--line);display:block">College / institution (optional)</label>
+    <input id="f-college-name" placeholder="e.g. National Law University, Delhi">
+    <div class="grid2">
+      <div><label>College website</label><input id="f-college-web" placeholder="e.g. https://nludelhi.ac.in"></div>
+      <div><label>Contact person / number</label><input id="f-college-contact" placeholder="e.g. Prof. Rao, +91 98xxxxxx"></div>
+    </div>
     <label>Status</label>
     <select id="f-status"><option value="active">Active — visible on site</option><option value="closed">Closed — hidden from site</option></select>
     <div class="msg" id="modalMsg"></div>
@@ -149,7 +163,7 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { listCoursesAdmin, saveCourse, deleteCourse, countEnrollments, listCourseEnrollees } from '../js/cms.js';
+import { listCoursesAdmin, saveCourse, deleteCourse, countEnrollments, listCourseEnrollees, uploadPhoto } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -165,6 +179,8 @@ function sayModal(t){ modalMsg.className='msg'+(t?' err':''); modalMsg.textConte
 const colors = ['#3e5bd9','#0e8a5f','#b45309','#7c3aed','#c0392b','#0891b2'];
 function colorFor(str){ let h=0; for(const c of (str||'')) h=(h*31+c.charCodeAt(0))%colors.length; return colors[h]; }
 
+let currentImageUrl = null;
+
 function openModal(c) {
   sayModal('');
   document.getElementById('modalTitle').textContent = c ? 'Edit course' : 'New course';
@@ -177,11 +193,28 @@ function openModal(c) {
   document.getElementById('f-schedule').value = c?.schedule_text || '';
   document.getElementById('f-price').value = c?.price || '';
   document.getElementById('f-cta').value = c?.cta_label || 'Enroll';
+  document.getElementById('f-college-name').value = c?.college_name || '';
+  document.getElementById('f-college-web').value = c?.college_website || '';
+  document.getElementById('f-college-contact').value = c?.college_contact || '';
   document.getElementById('f-status').value = c?.status || 'active';
+  document.getElementById('f-image').value = '';
+  currentImageUrl = c?.image_url || null;
+  updateImgPreview(currentImageUrl);
   modal.classList.add('open');
 }
 document.getElementById('newBtn').addEventListener('click', () => openModal(null));
 document.getElementById('cancelBtn').addEventListener('click', () => modal.classList.remove('open'));
+
+function updateImgPreview(url) {
+  const img = document.getElementById('imgPreview');
+  const empty = document.getElementById('imgPreviewEmpty');
+  if (url) { img.src = url; img.style.display = 'block'; empty.style.display = 'none'; }
+  else { img.style.display = 'none'; empty.style.display = 'block'; }
+}
+document.getElementById('f-image').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) updateImgPreview(URL.createObjectURL(file));
+});
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
@@ -237,27 +270,40 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   const title = document.getElementById('f-title').value.trim();
   const instructor = document.getElementById('f-instructor').value.trim();
   if (!title) { sayModal('Title is required.'); return; }
-  const priceVal = parseFloat(document.getElementById('f-price').value);
-  const course = {
-    id: document.getElementById('f-id').value || undefined,
-    title,
-    tag_type: document.getElementById('f-tag').value,
-    band_color: colorFor(title),
-    instructor,
-    duration: document.getElementById('f-duration').value.trim(),
-    mode: document.getElementById('f-mode').value,
-    schedule_text: document.getElementById('f-schedule').value.trim(),
-    price: isNaN(priceVal) || priceVal <= 0 ? null : priceVal,
-    is_free: isNaN(priceVal) || priceVal <= 0,
-    cta_label: document.getElementById('f-cta').value.trim() || 'Enroll',
-    status: document.getElementById('f-status').value,
-    created_by: session.user.id,
-  };
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
   try {
+    let imageUrl = currentImageUrl;
+    const imageFile = document.getElementById('f-image').files[0];
+    if (imageFile) {
+      const path = `${Date.now()}-${imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
+      imageUrl = await uploadPhoto('course-images', path, imageFile);
+    }
+    const priceVal = parseFloat(document.getElementById('f-price').value);
+    const course = {
+      id: document.getElementById('f-id').value || undefined,
+      title,
+      tag_type: document.getElementById('f-tag').value,
+      band_color: colorFor(title),
+      image_url: imageUrl,
+      instructor,
+      duration: document.getElementById('f-duration').value.trim(),
+      mode: document.getElementById('f-mode').value,
+      schedule_text: document.getElementById('f-schedule').value.trim(),
+      price: isNaN(priceVal) || priceVal <= 0 ? null : priceVal,
+      is_free: isNaN(priceVal) || priceVal <= 0,
+      cta_label: document.getElementById('f-cta').value.trim() || 'Enroll',
+      college_name: document.getElementById('f-college-name').value.trim() || null,
+      college_website: document.getElementById('f-college-web').value.trim() || null,
+      college_contact: document.getElementById('f-college-contact').value.trim() || null,
+      status: document.getElementById('f-status').value,
+      created_by: session.user.id,
+    };
     await saveCourse(course);
     modal.classList.remove('open');
     render();
   } catch (e) { sayModal(e.message || 'Could not save course.'); }
+  finally { saveBtn.disabled = false; saveBtn.textContent = 'Save course'; }
 });
 
 render();
