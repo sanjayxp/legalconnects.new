@@ -566,6 +566,29 @@ export async function deleteCase(caseId) {
   if (error) throw error;
 }
 
+// Looks up a case on the official eCourts data network by CNR (Case Number
+// Record, e.g. DLHC010001232024) and returns pre-filled fields for the
+// court_cases form. Calls the ecourts-lookup Edge Function rather than the
+// eCourtsIndia API directly — the paid API token lives only in Supabase's
+// server-side secrets, never in this browser code.
+export async function lookupCaseByCNR(cnr) {
+  const { data, error } = await supabase.functions.invoke('ecourts-lookup', {
+    body: { cnr },
+  });
+  if (error) {
+    // Supabase's FunctionsHttpError hides the actual JSON error body on
+    // `error`; the real message is on the response the SDK attaches to it.
+    let msg = 'Could not look up that CNR. Please try again.';
+    try {
+      const body = await error.context.json();
+      if (body?.error) msg = body.error;
+    } catch (_) { /* fall back to generic message */ }
+    throw new Error(msg);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data.data;
+}
+
 // ---------- PROFILE VIEWS ----------
 export async function incrementProfileView(advocateProfileId) {
   const { error } = await supabase.rpc('increment_profile_view', { profile_id: advocateProfileId });
