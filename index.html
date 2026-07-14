@@ -56,20 +56,27 @@
   h1{font-size:clamp(32px,4.4vw,50px);line-height:1.12;letter-spacing:-.025em;font-weight:800}
   h1 em{font-style:normal;color:var(--accent)}
   .hero p.sub{margin:18px 0 28px;font-size:17.5px;color:var(--ink-soft);max-width:52ch}
-  .searchbar{display:flex;background:var(--card);border:1.5px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;max-width:680px;padding:6px;gap:2px;transition:box-shadow .2s,border-color .2s}
+  .searchbar{display:flex;align-items:stretch;background:var(--card);border:1.5px solid var(--line);border-radius:18px;box-shadow:var(--shadow);max-width:680px;padding:6px;gap:2px;transition:box-shadow .2s,border-color .2s}
   .searchbar:focus-within{border-color:var(--accent);box-shadow:0 4px 10px rgba(62,91,217,.12),0 14px 36px rgba(62,91,217,.14)}
-  .searchbar .cell{flex:1.2;display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:12px;transition:background .15s;cursor:pointer}
+  .searchbar .cell{flex:1.2;display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:12px;transition:background .15s;cursor:pointer;min-height:52px}
   .searchbar .cell:hover,.searchbar .cell:focus-within{background:var(--accent-soft)}
-  .searchbar .cell + .cell{flex:1}
+  .searchbar .cell + .cell{flex:1;border-left:1px solid var(--line)}
+  .searchbar .cell:focus-within{border-left-color:transparent}
   .searchbar .cell-ic{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center;font-size:16px;flex-shrink:0}
   .searchbar .cell:focus-within .cell-ic{background:var(--accent);color:#fff}
-  .searchbar .cell-body{display:flex;flex-direction:column;min-width:0;flex:1}
+  .searchbar .cell-body{display:flex;flex-direction:column;min-width:0;flex:1;position:relative}
   .searchbar label{font-size:10.5px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;cursor:pointer}
-  .searchbar select,.searchbar input{border:none;outline:none;font-size:14.5px;font-weight:600;background:transparent;color:var(--ink);padding-top:1px;width:100%;cursor:pointer}
+  .searchbar select,.searchbar input{border:none;outline:none;font-size:14.5px;font-weight:600;background:transparent;color:var(--ink);padding-top:1px;width:100%;cursor:pointer;line-height:1.3;font-family:inherit}
+  .searchbar select{appearance:none;-webkit-appearance:none;-moz-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a93a5' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 2px center;padding-right:16px}
   .searchbar input::placeholder{color:var(--ink-faint);font-weight:500}
-  .searchbar .go{background:var(--accent);color:#fff;padding:0 26px;font-weight:700;font-size:15px;border-radius:13px;display:flex;align-items:center;gap:8px;transition:background .15s,transform .1s}
+  .searchbar .go{background:var(--accent);color:#fff;padding:0 26px;font-weight:700;font-size:15px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,transform .1s;flex-shrink:0}
   .searchbar .go:hover{background:var(--accent-dark)}
   .searchbar .go:active{transform:scale(.97)}
+  .suggest-list{display:none;position:absolute;top:calc(100% + 14px);left:-14px;right:-14px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 36px rgba(26,34,51,.16);max-height:230px;overflow-y:auto;z-index:60;text-align:left}
+  .suggest-list.open{display:block}
+  .suggest-item{padding:10px 16px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer}
+  .suggest-item:hover,.suggest-item.hi{background:var(--accent-soft)}
+  .suggest-empty{padding:10px 16px;font-size:13px;color:var(--ink-faint);font-weight:500}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
   .chip{font-size:13px;background:var(--card);border:1px solid var(--line);padding:6px 14px;border-radius:99px;color:var(--ink-soft);cursor:pointer}
   .chip:hover{border-color:var(--accent);color:var(--accent)}
@@ -551,6 +558,8 @@
     .cred-grid{grid-template-columns:1fr}
     .searchbar{flex-direction:column;padding:8px}
     .searchbar .cell{width:100%}
+    .searchbar .cell + .cell{border-left:none;border-top:1px solid var(--line)}
+    .searchbar .cell:focus-within{border-top-color:transparent}
     .searchbar .go{padding:14px;justify-content:center}
   }
 </style>
@@ -592,10 +601,10 @@
                 <option value="all">What do you need help with?</option>
                 <option value="Civil">Civil</option><option value="Criminal">Criminal Defense</option>
                 <option value="Family">Family &amp; Divorce</option><option value="Corporate">Corporate &amp; Business</option>
-                <option value="Property">Property &amp; Real Estate</option><option value="Tax">Tax</option>
+                <option value="Property & Real Estate">Property &amp; Real Estate</option><option value="Tax">Tax</option>
                 <option value="Labour & Employment">Labour &amp; Employment</option><option value="IP">Intellectual Property</option>
                 <option value="Cyber Law">Cyber Law</option><option value="Consumer">Consumer Disputes</option>
-                <option value="Real Estate">Real Estate</option><option value="Immigration">Immigration</option>
+                <option value="Immigration">Immigration</option>
               </select>
             </div>
           </div>
@@ -603,14 +612,15 @@
             <span class="cell-ic">📍</span>
             <div class="cell-body">
               <label>City</label>
-              <input id="q-city" placeholder="e.g. Mumbai, Pune" onkeydown="if(event.key==='Enter')searchGo()">
+              <input id="q-city" autocomplete="off" placeholder="Any city" oninput="citySuggest()" onfocus="citySuggest()" onblur="setTimeout(closeCitySuggest,150)" onkeydown="cityKeydown(event)">
+              <div class="suggest-list" id="q-city-suggest"></div>
             </div>
           </div>
           <button class="go" onclick="searchGo()">🔍 Search</button>
         </div>
         <div class="chips">
           <span class="chip" onclick="chipGo('Family')">Divorce lawyer</span>
-          <span class="chip" onclick="chipGo('Property')">Property dispute</span>
+          <span class="chip" onclick="chipGo('Property & Real Estate')">Property dispute</span>
           <span class="chip" onclick="chipGo('Criminal')">Cheque bounce</span>
           <span class="chip" onclick="chipGo('Corporate')">Startup compliance</span>
           <span class="chip" onclick="go('qa')">Ask a free question →</span>
@@ -648,7 +658,7 @@
       </div>
       <div class="areas">
         <div class="area" onclick="go('dir')"><div class="ic">👪</div><div><b>Family &amp; Divorce</b><span>Divorce, custody, maintenance</span></div></div>
-        <div class="area" onclick="go('dir')"><div class="ic">🏠</div><div><b>Property</b><span>Disputes, registration, RERA</span></div></div>
+        <div class="area" onclick="go('dir')"><div class="ic">🏠</div><div><b>Property &amp; Real Estate</b><span>Disputes, registration, RERA</span></div></div>
         <div class="area" onclick="go('dir')"><div class="ic">⚖️</div><div><b>Criminal Defense</b><span>Bail, FIR, trials</span></div></div>
         <div class="area" onclick="go('dir')"><div class="ic">🏢</div><div><b>Corporate</b><span>Contracts, compliance, disputes</span></div></div>
         <div class="area" onclick="go('dir')"><div class="ic">🧾</div><div><b>Tax</b><span>Income tax, GST, notices</span></div></div>
@@ -732,10 +742,10 @@
           <option value="all">All practice areas</option>
           <option value="Civil">Civil</option><option value="Criminal">Criminal Defense</option>
           <option value="Family">Family &amp; Divorce</option><option value="Corporate">Corporate</option>
-          <option value="Property">Property</option><option value="Tax">Tax</option>
+          <option value="Property & Real Estate">Property &amp; Real Estate</option><option value="Tax">Tax</option>
           <option value="Labour & Employment">Labour &amp; Employment</option><option value="IP">Intellectual Property</option>
           <option value="Cyber Law">Cyber Law</option><option value="Consumer">Consumer</option>
-          <option value="Real Estate">Real Estate</option><option value="Immigration">Immigration</option>
+          <option value="Immigration">Immigration</option>
         </select>
       </div>
       <div class="fgroup"><label>State</label>
@@ -1876,6 +1886,7 @@ function go(v){
    this file. ADVOCATES stays empty until that fetch resolves.
    ================================================================== */
 let ADVOCATES = [];
+let CITY_LIST = []; // populated from real advocate data in loadAdvocates() below
 const ADV_COLORS = ['#3e5bd9','#0e8a5f','#b45309','#7c3aed','#c0392b','#0891b2'];
 function colorFor(str){ let h=0; for(const c of (str||'')) h=(h*31+c.charCodeAt(0))%ADV_COLORS.length; return ADV_COLORS[h]; }
 function initialsFor(name){ return (name||'?').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
@@ -1946,22 +1957,62 @@ function openProfile(id, skipHash){
 /* Hero search → directory filters */
 function searchGo(){
   const area=document.getElementById('q-area').value;
-  const cityTxt=document.getElementById('q-city').value.trim().toLowerCase();
+  const cityTxt=document.getElementById('q-city').value.trim();
   go('dir');
   // apply practice area if it maps to a directory filter
   const areaSel = document.getElementById('f-area');
   areaSel.value = [...areaSel.options].some(o=>o.value===area) ? area : 'all';
-  // apply city if it matches a known option
+  // City can only be set to a real value by picking a suggestion (see
+  // citySuggest()/pickCity() below) — CITY_LIST only ever contains cities
+  // that actually have advocates, so any leftover unmatched text here just
+  // means "no city selected" rather than a dead-end search.
   const citySel=document.getElementById('f-city');
-  let matched='all';
-  [...citySel.options].forEach(o=>{ if(o.text.toLowerCase()===cityTxt) matched=o.value||o.text; });
-  citySel.value=matched;
+  const cityMatch = CITY_LIST.find(c=>c.toLowerCase()===cityTxt.toLowerCase());
+  citySel.value = cityMatch || 'all';
   applyFilters();
-  if(cityTxt && matched==='all') toast('Showing all cities — "'+document.getElementById('q-city').value+'" has no listed advocates yet');
 }
 function chipGo(area){
   document.getElementById('q-area').value=area;
   searchGo();
+}
+/* City autocomplete — only ever suggests cities that actually have
+   advocates, sourced from CITY_LIST (populated once real advocate data
+   loads; see loadAdvocates() in the module script). */
+let citySuggestIndex=-1;
+// Local escape helper — the `esc()` used elsewhere on this page lives inside
+// the type="module" script further down, which is a separate scope that
+// this classic script can't call into, so this search UI needs its own copy.
+function escSearch(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function citySuggest(){
+  const box=document.getElementById('q-city-suggest');
+  const q=document.getElementById('q-city').value.trim().toLowerCase();
+  citySuggestIndex=-1;
+  if(!CITY_LIST.length){ box.classList.remove('open'); return; }
+  const matches = q ? CITY_LIST.filter(c=>c.toLowerCase().includes(q)) : CITY_LIST;
+  box.innerHTML = matches.length
+    ? matches.map(c=>`<div class="suggest-item" onmousedown="pickCity('${c.replace(/'/g,"\\'")}')">${escSearch(c)}</div>`).join('')
+    : `<div class="suggest-empty">No advocates in "${escSearch(document.getElementById('q-city').value)}" yet — try ${matches0safe()}</div>`;
+  box.classList.add('open');
+}
+function matches0safe(){ return CITY_LIST.slice(0,3).map(escSearch).join(', '); }
+function closeCitySuggest(){ document.getElementById('q-city-suggest').classList.remove('open'); }
+function pickCity(c){
+  document.getElementById('q-city').value=c;
+  closeCitySuggest();
+}
+function cityKeydown(e){
+  const box=document.getElementById('q-city-suggest');
+  const items=[...box.querySelectorAll('.suggest-item')];
+  if(e.key==='ArrowDown'){ e.preventDefault(); citySuggestIndex=Math.min(citySuggestIndex+1, items.length-1); highlightCitySuggest(items); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); citySuggestIndex=Math.max(citySuggestIndex-1,0); highlightCitySuggest(items); }
+  else if(e.key==='Enter'){
+    if(citySuggestIndex>=0 && items[citySuggestIndex]){ e.preventDefault(); items[citySuggestIndex].dispatchEvent(new Event('mousedown')); }
+    else searchGo();
+  } else if(e.key==='Escape'){ closeCitySuggest(); }
+}
+function highlightCitySuggest(items){
+  items.forEach((el,i)=>el.classList.toggle('hi', i===citySuggestIndex));
+  if(items[citySuggestIndex]) items[citySuggestIndex].scrollIntoView({block:'nearest'});
 }
 /* Q&A answer upvotes — real, persisted via increment_answer_upvotes() */
 async function voteA(btn){
@@ -2947,6 +2998,7 @@ async function loadAdvocates() {
     // no hardcoded location lists.
     const states = [...new Set(ADVOCATES.map(a => a.state).filter(Boolean))].sort();
     const cities = [...new Set(ADVOCATES.map(a => a.city).filter(Boolean))].sort();
+    CITY_LIST = cities; // shared with the hero search autocomplete (classic script above)
     const stateSel = document.getElementById('f-state');
     const citySel = document.getElementById('f-city');
     states.forEach(s => stateSel.insertAdjacentHTML('beforeend', `<option>${s}</option>`));
