@@ -768,6 +768,7 @@
     <div>
       <div class="results-bar">
         <span class="count" id="adv-count"><b>4 advocates</b> match your filters</span>
+        <span id="search-echo" style="display:none;font-size:13px;background:var(--accent-soft);color:var(--accent-dark);border-radius:99px;padding:6px 14px;font-weight:600"></span>
         <select id="f-sort" onchange="sortAdv()"><option value="best">Sort: Best match</option><option value="exp">Most experienced</option><option value="fee">Lowest fee</option><option value="rating">Highest rated</option></select>
       </div>
 
@@ -1424,7 +1425,7 @@
         <input id="track-cnr" placeholder="Enter 16-digit CNR, e.g. MHAU010012342024" maxlength="16">
         <button class="btn btn-primary btn-lg" onclick="trackCase()">Track Case</button>
       </div>
-      <div class="cnr-hint">Don't know your CNR? It's on your court receipt or any order copy. <b onclick="document.getElementById('track-cnr').value='DLND020047882015';trackCase()">See a sample case</b></div>
+      <div class="cnr-hint">Don't know your CNR? It's on your court receipt or any order copy. <b onclick="document.getElementById('track-cnr').value='DLND020047882015';trackCase()">Try it now</b></div>
     </div>
   </div>
   <div class="wrap" style="padding-bottom:64px">
@@ -1855,15 +1856,20 @@
 <div class="toast" id="toast"></div>
 
 <script>
+let ROUTING_FROM_HASH = false;
 function go(v){
-  // Views 'qd' (a specific question) and 'prof' (a specific advocate) are
-  // represented in the URL hash (#q=... / #advocate=...) so they can be
-  // shared/bookmarked/reloaded. Navigating to any OTHER view should clear
-  // that hash — otherwise it gets stuck in the address bar (looks wrong,
-  // and a reload would incorrectly jump back into the old question/profile
-  // instead of showing the view you're actually on).
-  if(v!=='qd' && v!=='prof' && location.hash){
-    history.replaceState(null,'',location.pathname+location.search);
+  // Every view gets its own URL (#dir, #qa, #track, …) so pages are
+  // bookmarkable, shareable, reloadable, and the browser back/forward
+  // buttons work. 'qd' and 'prof' carry richer hashes (#q=… / #advocate=…)
+  // set by openQuestion/openProfile themselves, so we leave those alone.
+  if(v!=='qd' && v!=='prof' && !ROUTING_FROM_HASH){
+    const h = '#'+v;
+    if(location.hash !== h){
+      // First navigation on a fresh page replaces (no phantom back-step);
+      // everything after that pushes so Back walks your real history.
+      if(!location.hash && v==='home') history.replaceState(null,'',location.pathname+location.search);
+      else history.pushState(null,'',h);
+    }
   }
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('on'));
   document.getElementById('view-'+v).classList.add('on');
@@ -1899,6 +1905,7 @@ function renderDirectory(){
     const card=document.createElement('div');
     card.className='adv-card';
     card.dataset.area=(a.practice_areas||[]).join('|');
+    card.dataset.name=(a.name||'').toLowerCase();
     card.dataset.state=a.state||''; card.dataset.city=a.city||'';
     card.dataset.exp=a.experience_years||0; card.dataset.fee=a.consultation_fee||0;
     card.dataset.modes=(a.consultation_modes||[]).join(' '); card.dataset.rating=0;
@@ -1954,22 +1961,75 @@ function openProfile(id, skipHash){
   document.getElementById('p-bookfee').textContent = a.consultation_fee ? '₹'+Number(a.consultation_fee).toLocaleString('en-IN') : 'Not listed';
   go('prof');
 }
-/* Hero search → directory filters */
+/* Hero search → directory filters.
+   Rules: city text matches fuzzily (exact → starts-with → contains);
+   if it isn't a known city but matches an advocate NAME, we search by
+   name instead; and whatever was searched is echoed visibly above the
+   results so the user always sees what they're looking at. */
+let SEARCH_TEXT = '';   // active name filter, '' = none
 function searchGo(){
   const area=document.getElementById('q-area').value;
-  const cityTxt=document.getElementById('q-city').value.trim();
+  const raw=document.getElementById('q-city').value.trim();
   go('dir');
-  // apply practice area if it maps to a directory filter
+  // Advocate data may still be loading on a fast first search — wait for it.
+  if(!ADVOCATES.length){
+    searchEcho('⏳ Loading advocates…', false);
+    let tries=0;
+    const t=setInterval(()=>{
+      if(ADVOCATES.length || ++tries>16){ clearInterval(t); searchGo(); }
+    }, 250);
+    return;
+  }
   const areaSel = document.getElementById('f-area');
   areaSel.value = [...areaSel.options].some(o=>o.value===area) ? area : 'all';
-  // City can only be set to a real value by picking a suggestion (see
-  // citySuggest()/pickCity() below) — CITY_LIST only ever contains cities
-  // that actually have advocates, so any leftover unmatched text here just
-  // means "no city selected" rather than a dead-end search.
+  const q = raw.toLowerCase();
+  const cityMatch =
+       CITY_LIST.find(c=>c.toLowerCase()===q)
+    || CITY_LIST.find(c=>c.toLowerCase().startsWith(q) && q)
+    || CITY_LIST.find(c=>c.toLowerCase().includes(q) && q);
+  SEARCH_TEXT = '';
+  let note='';
+  if(raw && !cityMatch){
+    if(ADVOCATES.some(a=>(a.name||'').toLowerCase().includes(q))){
+      SEARCH_TEXT = q;                                  // treat as a name search
+      note = 'name contains “'+raw+'”';
+    } else {
+      note = 'no advocates in “'+raw+'” yet — showing all locations';
+    }
+  }
   const citySel=document.getElementById('f-city');
-  const cityMatch = CITY_LIST.find(c=>c.toLowerCase()===cityTxt.toLowerCase());
-  citySel.value = cityMatch || 'all';
+  if(cityMatch){
+    // Guard: make sure the option exists before selecting it (a select set
+    // to a missing value silently becomes '' and would hide every card).
+    if(![...citySel.options].some(o=>o.value===cityMatch||o.text===cityMatch)){
+      citySel.insertAdjacentHTML('beforeend','<option></option>');
+      citySel.lastElementChild.textContent=cityMatch;
+    }
+    citySel.value=cityMatch;
+  } else citySel.value='all';
   applyFilters();
+  // Build the visible "what you searched" summary
+  const areaLabel = area!=='all' ? areaSel.options[areaSel.selectedIndex].text : '';
+  const parts=[];
+  if(areaLabel) parts.push(areaLabel);
+  if(cityMatch) parts.push('in '+cityMatch);
+  if(note) parts.push(note);
+  searchEcho(parts.length ? 'Results for: '+parts.join(' · ') : '', true);
+}
+function searchEcho(text, withClear){
+  const el=document.getElementById('search-echo');
+  if(!el) return;
+  if(!text){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='';
+  el.innerHTML='';
+  el.append(text+' ');
+  if(withClear){
+    const b=document.createElement('b');
+    b.textContent='✕ Clear search';
+    b.style.cursor='pointer';
+    b.onclick=()=>{ document.getElementById('q-city').value=''; document.getElementById('q-area').value='all'; SEARCH_TEXT=''; searchEcho(''); resetFilters(); };
+    el.appendChild(b);
+  }
 }
 function chipGo(area){
   document.getElementById('q-area').value=area;
@@ -2352,6 +2412,7 @@ function applyFilters(){
   let n=0;
   document.querySelectorAll('#adv-list .adv-card').forEach(c=>{
     const d=c.dataset; let show=true;
+    if(SEARCH_TEXT && !(d.name||'').includes(SEARCH_TEXT)) show=false;
     if(area!=='all' && !('|'+d.area+'|').includes('|'+area+'|')) show=false;
     if(state!=='all' && d.state!==state) show=false;
     if(city!=='all' && d.city!==city) show=false;
@@ -2365,6 +2426,8 @@ function applyFilters(){
   document.getElementById('no-adv').style.display = n ? 'none' : '';
 }
 function resetFilters(){
+  SEARCH_TEXT='';
+  searchEcho('');
   document.getElementById('f-area').value='all';
   document.getElementById('f-state').value='all';
   document.getElementById('f-city').value='all';
@@ -2596,9 +2659,18 @@ function routeHash(){
   if(location.hash.startsWith('#advocate=')){
     const id = location.hash.slice('#advocate='.length);
     openProfile(id, true);   // skipHash=true: don't rewrite the hash we just navigated to
+    return;
+  }
+  // Plain view hashes: #home, #dir, #qa, #jobs, #grow, #track, #legal, …
+  const v = location.hash.slice(1);
+  if(v && document.getElementById('view-'+v)){
+    ROUTING_FROM_HASH = true;
+    go(v);
+    ROUTING_FROM_HASH = false;
   }
 }
 window.addEventListener('hashchange', routeHash);
+window.addEventListener('popstate', routeHash);
 
 /* ================= Real Q&A (questions/answers tables via cms.js) ================= */
 const QA_TOPIC_LABEL = { family:'Family & Divorce', property:'Property', criminal:'Criminal', corporate:'Corporate',
