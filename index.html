@@ -72,8 +72,12 @@
   .searchbar .go{background:var(--accent);color:#fff;padding:0 26px;font-weight:700;font-size:15px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,transform .1s;flex-shrink:0}
   .searchbar .go:hover{background:var(--accent-dark)}
   .searchbar .go:active{transform:scale(.97)}
-  .suggest-list{display:none;position:absolute;top:calc(100% + 14px);left:-14px;right:-14px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 36px rgba(26,34,51,.16);max-height:230px;overflow-y:auto;z-index:60;text-align:left}
+  .suggest-list{display:none;position:absolute;top:calc(100% + 14px);left:-14px;right:-14px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 36px rgba(26,34,51,.16);max-height:280px;overflow-y:auto;z-index:80;text-align:left}
   .suggest-list.open{display:block}
+  .searchbar-single .cell{flex:1}
+  .searchbar-single .suggest-list{top:calc(100% + 10px);left:0;right:0}
+  .suggest-head{font-size:11px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px;border-top:1px solid var(--line)}
+  .suggest-head:first-child{border-top:none}
   .suggest-item{padding:10px 16px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer}
   .suggest-item:hover,.suggest-item.hi{background:var(--accent-soft)}
   .suggest-empty{padding:10px 16px;font-size:13px;color:var(--ink-faint);font-weight:500}
@@ -592,36 +596,23 @@
         <span class="eyebrow">✓ Every advocate verified against Bar Council records</span>
         <h1>The right advocate for your legal matter, <em>without the guesswork</em>.</h1>
         <p class="sub">Tell us what you're facing. We'll match you with a verified advocate in your city — with transparent fees and no obligation until you book.</p>
-        <div class="searchbar">
-          <div class="cell" onclick="this.querySelector('select').focus()">
-            <span class="cell-ic">⚖️</span>
+        <div class="searchbar searchbar-single">
+          <div class="cell" onclick="this.querySelector('input').focus()" style="position:relative">
+            <span class="cell-ic">🔍</span>
             <div class="cell-body">
-              <label>Legal issue</label>
-              <select id="q-area">
-                <option value="all">What do you need help with?</option>
-                <option value="Civil">Civil</option><option value="Criminal">Criminal Defense</option>
-                <option value="Family">Family &amp; Divorce</option><option value="Corporate">Corporate &amp; Business</option>
-                <option value="Property & Real Estate">Property &amp; Real Estate</option><option value="Tax">Tax</option>
-                <option value="Labour & Employment">Labour &amp; Employment</option><option value="IP">Intellectual Property</option>
-                <option value="Cyber Law">Cyber Law</option><option value="Consumer">Consumer Disputes</option>
-                <option value="Immigration">Immigration</option>
-              </select>
+              <input id="q-all" autocomplete="off"
+                placeholder="Try &quot;divorce lawyer in Delhi&quot;, a city, or an advocate's name"
+                oninput="smartSuggest()" onfocus="smartSuggest()"
+                onblur="setTimeout(closeSuggest,180)" onkeydown="if(event.key==='Enter'){closeSuggest();searchGo();}">
             </div>
+            <div class="suggest-list" id="q-suggest"></div>
           </div>
-          <div class="cell" onclick="this.querySelector('input').focus()">
-            <span class="cell-ic">📍</span>
-            <div class="cell-body">
-              <label>City</label>
-              <input id="q-city" autocomplete="off" placeholder="Any city" oninput="citySuggest()" onfocus="citySuggest()" onblur="setTimeout(closeCitySuggest,150)" onkeydown="cityKeydown(event)">
-              <div class="suggest-list" id="q-city-suggest"></div>
-            </div>
-          </div>
-          <button class="go" onclick="searchGo()">🔍 Search</button>
+          <button class="go" onclick="closeSuggest();searchGo()">Search</button>
         </div>
         <div class="chips">
-          <span class="chip" onclick="chipGo('Family')">Divorce lawyer</span>
-          <span class="chip" onclick="chipGo('Property & Real Estate')">Property dispute</span>
-          <span class="chip" onclick="chipGo('Criminal')">Cheque bounce</span>
+          <span class="chip" onclick="chipGo('Divorce')">Divorce lawyer</span>
+          <span class="chip" onclick="chipGo('Property')">Property dispute</span>
+          <span class="chip" onclick="chipGo('Cheque bounce')">Cheque bounce</span>
           <span class="chip" onclick="chipGo('Corporate')">Startup compliance</span>
           <span class="chip" onclick="go('qa')">Ask a free question →</span>
         </div>
@@ -1961,119 +1952,131 @@ function openProfile(id, skipHash){
   document.getElementById('p-bookfee').textContent = a.consultation_fee ? '₹'+Number(a.consultation_fee).toLocaleString('en-IN') : 'Not listed';
   go('prof');
 }
-/* Hero search → directory filters.
-   Rules: city text matches fuzzily (exact → starts-with → contains);
-   if it isn't a known city but matches an advocate NAME, we search by
-   name instead; and whatever was searched is echoed visibly above the
-   results so the user always sees what they're looking at. */
-let SEARCH_TEXT = '';   // active name filter, '' = none
+/* ================= Unified smart search =================
+   One box understands legal issues, cities, and advocate names —
+   in any combination ("tax lawyer gurgaon", "delhi", "rakhi").
+   Whatever was searched is echoed above the results, and a city
+   with no advocates says so honestly instead of showing everything. */
+const AREAS=[
+  {v:'Civil', l:'Civil', k:['civil']},
+  {v:'Criminal', l:'Criminal Defense', k:['criminal','bail','fir','cheque','bounce','arrest']},
+  {v:'Family', l:'Family & Divorce', k:['family','divorce','custody','maintenance','dowry','marriage']},
+  {v:'Corporate', l:'Corporate & Business', k:['corporate','business','startup','company','compliance','contract']},
+  {v:'Property & Real Estate', l:'Property & Real Estate', k:['property','real estate','rera','land','tenant','rent','builder','possession']},
+  {v:'Tax', l:'Tax', k:['tax','gst','income tax']},
+  {v:'Labour & Employment', l:'Labour & Employment', k:['labour','labor','employment','salary','termination','gratuity']},
+  {v:'IP', l:'Intellectual Property', k:['intellectual','trademark','patent','copyright']},
+  {v:'Cyber Law', l:'Cyber Law', k:['cyber','online fraud','hacking']},
+  {v:'Consumer', l:'Consumer Disputes', k:['consumer','refund','defective']},
+  {v:'Immigration', l:'Immigration', k:['immigration','visa','passport']}
+];
+let SEARCH_TEXT = '';   // active advocate-name filter, '' = none
+function escSearch(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function parseQuery(raw){
+  const q=raw.toLowerCase();
+  const tokens=q.split(/[^a-z&]+/).filter(w=>w.length>=3);
+  const area = AREAS.find(a=>a.k.some(k=>q.includes(k)));
+  const city = CITY_LIST.find(c=>q.includes(c.toLowerCase()))
+    || CITY_LIST.find(c=>tokens.some(t=>c.toLowerCase().startsWith(t)))
+    || null;
+  const nameHit = raw && ADVOCATES.some(a=>(a.name||'').toLowerCase().includes(q));
+  return { q, area, city, nameHit };
+}
 function searchGo(){
-  const area=document.getElementById('q-area').value;
-  const raw=document.getElementById('q-city').value.trim();
+  const raw=document.getElementById('q-all').value.trim();
   go('dir');
-  // Advocate data may still be loading on a fast first search — wait for it.
   if(!ADVOCATES.length){
     searchEcho('⏳ Loading advocates…', false);
     let tries=0;
-    const t=setInterval(()=>{
-      if(ADVOCATES.length || ++tries>16){ clearInterval(t); searchGo(); }
-    }, 250);
+    const t=setInterval(()=>{ if(ADVOCATES.length || ++tries>16){ clearInterval(t); searchGo(); } }, 250);
     return;
   }
-  const areaSel = document.getElementById('f-area');
-  areaSel.value = [...areaSel.options].some(o=>o.value===area) ? area : 'all';
-  const q = raw.toLowerCase();
-  const cityMatch =
-       CITY_LIST.find(c=>c.toLowerCase()===q)
-    || CITY_LIST.find(c=>c.toLowerCase().startsWith(q) && q)
-    || CITY_LIST.find(c=>c.toLowerCase().includes(q) && q);
-  SEARCH_TEXT = '';
-  let note='';
-  if(raw && !cityMatch){
-    if(ADVOCATES.some(a=>(a.name||'').toLowerCase().includes(q))){
-      SEARCH_TEXT = q;                                  // treat as a name search
-      note = 'name contains “'+raw+'”';
-    } else {
-      note = 'no advocates in “'+raw+'” yet — showing all locations';
+  const { q, area, city, nameHit } = parseQuery(raw);
+  const areaSel=document.getElementById('f-area');
+  areaSel.value = area ? area.v : 'all';
+  const citySel=document.getElementById('f-city');
+  if(city){
+    if(![...citySel.options].some(o=>o.value===city||o.text===city)){
+      citySel.insertAdjacentHTML('beforeend','<option></option>');
+      citySel.lastElementChild.textContent=city;
+    }
+    citySel.value=city;
+  } else citySel.value='all';
+  SEARCH_TEXT='';
+  let none=false, parts=[];
+  if(area) parts.push(area.l);
+  if(city) parts.push('in '+city);
+  if(raw && !area && !city){
+    if(nameHit){ SEARCH_TEXT=q; parts.push('name contains “'+raw+'”'); }
+    else {
+      none=true;   // looks like a place/term we don't cover yet — say so, show nothing misleading
+      SEARCH_TEXT='##none##';   // impossible token: guarantees zero results rather than a misleading full list
+      parts.push('No advocates for “'+raw+'” yet — nearest available: '+(CITY_LIST.slice(0,3).join(', ')||'none'));
     }
   }
-  const citySel=document.getElementById('f-city');
-  if(cityMatch){
-    // Guard: make sure the option exists before selecting it (a select set
-    // to a missing value silently becomes '' and would hide every card).
-    if(![...citySel.options].some(o=>o.value===cityMatch||o.text===cityMatch)){
-      citySel.insertAdjacentHTML('beforeend','<option></option>');
-      citySel.lastElementChild.textContent=cityMatch;
-    }
-    citySel.value=cityMatch;
-  } else citySel.value='all';
   applyFilters();
-  // Build the visible "what you searched" summary
-  const areaLabel = area!=='all' ? areaSel.options[areaSel.selectedIndex].text : '';
-  const parts=[];
-  if(areaLabel) parts.push(areaLabel);
-  if(cityMatch) parts.push('in '+cityMatch);
-  if(note) parts.push(note);
-  searchEcho(parts.length ? 'Results for: '+parts.join(' · ') : '', true);
+  searchEcho(parts.length ? (none?'':'Results for: ')+parts.join(' · ') : '', true, none);
 }
-function searchEcho(text, withClear){
+function searchEcho(text, withClear, warn){
   const el=document.getElementById('search-echo');
   if(!el) return;
   if(!text){ el.style.display='none'; el.innerHTML=''; return; }
   el.style.display='';
+  el.style.background = warn ? 'var(--amber-soft,#fdf3e3)' : '';
+  el.style.color = warn ? 'var(--amber,#b45309)' : '';
   el.innerHTML='';
   el.append(text+' ');
   if(withClear){
     const b=document.createElement('b');
-    b.textContent='✕ Clear search';
+    b.textContent='✕ Clear';
     b.style.cursor='pointer';
-    b.onclick=()=>{ document.getElementById('q-city').value=''; document.getElementById('q-area').value='all'; SEARCH_TEXT=''; searchEcho(''); resetFilters(); };
+    b.onclick=()=>{ document.getElementById('q-all').value=''; SEARCH_TEXT=''; searchEcho(''); resetFilters(); };
     el.appendChild(b);
   }
 }
-function chipGo(area){
-  document.getElementById('q-area').value=area;
+function chipGo(text){
+  document.getElementById('q-all').value=text;
   searchGo();
 }
-/* City autocomplete — only ever suggests cities that actually have
-   advocates, sourced from CITY_LIST (populated once real advocate data
-   loads; see loadAdvocates() in the module script). */
-let citySuggestIndex=-1;
-// Local escape helper — the `esc()` used elsewhere on this page lives inside
-// the type="module" script further down, which is a separate scope that
-// this classic script can't call into, so this search UI needs its own copy.
-function escSearch(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function citySuggest(){
-  const box=document.getElementById('q-city-suggest');
-  const q=document.getElementById('q-city').value.trim().toLowerCase();
-  citySuggestIndex=-1;
-  if(!CITY_LIST.length){ box.classList.remove('open'); return; }
-  const matches = q ? CITY_LIST.filter(c=>c.toLowerCase().includes(q)) : CITY_LIST;
-  box.innerHTML = matches.length
-    ? matches.map(c=>`<div class="suggest-item" onmousedown="pickCity('${c.replace(/'/g,"\\'")}')">${escSearch(c)}</div>`).join('')
-    : `<div class="suggest-empty">No advocates in "${escSearch(document.getElementById('q-city').value)}" yet — try ${matches0safe()}</div>`;
+/* Suggestions under the single box: matching areas, cities, and advocates.
+   An unknown city says "no advocates there yet" INSIDE the dropdown, with
+   the covered cities listed right below it — nothing overlaps the page. */
+function smartSuggest(){
+  const box=document.getElementById('q-suggest');
+  const raw=document.getElementById('q-all').value.trim();
+  const q=raw.toLowerCase();
+  let html='';
+  const areaHits = q ? AREAS.filter(a=>a.l.toLowerCase().includes(q)||a.k.some(k=>k.startsWith(q)||q.includes(k))).slice(0,3) : [];
+  const cityHits = q ? CITY_LIST.filter(c=>c.toLowerCase().includes(q)).slice(0,5) : CITY_LIST.slice(0,6);
+  const nameHits = q ? ADVOCATES.filter(a=>(a.name||'').toLowerCase().includes(q)).slice(0,3) : [];
+  if(q && !areaHits.length && !cityHits.length && !nameHits.length){
+    html += '<div class="suggest-empty">No advocates for “'+escSearch(raw)+'” yet</div>';
+    html += '<div class="suggest-head">Cities with advocates</div>';
+    html += CITY_LIST.slice(0,6).map(c=>'<div class="suggest-item" onmousedown="pickSuggest(\''+c.replace(/'/g,"\\'")+'\')">📍 '+escSearch(c)+'</div>').join('');
+  } else {
+    if(areaHits.length){
+      html += '<div class="suggest-head">Legal issues</div>';
+      html += areaHits.map(a=>'<div class="suggest-item" onmousedown="pickSuggest(\''+a.l.replace(/'/g,"\\'")+'\')">⚖️ '+escSearch(a.l)+'</div>').join('');
+    }
+    if(cityHits.length){
+      html += '<div class="suggest-head">'+(q?'Cities':'Cities with advocates')+'</div>';
+      html += cityHits.map(c=>'<div class="suggest-item" onmousedown="pickSuggest(\''+c.replace(/'/g,"\\'")+'\')">📍 '+escSearch(c)+'</div>').join('');
+    }
+    if(nameHits.length){
+      html += '<div class="suggest-head">Advocates</div>';
+      html += nameHits.map(a=>'<div class="suggest-item" onmousedown="pickSuggest(\''+(a.name||'').replace(/'/g,"\\'")+'\')">👤 Adv. '+escSearch(a.name)+'</div>').join('');
+    }
+  }
+  if(!html){ box.classList.remove('open'); return; }
+  box.innerHTML=html;
   box.classList.add('open');
 }
-function matches0safe(){ return CITY_LIST.slice(0,3).map(escSearch).join(', '); }
-function closeCitySuggest(){ document.getElementById('q-city-suggest').classList.remove('open'); }
-function pickCity(c){
-  document.getElementById('q-city').value=c;
-  closeCitySuggest();
+function pickSuggest(text){
+  document.getElementById('q-all').value=text;
+  closeSuggest();
+  searchGo();
 }
-function cityKeydown(e){
-  const box=document.getElementById('q-city-suggest');
-  const items=[...box.querySelectorAll('.suggest-item')];
-  if(e.key==='ArrowDown'){ e.preventDefault(); citySuggestIndex=Math.min(citySuggestIndex+1, items.length-1); highlightCitySuggest(items); }
-  else if(e.key==='ArrowUp'){ e.preventDefault(); citySuggestIndex=Math.max(citySuggestIndex-1,0); highlightCitySuggest(items); }
-  else if(e.key==='Enter'){
-    if(citySuggestIndex>=0 && items[citySuggestIndex]){ e.preventDefault(); items[citySuggestIndex].dispatchEvent(new Event('mousedown')); }
-    else searchGo();
-  } else if(e.key==='Escape'){ closeCitySuggest(); }
-}
-function highlightCitySuggest(items){
-  items.forEach((el,i)=>el.classList.toggle('hi', i===citySuggestIndex));
-  if(items[citySuggestIndex]) items[citySuggestIndex].scrollIntoView({block:'nearest'});
-}
+function closeSuggest(){ const b=document.getElementById('q-suggest'); if(b) b.classList.remove('open'); }
 /* Q&A answer upvotes — real, persisted via increment_answer_upvotes() */
 async function voteA(btn){
   if(btn.classList.contains('on')) return;   // one upvote per page-view, simplest anti-double-click guard
