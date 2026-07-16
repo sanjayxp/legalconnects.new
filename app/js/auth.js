@@ -85,9 +85,49 @@ export async function redirectByRole() {
     window.location.href = appPath('/admin/');
     return;
   }
-  const routes = {
-    client:   '/dashboard/client.html',
-    advocate: '/dashboard/advocate.html',
-  };
-  window.location.href = appPath(routes[profile.role] || '/auth/login.html');
+  if (profile.role === 'advocate') {
+    // First-time advocates go straight into profile setup (onboarding),
+    // returning advocates go to their dashboard.
+    const { data: ap } = await supabase
+      .from('advocate_profiles')
+      .select('id')
+      .eq('id', profile.id)
+      .maybeSingle();
+    window.location.href = appPath(ap
+      ? '/dashboard/advocate.html'
+      : '/dashboard/advocate-profile.html?welcome=1');
+    return;
+  }
+  window.location.href = appPath(profile.role === 'client'
+    ? '/dashboard/client.html'
+    : '/auth/login.html');
+}
+
+// --- OAUTH (Google / LinkedIn) ---
+// Social login can't carry the chosen role through the provider redirect,
+// so we remember the intent locally and apply it when the user returns.
+export async function oauthLogin(provider, intendedRole) {
+  if (intendedRole) localStorage.setItem('lc_role_intent', intendedRole);
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider, // 'google' or 'linkedin_oidc'
+    options: { redirectTo: window.location.origin + appPath('/auth/login.html') }
+  });
+  if (error) throw error;
+}
+
+// Called on the login page whenever a session already exists (normal visit
+// or return from an OAuth provider). Applies any stored role intent for
+// brand-new social signups, then routes by role.
+export async function handleAuthReturn() {
+  const intent = localStorage.getItem('lc_role_intent');
+  localStorage.removeItem('lc_role_intent');
+  if (intent === 'advocate') {
+    const profile = await getCurrentProfile();
+    // New OAuth accounts default to 'client' (the signup trigger's fallback).
+    // If this user chose "I'm an advocate" before the redirect, honour it.
+    if (profile && profile.role === 'client') {
+      await supabase.from('profiles').update({ role: 'advocate' }).eq('id', profile.id);
+    }
+  }
+  await redirectByRole();
 }
