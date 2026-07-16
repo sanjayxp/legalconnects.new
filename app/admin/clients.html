@@ -52,6 +52,8 @@
     <span class="admin-chip">Admin</span>
     <div class="adminnav">
       <a href="../dashboard/admin.html">Overview</a>
+      <a href="leads.html">Leads</a>
+      <a href="qa.html">Q&amp;A</a>
       <a href="jobs.html">Jobs</a>
       <a href="courses.html">Courses</a>
       <a href="team.html">Team</a>
@@ -67,20 +69,21 @@
   <div class="pagehead">
     <div>
       <h1>Clients</h1>
-      <div class="sub">Everyone registered as a client. Read-only for now — job applications, course enrollments, and cases they've posted live in their own sections.</div>
+      <div class="sub">Everyone registered as a client. Click Edit to fix a name or phone. Account deletion requires a support process (it removes their login), so it's deliberately not a one-click action here.</div>
     </div>
     <input type="text" id="search" placeholder="Search by name, email, or phone…">
   </div>
 
   <div class="card">
     <table>
-      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Signed up</th></tr></thead>
-      <tbody id="body"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Signed up</th><th></th></tr></thead>
+      <tbody id="body"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
     </table>
   </div>
 </main>
 
 <script type="module">
+import { supabase } from '../js/config.js';
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
 import { listClients } from '../js/cms.js';
 
@@ -97,14 +100,31 @@ let CLIENTS = [];
 
 function renderRows(rows) {
   const tbody = document.getElementById('body');
-  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">No matching clients.</td></tr>'; return; }
-  tbody.innerHTML = rows.map(c => `<tr>
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No matching clients.</td></tr>'; return; }
+  tbody.innerHTML = rows.map(c => `<tr data-id="${c.id}">
     <td><b>${esc(c.full_name || 'Unnamed')}</b></td>
     <td>${esc(c.email || '—')}</td>
     <td>${esc(c.phone || '—')}</td>
     <td>${c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}</td>
+    <td><button class="rowbtn" data-act="edit" style="background:none;border:none;color:var(--accent);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer">Edit</button></td>
   </tr>`).join('');
 }
+
+document.getElementById('body').addEventListener('click', async (e) => {
+  if (e.target.dataset.act !== 'edit') return;
+  const id = e.target.closest('tr')?.dataset.id;
+  const c  = CLIENTS.find(x => x.id === id);
+  if (!c) return;
+  const name  = prompt('Full name:', c.full_name || '');
+  if (name === null) return;
+  const phone = prompt('Phone:', c.phone || '');
+  if (phone === null) return;
+  const { error } = await supabase.from('profiles')
+    .update({ full_name: name.trim() || null, phone: phone.trim() || null }).eq('id', id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  c.full_name = name.trim(); c.phone = phone.trim();
+  renderRows(CLIENTS);
+});
 
 document.getElementById('search').addEventListener('input', (e) => {
   const q = e.target.value.trim().toLowerCase();

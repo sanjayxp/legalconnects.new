@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<base href="/admin/">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Q&amp;A Moderation — LegalConnects Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --red:#c0392b;--red-soft:#fdecea;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+  header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:50}
+  .nav{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:20px;height:60px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em}
+  .logo-mark{width:28px;height:28px;border-radius:7px;background:#3e5bd9;color:#fff;display:grid;place-items:center;font-size:14px}
+  .admin-chip{padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.15);font-size:12px;font-weight:700;color:#fff}
+  .adminnav{display:flex;gap:4px;margin-left:12px;flex-wrap:wrap}
+  .adminnav a{padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:600;color:rgba(255,255,255,.75)}
+  .adminnav a:hover{background:rgba(255,255,255,.08);color:#fff}
+  .adminnav a.on{background:rgba(255,255,255,.15);color:#fff}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .btn-ghost{padding:7px 14px;border-radius:8px;font:inherit;font-size:13px;font-weight:600;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);background:transparent;cursor:pointer}
+  .btn-ghost:hover{background:rgba(255,255,255,.1);color:#fff}
+  main{max-width:1120px;margin:0 auto;padding:32px 24px}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--ink-soft);font-size:14px;margin:2px 0 22px;max-width:64ch}
+  .q-item{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px 22px;margin-bottom:14px}
+  .q-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .q-title{font-size:15.5px;font-weight:700}
+  .q-meta{font-size:12.5px;color:var(--ink-faint);margin-top:3px}
+  .q-body{font-size:13.5px;color:var(--ink-soft);margin-top:8px}
+  .topic{font-size:11px;font-weight:800;background:var(--accent-soft);color:var(--accent-dark);padding:3px 10px;border-radius:99px;white-space:nowrap}
+  .rowbtn{background:none;border:none;color:var(--accent);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:2px 4px;white-space:nowrap}
+  .rowbtn.danger{color:var(--red)}
+  .answers{border-top:1px solid var(--line);margin-top:14px;padding-top:6px}
+  .ans{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:flex-start}
+  .ans:last-child{border-bottom:none}
+  .ans-body{font-size:13px;color:var(--ink-soft);flex:1}
+  .ans-meta{font-size:12px;color:var(--ink-faint);margin-top:3px}
+  .empty{text-align:center;padding:50px 20px;color:var(--ink-faint);background:var(--card);border:1px dashed var(--line);border-radius:16px}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <div class="logo"><div class="logo-mark">⚖</div>LegalConnects</div>
+    <span class="admin-chip">Admin</span>
+    <div class="adminnav">
+      <a href="../dashboard/admin.html">Overview</a>
+      <a href="leads.html">Leads</a>
+      <a href="qa.html" class="on">Q&amp;A</a>
+      <a href="jobs.html">Jobs</a>
+      <a href="courses.html">Courses</a>
+      <a href="team.html">Team</a>
+      <a href="verify-advocates.html">Advocates</a>
+      <a href="clients.html">Clients</a>
+      <a href="admins.html">Admins</a>
+    </div>
+    <div class="nav-right"><button class="btn-ghost" id="signoutBtn">Sign out</button></div>
+  </nav>
+</header>
+
+<main>
+  <h1>Q&amp;A Moderation</h1>
+  <p class="sub">Every question and answer on the forum. Delete anything that violates Bar Council conduct rules — outcome guarantees, solicitation, personal contact details in answers — or is spam/abusive. Deletions are permanent.</p>
+  <div id="list"><div class="empty">Loading…</div></div>
+</main>
+
+<script type="module">
+import { supabase } from '../js/config.js';
+import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
+
+await requireAuth();
+const profile = await getCurrentProfile();
+if (profile && profile.role !== 'admin') {
+  window.location.href = profile.role === 'advocate' ? '../dashboard/advocate.html' : '../dashboard/client.html';
+}
+document.getElementById('signoutBtn').addEventListener('click', signOut);
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+let QUESTIONS = [];
+
+async function load(){
+  const { data, error } = await supabase
+    .from('questions')
+    .select('id, topic, title, body, status, view_count, created_at, answers(id, body, upvote_count, created_at, profiles:advocate_id(full_name))')
+    .order('created_at', { ascending: false });
+  const list = document.getElementById('list');
+  if (error){ list.innerHTML = `<div class="empty">Could not load questions: ${esc(error.message)}</div>`; return; }
+  QUESTIONS = data || [];
+  render();
+}
+
+function render(){
+  const list = document.getElementById('list');
+  if (!QUESTIONS.length){ list.innerHTML = '<div class="empty">No questions yet. Forum posts will appear here for moderation.</div>'; return; }
+  list.innerHTML = QUESTIONS.map(q => `
+    <div class="q-item" data-qid="${q.id}">
+      <div class="q-head">
+        <div style="flex:1;min-width:220px">
+          <div class="q-title">${esc(q.title)}</div>
+          <div class="q-meta">${new Date(q.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})} · ${q.view_count||0} views · ${(q.answers||[]).length} answer(s) · status: ${esc(q.status||'open')}</div>
+          ${q.body ? `<div class="q-body">${esc(q.body)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span class="topic">${esc(q.topic||'general')}</span>
+          <button class="rowbtn danger" data-act="delq">Delete question</button>
+        </div>
+      </div>
+      ${(q.answers||[]).length ? `<div class="answers">` + q.answers.map(a => `
+        <div class="ans" data-aid="${a.id}">
+          <div>
+            <div class="ans-body">${esc(a.body)}</div>
+            <div class="ans-meta">by ${esc(a.profiles && a.profiles.full_name || 'Advocate')} · ▲ ${a.upvote_count||0} · ${new Date(a.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
+          </div>
+          <button class="rowbtn danger" data-act="dela">Delete answer</button>
+        </div>`).join('') + `</div>` : ''}
+    </div>`).join('');
+}
+
+document.getElementById('list').addEventListener('click', async (e) => {
+  const act = e.target.dataset.act;
+  if (!act) return;
+  if (act === 'delq'){
+    const qid = e.target.closest('.q-item')?.dataset.qid;
+    if (!confirm('Delete this question AND all its answers permanently?')) return;
+    await supabase.from('answers').delete().eq('question_id', qid);
+    const { error } = await supabase.from('questions').delete().eq('id', qid);
+    if (error){ alert(error.message); return; }
+    QUESTIONS = QUESTIONS.filter(q=>q.id!==qid); render();
+  }
+  if (act === 'dela'){
+    const aid = e.target.closest('.ans')?.dataset.aid;
+    if (!confirm('Delete this answer permanently?')) return;
+    const { error } = await supabase.from('answers').delete().eq('id', aid);
+    if (error){ alert(error.message); return; }
+    QUESTIONS.forEach(q => q.answers = (q.answers||[]).filter(a=>a.id!==aid)); render();
+  }
+});
+
+load();
+</script>
+</body>
+</html>

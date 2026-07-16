@@ -2202,6 +2202,14 @@ function closeBook(){ document.getElementById('bookModal').classList.remove('ope
 function bkShow(n){
   for(let i=1;i<=3;i++) document.getElementById('bk'+i).style.display = i===n?'':'none';
 }
+/* Lead capture — every serious enquiry lands in the admin Leads panel,
+   even if the booking itself is abandoned or fails afterwards. */
+async function lcLead(row){
+  try{
+    const { supabase } = await import('/app/js/config.js');
+    await supabase.from('leads').insert(row);
+  }catch(e){ console.warn('lead capture skipped:', e.message); }
+}
 async function bkSubmit(){
   const name=document.getElementById('bk-name').value.trim();
   const email=document.getElementById('bk-email').value.trim();
@@ -2211,6 +2219,10 @@ async function bkSubmit(){
   const msg=document.getElementById('bk-msg');
   if(!name||!phone){ msg.textContent='Name and phone are needed so the advocate can reach you.'; msg.style.display='block'; return; }
   if(!bkSelectedSlot){ msg.textContent='Please go back and pick a time slot.'; msg.style.display='block'; return; }
+  lcLead({ client_name:name, phone, email:email||null,
+           matter:(notes||'Consultation request')+' ['+mode+']',
+           city:currentAdv&&currentAdv.city||null,
+           source:'booking', advocate_id:currentAdv&&currentAdv.id||null });
   const btn=document.getElementById('bk-submitbtn');
   btn.disabled=true; btn.textContent='Sending…';
   try{
@@ -2484,7 +2496,7 @@ function postCase(){
   const area=document.getElementById('pc-area').value;
   const city=document.getElementById('pc-city').value.trim()||'your city';
   const budget=document.getElementById('pc-budget').value;
-  // PRODUCTION: insert into posted_cases table; notify matching advocates
+  lcLead({ client_name:name, phone, matter:area+' — '+desc, city, budget, source:'post_case' });
   const pool=document.querySelector('#dp-leads .dcard .case-lead');
   if(pool){
     const el=document.createElement('div');

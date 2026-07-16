@@ -464,6 +464,29 @@ export async function uploadPhoto(bucket, path, file) {
   return data.publicUrl;
 }
 
+// ---------- BAR COUNCIL CERTIFICATE (private, owner + admin only) ----------
+// Path is namespaced by the advocate's own uid, mirroring advocate-photos —
+// the storage RLS policies only allow an owner to read/write inside their
+// own folder, plus a separate admin-only policy for verification review.
+export async function uploadBarCertificate(userId, file) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const path = `${userId}/${Date.now()}-${safeName}`;
+  const { error } = await supabase.storage.from('bar-certificates').upload(path, file, {
+    upsert: true,
+    contentType: file.type,
+  });
+  if (error) throw error;
+  return path;
+}
+
+// Works for both the owning advocate and an admin — RLS resolves which
+// policy applies. Bucket is private, so this always needs a signed URL.
+export async function getBarCertificateSignedUrl(path) {
+  const { data, error } = await supabase.storage.from('bar-certificates').createSignedUrl(path, 300);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
 // ---------- JOB APPLICATION RESUMES ----------
 // Private bucket — anyone (including anonymous applicants) can upload their
 // own resume, but only admins can read/download one back. Path is namespaced
