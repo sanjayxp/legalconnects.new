@@ -640,3 +640,125 @@ export async function incrementProfileView(advocateProfileId) {
   const { error } = await supabase.rpc('increment_profile_view', { profile_id: advocateProfileId });
   if (error) throw error;
 }
+
+// ================= PHASE A: CASE WORKSPACE =================
+
+export async function listCaseEvents(caseId) {
+  const { data, error } = await supabase.from('case_events')
+    .select('*').eq('case_id', caseId)
+    .order('event_date', { ascending: false }).order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+export async function addCaseEvent(caseId, advocateId, fields) {
+  const { error } = await supabase.from('case_events')
+    .insert({ case_id: caseId, advocate_id: advocateId, ...fields });
+  if (error) throw error;
+}
+export async function deleteCaseEvent(id) {
+  const { error } = await supabase.from('case_events').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function setCaseLabels(caseId, labels) {
+  const { error } = await supabase.from('court_cases')
+    .update({ labels, updated_at: new Date().toISOString() }).eq('id', caseId);
+  if (error) throw error;
+}
+
+export async function listCaseDocuments(caseId) {
+  const { data, error } = await supabase.from('case_documents')
+    .select('*').eq('case_id', caseId).order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+export async function uploadCaseDocument(caseId, advocateId, file) {
+  const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `${advocateId}/${caseId}/${Date.now()}_${safe}`;
+  const { error: upErr } = await supabase.storage.from('case-docs').upload(path, file);
+  if (upErr) throw upErr;
+  const { error } = await supabase.from('case_documents')
+    .insert({ case_id: caseId, advocate_id: advocateId, file_name: file.name, file_path: path });
+  if (error) throw error;
+}
+export async function caseDocumentUrl(filePath) {
+  const { data, error } = await supabase.storage.from('case-docs').createSignedUrl(filePath, 3600);
+  if (error) throw error;
+  return data.signedUrl;
+}
+export async function deleteCaseDocument(doc) {
+  await supabase.storage.from('case-docs').remove([doc.file_path]);
+  const { error } = await supabase.from('case_documents').delete().eq('id', doc.id);
+  if (error) throw error;
+}
+
+export async function getCase(caseId) {
+  const { data, error } = await supabase.from('court_cases').select('*').eq('id', caseId).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// ================= PHASE C: CLIENT MANAGEMENT =================
+
+export async function listMyClients(advocateId) {
+  const { data, error } = await supabase.from('advocate_clients')
+    .select('*').eq('advocate_id', advocateId).order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+export async function addClient(advocateId, fields) {
+  const { data, error } = await supabase.from('advocate_clients')
+    .insert({ advocate_id: advocateId, ...fields }).select().single();
+  if (error) throw error;
+  return data;
+}
+export async function updateClient(id, fields) {
+  const { error } = await supabase.from('advocate_clients').update(fields).eq('id', id);
+  if (error) throw error;
+}
+export async function deleteClient(id) {
+  const { error } = await supabase.from('advocate_clients').delete().eq('id', id);
+  if (error) throw error;
+}
+export async function linkCaseToClient(caseId, registerClientId) {
+  const { error } = await supabase.from('court_cases')
+    .update({ register_client_id: registerClientId }).eq('id', caseId);
+  if (error) throw error;
+}
+export async function listClientCases(advocateId, registerClientId) {
+  const { data, error } = await supabase.from('court_cases')
+    .select('id, case_title, next_hearing_date, stage')
+    .eq('advocate_id', advocateId).eq('register_client_id', registerClientId);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function logClientUpdate(advocateId, clientId, caseId, message, channel) {
+  const { error } = await supabase.from('client_updates')
+    .insert({ advocate_id: advocateId, client_id: clientId, case_id: caseId || null, message, channel });
+  if (error) throw error;
+}
+export async function listClientUpdates(clientId) {
+  const { data, error } = await supabase.from('client_updates')
+    .select('*').eq('client_id', clientId).order('sent_at', { ascending: false }).limit(20);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function listMyInvoices(advocateId) {
+  const { data, error } = await supabase.from('invoices')
+    .select('*, advocate_clients(full_name)')
+    .eq('advocate_id', advocateId).order('issued_on', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+export async function addInvoice(advocateId, fields) {
+  const { error } = await supabase.from('invoices').insert({ advocate_id: advocateId, ...fields });
+  if (error) throw error;
+}
+export async function setInvoiceStatus(id, status) {
+  const patch = { status };
+  if (status === 'paid') patch.paid_on = new Date().toISOString().slice(0,10);
+  const { error } = await supabase.from('invoices').update(patch).eq('id', id);
+  if (error) throw error;
+}

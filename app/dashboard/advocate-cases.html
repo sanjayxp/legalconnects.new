@@ -92,6 +92,7 @@
       <a href="advocate-profile.html">👤 Profile</a>
       <a href="advocate-bookings.html">📥 Leads &amp; Bookings</a>
       <a href="advocate-cases.html" class="on">⚖ My Cases</a>
+      <a href="advocate-clients.html">🧑‍💼 Clients</a>
       <a href="documents.html">📄 Documents</a>
       <a href="../../index.html" target="_blank" rel="noopener" class="external">🌐 Visit Website</a>
     </nav>
@@ -198,8 +199,10 @@ async function load() {
         <h3>${esc(c.case_title)}</h3>
         <div class="case-meta">${c.crn ? 'CRN ' + esc(c.crn) + ' · ' : ''}${esc(c.court_name || 'Court not specified')}${c.case_type ? ' · ' + esc(c.case_type) : ''}</div>
         <div class="case-stage">${c.stage ? 'Stage: ' + esc(c.stage) : 'Stage not set'}${c.last_order ? ' · Last order: ' + esc(c.last_order) : ''}</div>
+        ${(c.labels&&c.labels.length)?`<div style="margin-top:6px">${c.labels.map(l=>`<span style="display:inline-block;font-size:11px;font-weight:800;background:var(--accent-soft);color:var(--accent-dark);border-radius:99px;padding:3px 10px;margin:0 5px 4px 0">🏷 ${esc(l)}</span>`).join('')}</div>`:''}
       </div>
       <div class="case-actions">
+        <a class="btn btn-primary" href="advocate-case.html?id=${c.id}" style="display:inline-block">Open workspace</a>
         <button class="btn btn-outline" data-del="${c.id}">Remove</button>
       </div>
     </div>`;

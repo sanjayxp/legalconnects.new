@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<base href="/dashboard/">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clients &amp; Billing — LegalConnects</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --red:#c0392b;--red-soft:#fdecea;
+    --amber:#b45309;--amber-soft:#fdf3e3;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+  .shell{display:flex;min-height:100vh}
+  .sidebar{width:252px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);padding:20px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .sidebar .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em;padding:0 8px;margin-bottom:20px}
+  .sidebar .logo-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px}
+  .sidebar nav{display:flex;flex-direction:column;gap:2px;flex:1}
+  .sidebar nav a{display:flex;align-items:center;gap:9px;padding:10px 10px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+  .sidebar nav a:hover{background:var(--bg)}
+  .sidebar nav a.on{background:var(--accent-soft);color:var(--accent-dark)}
+  .sidebar .signout{padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);background:transparent;cursor:pointer;text-align:left;margin-top:8px}
+  .main-area{flex:1;min-width:0}
+  .main-area main{max-width:960px;margin:0 auto;padding:32px 24px}
+  @media (max-width:780px){ .shell{flex-direction:column} .sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;padding:14px;gap:10px} .sidebar nav{flex-direction:row;flex-wrap:wrap} }
+  h1{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:22px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .stat .n{font-size:22px;font-weight:800}
+  .stat .l{font-size:12.5px;color:var(--ink-soft)}
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+  @media (max-width:980px){ .cols{grid-template-columns:1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+  .card h3{font-size:15px;font-weight:800;margin-bottom:12px}
+  label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin:10px 0 6px}
+  input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none;background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  .btn{border:none;border-radius:9px;padding:10px 16px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-outline{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft)}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+  .msg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:8px;display:none}
+  .msg.err{display:block;background:var(--red-soft);color:var(--red)}
+  .msg.ok{display:block;background:var(--green-soft);color:var(--green)}
+  .client{border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+  .client-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer}
+  .client-head:hover{background:var(--bg)}
+  .client-head .ini{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .client-head b{font-size:14.5px;display:block}
+  .client-head .cm{font-size:12.5px;color:var(--ink-faint)}
+  .client-head .due{margin-left:auto;font-size:12px;font-weight:800;border-radius:99px;padding:4px 11px;white-space:nowrap}
+  .due.ok{background:var(--green-soft);color:var(--green)}
+  .due.owe{background:var(--amber-soft);color:var(--amber)}
+  .client-body{display:none;border-top:1px solid var(--line);padding:16px 18px}
+  .client.open .client-body{display:block}
+  .sect{font-size:11.5px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px}
+  .rowline{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--ink-soft);padding:7px 0;border-bottom:1px dashed var(--line)}
+  .rowline:last-child{border-bottom:none}
+  .rowline b{color:var(--ink)}
+  .pill{font-size:11px;font-weight:800;border-radius:99px;padding:3px 10px}
+  .p-paid{background:var(--green-soft);color:var(--green)}
+  .p-unpaid{background:var(--amber-soft);color:var(--amber)}
+  .p-cancelled{background:#f1f2f6;color:var(--ink-faint)}
+  .act{color:var(--accent);cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap}
+  .act.red{color:var(--red)}
+  .empty{color:var(--ink-faint);font-size:13.5px;padding:14px 0;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-mark">⚖</div>LegalConnects</div>
+    <nav>
+      <a href="advocate.html">📊 Overview</a>
+      <a href="advocate-profile.html">👤 Profile</a>
+      <a href="advocate-bookings.html">📥 Leads &amp; Bookings</a>
+      <a href="advocate-cases.html">⚖ My Cases</a>
+      <a href="advocate-clients.html" class="on">🧑‍💼 Clients</a>
+      <a href="documents.html">📄 Documents</a>
+    </nav>
+    <button class="signout" id="signoutBtn">🚪 Sign out</button>
+  </aside>
+
+  <div class="main-area">
+    <main>
+      <h1>Clients &amp; billing</h1>
+      <div class="sub">Your client register — cases, updates you've sent, and your fee register per client. Private to you.</div>
+
+      <div class="stats">
+        <div class="stat"><div class="n" id="st-clients">—</div><div class="l">Clients</div></div>
+        <div class="stat"><div class="n" id="st-billed">—</div><div class="l">Billed (total)</div></div>
+        <div class="stat"><div class="n" id="st-paid">—</div><div class="l">Received</div></div>
+        <div class="stat"><div class="n" id="st-due">—</div><div class="l">Outstanding</div></div>
+      </div>
+
+      <div class="cols">
+        <div id="clientList"><div class="empty">Loading…</div></div>
+
+        <div>
+          <div class="card">
+            <h3>Add a client</h3>
+            <label>Full name</label><input id="nc-name" placeholder="e.g. Sunita Mane">
+            <label>Phone (for WhatsApp updates)</label><input id="nc-phone" placeholder="+91">
+            <label>Email (optional)</label><input id="nc-email" placeholder="client@example.com">
+            <label>Notes (optional)</label><textarea id="nc-notes" style="min-height:48px" placeholder="e.g. Referred by Adv. Kulkarni; deposit dispute"></textarea>
+            <button class="btn btn-primary" id="nc-add" style="margin-top:12px;width:100%">+ Add client</button>
+            <div class="msg" id="nc-msg"></div>
+            <div style="font-size:11.5px;color:var(--ink-faint);margin-top:10px">🔒 Stored under your account only. Handle client data per your professional duty of confidentiality — you can delete it anytime.</div>
+          </div>
+          <div class="card">
+            <h3>Raise an invoice</h3>
+            <label>Client</label><select id="inv-client"></select>
+            <label>Case (optional)</label><select id="inv-case"><option value="">Not linked to a case</option></select>
+            <label>Description</label><input id="inv-desc" placeholder="e.g. Drafting & filing of written statement">
+            <label>Amount (₹)</label><input id="inv-amt" type="number" min="0" placeholder="e.g. 5000">
+            <button class="btn btn-primary" id="inv-add" style="margin-top:12px;width:100%">Add to fee register</button>
+            <div class="msg" id="inv-msg"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+import { requireAuth, signOut } from '../js/auth.js';
+import { listMyClients, addClient, updateClient, deleteClient, listClientCases,
+         listClientUpdates, logClientUpdate, listMyInvoices, addInvoice, setInvoiceStatus,
+         listMyCases } from '../js/cms.js';
+
+const session = await requireAuth();
+document.getElementById('signoutBtn').addEventListener('click', signOut);
+const uid = session.user.id;
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function say(id,t,ok){ const m=document.getElementById(id); m.className='msg'+(t?(ok?' ok':' err'):''); m.textContent=t||''; }
+const inr = n => '₹'+Number(n||0).toLocaleString('en-IN');
+
+let CLIENTS=[], INVOICES=[], CASES=[];
+
+async function loadAll(){
+  [CLIENTS, INVOICES, CASES] = await Promise.all([
+    listMyClients(uid), listMyInvoices(uid), listMyCases(uid)
+  ]);
+  fillSelectors(); stats(); renderClients();
+}
+
+function fillSelectors(){
+  const cs=document.getElementById('inv-client');
+  cs.innerHTML = CLIENTS.length
+    ? CLIENTS.map(c=>`<option value="${c.id}">${esc(c.full_name)}</option>`).join('')
+    : '<option value="">Add a client first</option>';
+  const ks=document.getElementById('inv-case');
+  ks.innerHTML = '<option value="">Not linked to a case</option>' +
+    CASES.map(c=>`<option value="${c.id}">${esc(c.case_title)}</option>`).join('');
+}
+
+function stats(){
+  const live=INVOICES.filter(i=>i.status!=='cancelled');
+  const paid=live.filter(i=>i.status==='paid').reduce((s,i)=>s+Number(i.amount),0);
+  const total=live.reduce((s,i)=>s+Number(i.amount),0);
+  document.getElementById('st-clients').textContent=CLIENTS.length;
+  document.getElementById('st-billed').textContent=inr(total);
+  document.getElementById('st-paid').textContent=inr(paid);
+  document.getElementById('st-due').textContent=inr(total-paid);
+}
+
+function clientDue(cid){
+  return INVOICES.filter(i=>i.client_id===cid && i.status==='unpaid')
+                 .reduce((s,i)=>s+Number(i.amount),0);
+}
+
+function renderClients(){
+  const box=document.getElementById('clientList');
+  if(!CLIENTS.length){ box.innerHTML='<div class="empty">No clients yet — add your first on the right. Clients you add here can be linked to cases and receive updates.</div>'; return; }
+  box.innerHTML = CLIENTS.map(c=>{
+    const due=clientDue(c.id);
+    return `<div class="client" data-id="${c.id}">
+      <div class="client-head" data-toggle>
+        <span class="ini">${esc((c.full_name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</span>
+        <span><b>${esc(c.full_name)}</b><span class="cm">${esc([c.phone,c.email].filter(Boolean).join(' · ')||'no contact details')}</span></span>
+        <span class="due ${due>0?'owe':'ok'}">${due>0? inr(due)+' due' : 'No dues'}</span>
+      </div>
+      <div class="client-body" data-body>…</div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-toggle]').forEach(h=>h.addEventListener('click', ()=>toggleClient(h.closest('.client'))));
+}
+
+async function toggleClient(el){
+  const open=el.classList.toggle('open');
+  if(!open) return;
+  const cid=el.dataset.id;
+  const c=CLIENTS.find(x=>x.id===cid);
+  const body=el.querySelector('[data-body]');
+  body.innerHTML='<div class="empty">Loading…</div>';
+  const [cases, updates]=await Promise.all([listClientCases(uid,cid), listClientUpdates(cid)]);
+  const inv=INVOICES.filter(i=>i.client_id===cid);
+  body.innerHTML =
+    (c.notes?`<div style="font-size:13px;color:var(--ink-soft)">📝 ${esc(c.notes)}</div>`:'')
+    +`<div class="sect">Cases (${cases.length})</div>`
+    +(cases.length? cases.map(k=>`<div class="rowline"><span><a href="advocate-case.html?id=${k.id}" style="color:var(--accent);font-weight:600">${esc(k.case_title)}</a></span><span>${k.next_hearing_date? 'Next: '+new Date(k.next_hearing_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}</span></div>`).join('')
+      : '<div class="empty" style="padding:6px 0">No linked cases — open a case workspace and link it to this client.</div>')
+    +`<div class="sect">Fee register (${inv.length})</div>`
+    +(inv.length? inv.map(i=>`<div class="rowline"><span>${esc(i.description)}<br><span style="font-size:11.5px;color:var(--ink-faint)">${new Date(i.issued_on).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span></span>
+        <span style="text-align:right"><b>${inr(i.amount)}</b> <span class="pill p-${i.status}">${i.status}</span><br>
+        ${i.status==='unpaid'?`<span class="act" data-paid="${i.id}">mark paid</span> · <span class="act red" data-cancel="${i.id}">cancel</span>`:''}</span></div>`).join('')
+      : '<div class="empty" style="padding:6px 0">No invoices yet.</div>')
+    +`<div class="sect">Updates sent (${updates.length})</div>`
+    +(updates.length? updates.slice(0,5).map(u=>`<div class="rowline"><span style="font-size:12.5px">${esc(u.message)}</span><span style="font-size:11.5px;color:var(--ink-faint);white-space:nowrap">${new Date(u.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span></div>`).join('')
+      : '<div class="empty" style="padding:6px 0">No updates sent yet — send them from a case workspace.</div>')
+    +`<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-outline" data-edit>Edit details</button>
+        <button class="btn btn-outline" data-msg>📲 Message on WhatsApp</button>
+        <button class="btn btn-outline" data-del style="color:var(--red);border-color:#f0c8c2">Delete client</button>
+      </div>`;
+  body.querySelectorAll('[data-paid]').forEach(a=>a.addEventListener('click', async ()=>{
+    await setInvoiceStatus(a.dataset.paid,'paid');
+    INVOICES=await listMyInvoices(uid); stats(); el.classList.remove('open'); toggleClient(el); renderDueBadge(el,cid);
+  }));
+  body.querySelectorAll('[data-cancel]').forEach(a=>a.addEventListener('click', async ()=>{
+    await setInvoiceStatus(a.dataset.cancel,'cancelled');
+    INVOICES=await listMyInvoices(uid); stats(); el.classList.remove('open'); toggleClient(el); renderDueBadge(el,cid);
+  }));
+  body.querySelector('[data-edit]').addEventListener('click', async ()=>{
+    const name=prompt('Full name:', c.full_name); if(name===null) return;
+    const phone=prompt('Phone:', c.phone||''); if(phone===null) return;
+    const notes=prompt('Notes:', c.notes||''); if(notes===null) return;
+    await updateClient(cid,{full_name:name.trim()||c.full_name, phone:phone.trim()||null, notes:notes.trim()||null});
+    await loadAll();
+  });
+  body.querySelector('[data-msg]').addEventListener('click', ()=>{
+    const phone=(c.phone||'').replace(/[^0-9]/g,'');
+    if(!phone){ alert('No phone number on this client.'); return; }
+    window.open('https://wa.me/'+(phone.length===10?'91'+phone:phone),'_blank');
+  });
+  body.querySelector('[data-del]').addEventListener('click', async ()=>{
+    if(!confirm('Delete this client and their fee register permanently? Linked cases stay but lose the link.')) return;
+    await deleteClient(cid); await loadAll();
+  });
+}
+function renderDueBadge(el,cid){
+  const due=clientDue(cid);
+  const b=el.querySelector('.due');
+  b.className='due '+(due>0?'owe':'ok');
+  b.textContent=due>0? inr(due)+' due' : 'No dues';
+}
+
+document.getElementById('nc-add').addEventListener('click', async ()=>{
+  const name=document.getElementById('nc-name').value.trim();
+  if(!name){ say('nc-msg','Name is required.'); return; }
+  try{
+    await addClient(uid,{
+      full_name:name,
+      phone:document.getElementById('nc-phone').value.trim()||null,
+      email:document.getElementById('nc-email').value.trim()||null,
+      notes:document.getElementById('nc-notes').value.trim()||null
+    });
+    ['nc-name','nc-phone','nc-email','nc-notes'].forEach(i=>document.getElementById(i).value='');
+    say('nc-msg','Client added.',true); await loadAll();
+  }catch(e){ say('nc-msg', e.message||'Could not add client.'); }
+});
+
+document.getElementById('inv-add').addEventListener('click', async ()=>{
+  const client_id=document.getElementById('inv-client').value;
+  const desc=document.getElementById('inv-desc').value.trim();
+  const amt=Number(document.getElementById('inv-amt').value);
+  if(!client_id){ say('inv-msg','Add a client first.'); return; }
+  if(!desc || !(amt>0)){ say('inv-msg','Description and a positive amount are required.'); return; }
+  try{
+    await addInvoice(uid,{ client_id, case_id:document.getElementById('inv-case').value||null, description:desc, amount:amt });
+    document.getElementById('inv-desc').value=''; document.getElementById('inv-amt').value='';
+    say('inv-msg','Added to the fee register.',true); await loadAll();
+  }catch(e){ say('inv-msg', e.message||'Could not add invoice.'); }
+});
+
+await loadAll();
+</script>
+</body>
+</html>

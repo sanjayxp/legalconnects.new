@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<base href="/dashboard/">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Workspace — LegalConnects</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root{
+    --ink:#1a2233;--ink-soft:#4b5568;--ink-faint:#8a93a5;
+    --accent:#3e5bd9;--accent-dark:#2f46ad;--accent-soft:#eef1fd;
+    --green:#0e8a5f;--green-soft:#e7f6ef;
+    --red:#c0392b;--red-soft:#fdecea;
+    --amber:#b45309;--amber-soft:#fdf3e3;
+    --bg:#fafbfd;--card:#ffffff;--line:#e6e9f0;
+    --shadow:0 1px 3px rgba(26,34,51,.06),0 8px 24px rgba(26,34,51,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+  .shell{display:flex;min-height:100vh}
+  .sidebar{width:252px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);padding:20px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .sidebar .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em;padding:0 8px;margin-bottom:20px}
+  .sidebar .logo-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px}
+  .sidebar nav{display:flex;flex-direction:column;gap:2px;flex:1}
+  .sidebar nav a{display:flex;align-items:center;gap:9px;padding:10px 10px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+  .sidebar nav a:hover{background:var(--bg)}
+  .sidebar nav a.on{background:var(--accent-soft);color:var(--accent-dark)}
+  .sidebar .signout{padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);background:transparent;cursor:pointer;text-align:left;margin-top:8px}
+  .main-area{flex:1;min-width:0}
+  .main-area main{max-width:960px;margin:0 auto;padding:32px 24px}
+  @media (max-width:780px){ .shell{flex-direction:column} .sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;padding:14px;gap:10px} .sidebar nav{flex-direction:row;flex-wrap:wrap} }
+  h1{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+  .sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:6px}
+  .backlink{font-size:13px;color:var(--accent);font-weight:700;display:inline-block;margin-bottom:14px}
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start;margin-top:16px}
+  @media (max-width:980px){ .cols{grid-template-columns:1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+  .card h3{font-size:15px;font-weight:800;margin-bottom:12px}
+  label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin:10px 0 6px}
+  input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none;resize:vertical;background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  .btn{border:none;border-radius:9px;padding:10px 16px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-outline{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft)}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+  .msg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:8px;display:none}
+  .msg.err{display:block;background:var(--red-soft);color:var(--red)}
+  .msg.ok{display:block;background:var(--green-soft);color:var(--green)}
+  .labelchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--accent-dark);border-radius:99px;padding:5px 12px;margin:0 6px 6px 0}
+  .labelchip b{cursor:pointer;color:var(--accent)}
+  .tl{border-left:2px solid var(--line);margin-left:8px;padding-left:20px}
+  .tl-item{position:relative;padding-bottom:16px}
+  .tl-item::before{content:"";position:absolute;left:-27px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:3px solid var(--accent-soft)}
+  .tl-item .when{font-size:11.5px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.04em}
+  .tl-item .kind{font-size:10.5px;font-weight:800;border-radius:99px;padding:2px 9px;margin-left:6px}
+  .k-hearing{background:var(--accent-soft);color:var(--accent-dark)}
+  .k-order{background:var(--amber-soft);color:var(--amber)}
+  .k-filing{background:var(--green-soft);color:var(--green)}
+  .k-note,.k-client_update{background:#f1f2f6;color:var(--ink-soft)}
+  .tl-item h4{font-size:14px;margin-top:3px}
+  .tl-item p{font-size:13px;color:var(--ink-soft);margin-top:3px}
+  .tl-item .del{font-size:11.5px;color:var(--red);cursor:pointer;font-weight:700}
+  .doc{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .doc:last-child{border-bottom:none}
+  .doc a{color:var(--accent);font-weight:600}
+  .doc .del{color:var(--red);cursor:pointer;font-size:12px;font-weight:700}
+  .facts{font-size:13px;color:var(--ink-soft);line-height:1.8}
+  .facts b{color:var(--ink)}
+  .empty{color:var(--ink-faint);font-size:13.5px;padding:14px 0;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-mark">⚖</div>LegalConnects</div>
+    <nav>
+      <a href="advocate.html">📊 Overview</a>
+      <a href="advocate-profile.html">👤 Profile</a>
+      <a href="advocate-bookings.html">📥 Leads &amp; Bookings</a>
+      <a href="advocate-cases.html" class="on">⚖ My Cases</a>
+      <a href="advocate-clients.html">🧑‍💼 Clients</a>
+      <a href="documents.html">📄 Documents</a>
+    </nav>
+    <button class="signout" id="signoutBtn">🚪 Sign out</button>
+  </aside>
+
+  <div class="main-area">
+    <main>
+      <a class="backlink" href="advocate-cases.html">← All cases</a>
+      <h1 id="c-title">Loading case…</h1>
+      <div class="sub" id="c-meta"></div>
+      <div id="labelsRow" style="margin-top:8px"></div>
+
+      <div class="cols">
+        <div>
+          <div class="card">
+            <h3>Timeline</h3>
+            <div style="display:grid;grid-template-columns:110px 130px 1fr;gap:10px;align-items:end">
+              <div><label>Date</label><input type="date" id="ev-date"></div>
+              <div><label>Type</label><select id="ev-kind">
+                <option value="hearing">Hearing</option><option value="order">Order</option>
+                <option value="filing">Filing</option><option value="note" selected>Note</option>
+              </select></div>
+              <div><label>What happened</label><input id="ev-title" placeholder="e.g. Adjourned to 4 Aug — evidence to continue"></div>
+            </div>
+            <label>Details (optional)</label>
+            <textarea id="ev-detail" style="min-height:48px" placeholder="Anything worth remembering later"></textarea>
+            <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+              <button class="btn btn-primary" id="ev-add">+ Add to timeline</button>
+              <span style="font-size:12px;color:var(--ink-faint)">Timeline entries can be sent to the client as updates →</span>
+            </div>
+            <div class="msg" id="ev-msg"></div>
+            <div class="tl" id="timeline" style="margin-top:20px"><div class="empty">Loading…</div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3>Case facts</h3>
+            <div class="facts" id="facts">…</div>
+          </div>
+
+          <div class="card">
+            <h3>Labels</h3>
+            <div style="display:flex;gap:8px">
+              <input id="lab-new" placeholder="e.g. urgent, awaiting client" style="flex:1">
+              <button class="btn btn-primary" id="lab-add">Add</button>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-faint);margin-top:8px">Labels appear on the case card in My Cases.</div>
+          </div>
+
+          <div class="card">
+            <h3>Client</h3>
+            <select id="clientSel"><option value="">Not linked to a client</option></select>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn btn-primary" id="sendUpdate">📲 Send latest update</button>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-faint);margin-top:8px">Sends the newest timeline entry to the linked client on WhatsApp and logs it.</div>
+            <div class="msg" id="cl-msg"></div>
+          </div>
+
+          <div class="card">
+            <h3>Documents</h3>
+            <input type="file" id="doc-file">
+            <button class="btn btn-primary" id="doc-up" style="margin-top:10px;width:100%">⬆ Upload document</button>
+            <div style="font-size:11.5px;color:var(--ink-faint);margin-top:8px">Private to you — stored encrypted, links expire after an hour.</div>
+            <div class="msg" id="doc-msg"></div>
+            <div id="docs" style="margin-top:12px"><div class="empty">Loading…</div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+import { requireAuth, signOut } from '../js/auth.js';
+import { getCase, listCaseEvents, addCaseEvent, deleteCaseEvent, setCaseLabels,
+         listCaseDocuments, uploadCaseDocument, caseDocumentUrl, deleteCaseDocument,
+         listMyClients, linkCaseToClient, logClientUpdate } from '../js/cms.js';
+
+const session = await requireAuth();
+document.getElementById('signoutBtn').addEventListener('click', signOut);
+const uid = session.user.id;
+const caseId = new URLSearchParams(location.search).get('id');
+if (!caseId) location.href = 'advocate-cases.html';
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function say(id, t, ok){ const m=document.getElementById(id); m.className='msg'+(t?(ok?' ok':' err'):''); m.textContent=t||''; }
+
+let CASE=null, CLIENTS=[];
+
+async function loadCase(){
+  CASE = await getCase(caseId);
+  if (!CASE || CASE.advocate_id !== uid) { location.href='advocate-cases.html'; return; }
+  document.getElementById('c-title').textContent = CASE.case_title;
+  document.getElementById('c-meta').textContent =
+    [CASE.crn?'CRN '+CASE.crn:null, CASE.court_name, CASE.case_type,
+     CASE.next_hearing_date?'Next hearing: '+new Date(CASE.next_hearing_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):null]
+    .filter(Boolean).join(' · ');
+  document.getElementById('facts').innerHTML =
+    `<b>Stage:</b> ${esc(CASE.stage||'—')}<br><b>Last order:</b> ${esc(CASE.last_order||'—')}<br>`+
+    `<b>Filed:</b> ${CASE.filed_date? new Date(CASE.filed_date).toLocaleDateString('en-IN') : '—'}<br>`+
+    `<b>Source:</b> ${CASE.source==='ecourts'?'Synced from eCourts':'Added manually'}`;
+  renderLabels();
+}
+
+function renderLabels(){
+  const row=document.getElementById('labelsRow');
+  row.innerHTML='';
+  (CASE.labels||[]).forEach(l=>{
+    const chip=document.createElement('span'); chip.className='labelchip';
+    chip.append('🏷 '+l+' ');
+    const x=document.createElement('b'); x.textContent='✕';
+    x.onclick=async ()=>{ CASE.labels=CASE.labels.filter(v=>v!==l); await setCaseLabels(caseId, CASE.labels); renderLabels(); };
+    chip.appendChild(x); row.appendChild(chip);
+  });
+}
+document.getElementById('lab-add').addEventListener('click', async ()=>{
+  const v=document.getElementById('lab-new').value.trim().toLowerCase();
+  if(!v) return;
+  CASE.labels=[...new Set([...(CASE.labels||[]), v])];
+  await setCaseLabels(caseId, CASE.labels);
+  document.getElementById('lab-new').value='';
+  renderLabels();
+});
+
+const KIND_LABEL={hearing:'Hearing',order:'Order',filing:'Filing',note:'Note',client_update:'Sent to client'};
+let EVENTS=[];
+async function loadTimeline(){
+  EVENTS = await listCaseEvents(caseId);
+  const tl=document.getElementById('timeline');
+  if(!EVENTS.length){ tl.innerHTML='<div class="empty">No entries yet — add the first one above.</div>'; return; }
+  tl.innerHTML = EVENTS.map(e=>`<div class="tl-item">
+    <span class="when">${new Date(e.event_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span>
+    <span class="kind k-${e.kind}">${KIND_LABEL[e.kind]||e.kind}</span>
+    <h4>${esc(e.title)}</h4>
+    ${e.detail?`<p>${esc(e.detail)}</p>`:''}
+    <span class="del" data-id="${e.id}">delete</span>
+  </div>`).join('');
+  tl.querySelectorAll('.del').forEach(d=>d.addEventListener('click', async ()=>{
+    if(!confirm('Delete this timeline entry?')) return;
+    await deleteCaseEvent(d.dataset.id); loadTimeline();
+  }));
+}
+document.getElementById('ev-add').addEventListener('click', async ()=>{
+  const title=document.getElementById('ev-title').value.trim();
+  if(!title){ say('ev-msg','Describe what happened first.'); return; }
+  try{
+    await addCaseEvent(caseId, uid, {
+      event_date: document.getElementById('ev-date').value || new Date().toISOString().slice(0,10),
+      kind: document.getElementById('ev-kind').value,
+      title, detail: document.getElementById('ev-detail').value.trim()||null
+    });
+    document.getElementById('ev-title').value=''; document.getElementById('ev-detail').value='';
+    say('ev-msg','Added.',true); loadTimeline();
+  }catch(e){ say('ev-msg', e.message||'Could not add entry.'); }
+});
+
+async function loadClients(){
+  CLIENTS = await listMyClients(uid);
+  const sel=document.getElementById('clientSel');
+  CLIENTS.forEach(c=>{
+    const o=document.createElement('option'); o.value=c.id; o.textContent=c.full_name+(c.phone?' · '+c.phone:'');
+    sel.appendChild(o);
+  });
+  sel.value = CASE.register_client_id || '';
+  sel.addEventListener('change', async ()=>{
+    await linkCaseToClient(caseId, sel.value||null);
+    CASE.register_client_id = sel.value||null;
+    say('cl-msg', sel.value?'Linked.':'Unlinked.', true);
+  });
+}
+document.getElementById('sendUpdate').addEventListener('click', async ()=>{
+  if(!CASE.register_client_id){ say('cl-msg','Link a client first (or add one on the Clients page).'); return; }
+  if(!EVENTS.length){ say('cl-msg','Add a timeline entry first — that\'s what gets sent.'); return; }
+  const client=CLIENTS.find(c=>c.id===CASE.register_client_id);
+  const e=EVENTS[0];
+  const msg=`Update on your case "${CASE.case_title}": ${e.title}`
+    +(CASE.next_hearing_date?`. Next hearing: ${new Date(CASE.next_hearing_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}.`:'.')
+    +` — via LegalConnects`;
+  await logClientUpdate(uid, client.id, caseId, msg, 'whatsapp');
+  const phone=(client.phone||'').replace(/[^0-9]/g,'');
+  if(phone) window.open('https://wa.me/'+(phone.length===10?'91'+phone:phone)+'?text='+encodeURIComponent(msg),'_blank');
+  say('cl-msg', phone?'WhatsApp opened with the update — press send there. Logged.':'No phone on this client — update logged only.', true);
+});
+
+async function loadDocs(){
+  const docs=await listCaseDocuments(caseId);
+  const box=document.getElementById('docs');
+  if(!docs.length){ box.innerHTML='<div class="empty">No documents yet.</div>'; return; }
+  box.innerHTML = docs.map(d=>`<div class="doc">
+    <a href="#" data-open="${d.file_path}">📄 ${esc(d.file_name)}</a>
+    <span class="del" data-doc="${d.id}">remove</span>
+  </div>`).join('');
+  box.querySelectorAll('[data-open]').forEach(a=>a.addEventListener('click', async ev=>{
+    ev.preventDefault();
+    const url=await caseDocumentUrl(a.dataset.open);
+    window.open(url,'_blank');
+  }));
+  box.querySelectorAll('[data-doc]').forEach(s=>s.addEventListener('click', async ()=>{
+    if(!confirm('Remove this document permanently?')) return;
+    const doc=docs.find(x=>x.id===s.dataset.doc);
+    await deleteCaseDocument(doc); loadDocs();
+  }));
+}
+document.getElementById('doc-up').addEventListener('click', async ()=>{
+  const f=document.getElementById('doc-file').files[0];
+  if(!f){ say('doc-msg','Choose a file first.'); return; }
+  if(f.size > 10*1024*1024){ say('doc-msg','Max 10 MB per file.'); return; }
+  try{
+    say('doc-msg','Uploading…',true);
+    await uploadCaseDocument(caseId, uid, f);
+    document.getElementById('doc-file').value='';
+    say('doc-msg','Uploaded.',true); loadDocs();
+  }catch(e){ say('doc-msg', e.message||'Upload failed.'); }
+});
+
+await loadCase();
+await Promise.all([loadTimeline(), loadClients(), loadDocs()]);
+</script>
+</body>
+</html>
