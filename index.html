@@ -760,7 +760,7 @@
       <div class="results-bar">
         <span class="count" id="adv-count"><b>4 advocates</b> match your filters</span>
         <span id="search-echo" style="display:none;font-size:13px;background:var(--accent-soft);color:var(--accent-dark);border-radius:99px;padding:6px 14px;font-weight:600"></span>
-        <select id="f-sort" onchange="sortAdv()"><option value="best">Sort: Best match</option><option value="exp">Most experienced</option><option value="fee">Lowest fee</option><option value="rating">Highest rated</option></select>
+        <select id="f-sort" onchange="sortAdv()"><option value="best">Sort: Relevance</option><option value="exp">Most experienced</option><option value="fee">Lowest fee</option></select>
       </div>
 
       <!-- Advocate cards are rendered from the ADVOCATES data (see script) —
@@ -809,7 +809,7 @@
       </div>
 
       <div class="prof-card">
-        <h3>Areas of expertise</h3>
+        <h3>Practice areas</h3>
         <div class="tagrow" id="p-tags"></div>
       </div>
 
@@ -1333,6 +1333,7 @@
       <div class="msg" id="bk-msg" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#fdecea;color:#c0392b;font-size:13.5px"></div>
       <div class="row">
         <button class="btn btn-ghost" onclick="bkBack()">← Back</button>
+        <div style="font-size:11.5px;color:var(--ink-faint);margin:10px 0 2px">By requesting this slot you consent to LegalConnects sharing these details with this advocate to arrange your consultation, as described in our Privacy Policy. You can ask us to delete your data anytime at info@legalconnects.in.</div>
         <button class="btn btn-primary" onclick="bkSubmit()" id="bk-submitbtn">Request This Slot</button>
       </div>
     </div>
