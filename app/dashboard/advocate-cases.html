@@ -44,6 +44,11 @@
 
   .addform{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px;margin-bottom:22px}
   .addform h3{font-size:15px;font-weight:800;margin-bottom:14px}
+  .cases-side .addform .grid2{grid-template-columns:1fr}
+  @media (max-width:980px){
+    .cases-layout{grid-template-columns:1fr !important}
+    .cases-side{position:static !important}
+  }
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   label{font-size:12.5px;font-weight:700;color:var(--ink-soft);display:block;margin:10px 0 6px}
   input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;outline:none;resize:vertical}
@@ -98,6 +103,12 @@
       <h1>My cases</h1>
       <div class="sub">Track your matters by CRN, court, and next hearing date.</div>
 
+      <div class="cases-layout" style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start">
+      <div>
+        <div id="casesList"><div class="empty">Loading…</div></div>
+      </div>
+      <div class="cases-side" style="position:sticky;top:16px">
+
       <div class="addform" id="lookupCard">
         <h3>🔄 Look up a case by CNR</h3>
         <div class="sub" style="margin-bottom:0">Pulls live case details from the eCourts network — parties, court, hearing dates, and latest order. You'll review before it's saved.</div>
@@ -132,7 +143,8 @@
         <div class="msg" id="addMsg"></div>
       </div>
 
-      <div id="casesList"><div class="empty">Loading…</div></div>
+      </div><!-- /cases-side -->
+      </div><!-- /cases-layout -->
     </main>
   </div>
 </div>
