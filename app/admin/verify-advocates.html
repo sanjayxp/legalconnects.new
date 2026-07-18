@@ -190,7 +190,13 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { listAllAdvocates, listIncompleteAdvocateSignups, reviewAdvocateProfile, adminUpdateAdvocateProfile, deleteAdvocateProfile, uploadPhoto } from '../js/cms.js';
+import { listAllAdvocates, listIncompleteAdvocateSignups, reviewAdvocateProfile, adminUpdateAdvocateProfile, deleteAdvocateProfile, uploadPhoto, getBarCertificateSignedUrl } from '../js/cms.js';
+
+// Open a Bar Council certificate in a new tab via a short-lived signed URL.
+window.viewCert = async function(path, el){
+  try { window.open(await getBarCertificateSignedUrl(path), '_blank'); }
+  catch (e) { if (el) el.textContent = 'could not open — retry'; }
+};
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -399,6 +405,9 @@ function renderList() {
         <h3>${esc(name)} <span class="badge ${status}">${status}</span></h3>
         <div class="meta">Submitted ${dateLabel} · Phone: ${esc(a.profiles?.phone || '—')}</div>
         <div class="field"><b>Bar enrolment no.:</b> ${esc(a.bar_number || '—')}</div>
+        <div class="field"><b>Bar certificate:</b> ${a.bar_certificate_url
+          ? `<a href="#" style="color:var(--accent);font-weight:600" onclick="viewCert('${esc(a.bar_certificate_url)}', this);return false;">📄 View document</a>`
+          : '<span style="color:#c0392b;font-weight:600">⚠ Not uploaded — do not approve without it</span>'}</div>
         <div class="field"><b>Practice areas:</b> ${(a.practice_areas||[]).map(esc).join(', ') || '—'}</div>
         <div class="field"><b>Experience:</b> ${a.experience_years != null ? a.experience_years + ' yrs' : '—'}</div>
         <div class="field"><b>Fee:</b> ${a.consultation_fee != null ? '₹' + a.consultation_fee : '—'}</div>
