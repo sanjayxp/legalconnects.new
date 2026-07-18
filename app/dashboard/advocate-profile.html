@@ -172,8 +172,12 @@
 
     <div class="grid2">
       <div>
-        <label>Bar Council enrolment number</label>
-        <input id="f-bar" placeholder="e.g. MAH/1234/2015">
+        <label>Bar Council enrolment number <span style="color:#c0392b">*</span></label>
+        <input id="f-bar" placeholder="e.g. MAH/1234/2015" required>
+        <div style="font-size:11.5px;color:var(--ink-faint);margin-top:4px">Format: state code / number / year — exactly as printed on your certificate.</div>
+        <label style="margin-top:12px">Bar Council certificate / COP <span style="color:#c0392b">*</span></label>
+        <input type="file" id="f-cert" accept="image/*,.pdf">
+        <div id="certStatus" style="font-size:12px;color:var(--ink-faint);margin-top:6px">Required — a clear photo or PDF of your enrolment certificate. Seen only by our verification team.</div>
       </div>
       <div>
         <label>Years of experience</label>
@@ -212,7 +216,7 @@
 
 <script type="module">
 import { requireAuth, getCurrentProfile, signOut } from '../js/auth.js';
-import { getAdvocateProfile, upsertAdvocateProfile, uploadPhoto, updateOwnName } from '../js/cms.js';
+import { getAdvocateProfile, upsertAdvocateProfile, uploadPhoto, updateOwnName, uploadBarCertificate, getBarCertificateSignedUrl } from '../js/cms.js';
 
 const session = await requireAuth();
 const profile = await getCurrentProfile();
@@ -302,6 +306,15 @@ if (existing) {
   document.getElementById('f-state').value = existing.state || '';
   document.getElementById('f-languages').value = (existing.languages || []).join(', ');
   document.getElementById('f-bar').value = existing.bar_number || '';
+  if (existing.bar_certificate_url) {
+    const cs = document.getElementById('certStatus');
+    cs.innerHTML = '✅ Certificate on file — <a href="#" id="certView" style="color:var(--accent)">view</a>. Choose a file only if you need to replace it.';
+    document.getElementById('certView').addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { window.open(await getBarCertificateSignedUrl(existing.bar_certificate_url), '_blank'); }
+      catch { cs.append(' (could not open — try again)'); }
+    });
+  }
   document.getElementById('f-exp').value = existing.experience_years ?? '';
   document.getElementById('f-fee').value = existing.consultation_fee ?? '';
   document.getElementById('f-bio').value = existing.bio || '';
@@ -337,13 +350,56 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     }
     const modes = ['video','phone','inperson'].filter(m => document.getElementById('mode-'+m).checked);
     const languages = document.getElementById('f-languages').value.split(',').map(s => s.trim()).filter(Boolean);
+    // MANDATORY for advocates: Bar Council number + certificate document.
+    // Without both, the profile cannot be saved/submitted for verification.
+    const barVal = document.getElementById('f-bar').value.trim();
+    const certFile = document.getElementById('f-cert').files[0];
+    const hasCertOnFile = !!(existing && existing.bar_certificate_url);
+    if (!barVal) {
+      sayMsg('Your Bar Council enrolment number is required.');
+      document.getElementById('f-bar').focus();
+      return;
+    }
+    // Format check: STATE-CODE / NUMBER / YEAR — the skeleton every State
+    // Bar Council uses (e.g. MAH/1234/2015, D/456/2019, KAR/789/2021).
+    // Separators - or spaces are normalised to /. This blocks junk input;
+    // authenticity is still verified by admin against the certificate.
+    const barCanon = barVal.toUpperCase()
+      .replace(/[\s-]+/g, '/')          // spaces and dashes become /
+      .replace(/\/{2,}/g, '/')          // collapse doubled separators
+      .replace(/^([A-Z]+)(\d)/, '$1/$2'); // "MAH1234/2015" → "MAH/1234/2015"
+    const BAR_RE = /^[A-Z]{1,5}\/\d{1,6}\/(19[5-9]\d|20[0-4]\d)$/;
+    if (!BAR_RE.test(barCanon)) {
+      sayMsg('That doesn\'t look like a valid enrolment number. Use the format on your certificate: state code / number / year — e.g. MAH/1234/2015 or D/456/2019.');
+      document.getElementById('f-bar').focus();
+      return;
+    }
+    const thisYear = new Date().getFullYear();
+    const barYear = parseInt(barCanon.split('/')[2], 10);
+    if (barYear > thisYear) {
+      sayMsg('The enrolment year can\'t be in the future — check the year on your certificate.');
+      document.getElementById('f-bar').focus();
+      return;
+    }
+    if (!certFile && !hasCertOnFile) {
+      sayMsg('Please upload a photo or PDF of your Bar Council certificate — it is required for verification.');
+      return;
+    }
+    if (certFile && certFile.size > 10 * 1024 * 1024) {
+      sayMsg('Certificate file is too large — maximum 10 MB.');
+      return;
+    }
+    let certPath = existing?.bar_certificate_url || null;
+    if (certFile) certPath = await uploadBarCertificate(session.user.id, certFile);
+
     const feeVal = parseFloat(document.getElementById('f-fee').value);
     const fields = {
       headline: document.getElementById('f-headline').value.trim(),
       city: document.getElementById('f-city').value.trim(),
       state: document.getElementById('f-state').value.trim(),
       languages,
-      bar_number: document.getElementById('f-bar').value.trim(),
+      bar_number: barCanon,
+      bar_certificate_url: certPath,
       experience_years: parseInt(document.getElementById('f-exp').value) || null,
       consultation_fee: isNaN(feeVal) ? null : feeVal,
       consultation_modes: modes,
