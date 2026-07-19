@@ -19,7 +19,7 @@
   body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
   a{text-decoration:none;color:inherit}
   header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:50}
-  .nav{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:20px;height:60px;flex-wrap:wrap}
+  .nav{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:18px;min-height:60px;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
   .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.02em}
   .logo-mark{width:28px;height:28px;border-radius:7px;background:#3e5bd9;color:#fff;display:grid;place-items:center;font-size:14px}
   .admin-chip{padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.15);font-size:12px;font-weight:700;color:#fff}
@@ -49,7 +49,7 @@
 <header>
   <nav class="nav">
     <div class="logo"><div class="logo-mark">⚖</div>LegalConnects</div>
-    <span class="admin-chip">Admin</span>
+    
     <div class="adminnav">
       <a href="../dashboard/admin.html">Overview</a>
       <a href="leads.html">Leads</a>
@@ -69,7 +69,7 @@
   <div class="pagehead">
     <div>
       <h1>Clients</h1>
-      <div class="sub">Everyone registered as a client. Click Edit to fix a name or phone. Account deletion requires a support process (it removes their login), so it's deliberately not a one-click action here.</div>
+      <div class="sub">Everyone registered as a client. Edit fixes a name or phone; Delete removes their profile from the platform (their login credential is fully purged in a later cleanup — noted in the park list).</div>
     </div>
     <input type="text" id="search" placeholder="Search by name, email, or phone…">
   </div>
@@ -106,15 +106,28 @@ function renderRows(rows) {
     <td>${esc(c.email || '—')}</td>
     <td>${esc(c.phone || '—')}</td>
     <td>${c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}</td>
-    <td><button class="rowbtn" data-act="edit" style="background:none;border:none;color:var(--accent);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer">Edit</button></td>
+    <td style="white-space:nowrap">
+      <button class="rowbtn" data-act="edit" style="background:none;border:none;color:var(--accent);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer">Edit</button>
+      &nbsp;<button class="rowbtn" data-act="del" style="background:none;border:none;color:var(--red);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer">Delete</button>
+    </td>
   </tr>`).join('');
 }
 
 document.getElementById('body').addEventListener('click', async (e) => {
-  if (e.target.dataset.act !== 'edit') return;
+  const act = e.target.dataset.act;
+  if (act !== 'edit' && act !== 'del') return;
   const id = e.target.closest('tr')?.dataset.id;
   const c  = CLIENTS.find(x => x.id === id);
   if (!c) return;
+  if (act === 'del') {
+    if (!confirm(`Delete client "${c.full_name || c.email}"?\n\nThis removes their profile, and their questions/bookings lose their author. This cannot be undone.`)) return;
+    if (!confirm('Are you sure? Final confirmation.')) return;
+    const { error } = await supabase.from('profiles').delete().eq('id', id);
+    if (error) { alert('Could not delete: ' + error.message + '\n(They may have linked records that must be removed first.)'); return; }
+    CLIENTS = CLIENTS.filter(x => x.id !== id);
+    renderRows(CLIENTS);
+    return;
+  }
   const name  = prompt('Full name:', c.full_name || '');
   if (name === null) return;
   const phone = prompt('Phone:', c.phone || '');
